@@ -43,14 +43,11 @@
         <div data-role="popup" id="popup1" class="ui-content"> Location...
             </div>
         <div data-role="header">
-            <form >  
- 
-                <input type="text" style="height:30px;margin-left:40px;" name="keyword" id="keyword" placeholder="输入关键字……">
+            <form >
+                <input type="text" style="height:30px;margin-left:40px;" name="keyword" id="keyword" placeholder="搜索浙江的工厂">
                 <input type="button" id="searchbtn" data-inline="true"  data-ajax="false" onclick="searchplace()" data-icon="search" value="搜索" />
                 <input type="button" id="Submit1" data-inline="true"  data-ajax="false" onclick="pathplan()" data-icon="forward" value="路径">
-                <input type="button" id="searchNear" data-inline="true" data-ajax="false" onclick="searchnear()" data-icon="navigation" value="附近">                 
-                    
-               
+                <input type="button" id="searchNear" data-inline="true" data-ajax="false" onclick="searchnear()" data-icon="navigation" value="附近">              
              </form>              
                <!-- <a href="#link" data-role="button" data-icon="search" data-iconpos="notext">搜索</a>-->
         </div>
@@ -99,7 +96,15 @@
                 
         </div>
         <div data-role="content" style="height:-webkit-calc(100% - 121px);">
-           <div id="layercontrol" style=" height:100%;"></div>
+           <div id="layercontrol" class="ui-field-contain" style=" height:100%;">
+                <div class="ui-checkbox">
+                    <label for="demo1" class="ui-btn ui-corner-all ui-btn-icon-left ui-checkbox-off">浙江数据</label>
+                    <input type="checkbox" name="demo1" id="demo1">
+                </div>
+              <!--  <ul data-role="list" id="layers" class="ui-listview">
+                  <li><input type="checkbox" value="hello" checked="">hello</li>
+               </ul> -->
+           </div>
         </div>
         <div data-role="footer" data-position="fixed" data-fullscreen="true">
             

@@ -396,7 +396,7 @@ function init() {
         'ascending': false,
         roundedCorner:false
     });
-    map.addControl(layercontrol);
+    // map.addControl(layercontrol);
     locate = new OpenLayers.Control.MousePosition({ 'div': OpenLayers.Util.getElement('location') });
     map.addControl(locate);
     scale = new OpenLayers.Control.Scale({ 'div': OpenLayers.Util.getElement('scale') });
@@ -578,11 +578,9 @@ function init() {
     });
     geolocate.events.register("locationfailed", this, function () {
         OpenLayers.Console.log('Location detection failed');
-    });    
+    });
 
-
-
-
+    layers2list();
 } //end of init() 
 
 document.getElementById('locate').onclick = function () {
@@ -716,10 +714,7 @@ function onLiSelect(x,y,hosname) {
    }
 
 function DrawPoint(responseTxt) {
-
     var result = responseTxt;
-    
-
     if (result == "")
         {alert("未查询到结果");
         return;}
@@ -734,7 +729,7 @@ function DrawPoint(responseTxt) {
 
             var polygon = new OpenLayers.Geometry.LineString();
 
-            for (var i in result) {      
+            for (var i in result) {
 //               
                 var hospital= wkt.read(result[i]["st_astext"].toString());
                 var hosname= result[i]["hname"];
@@ -935,8 +930,23 @@ function dialog() {
 
 }
 
-function getLayerByName() {
-
+function layers2list() {
+    var layercontrol = $("#layercontrol");
+    var layers = map.layers;
+    var _html = "";
+    var dataId = 0;
+    layers.forEach(function(l) {
+        if(l.name == "查询结果" || l.name == "路径" || l.name == "temp") {
+            _html +="<div class='ui-checkbox'><label for='layer"+
+            dataId +"' class='ui-btn ui-corner-all ui-btn-icon-left ui-checkbox-off'>"+
+            l.name +"</label><input type='checkbox' name='layer"+ 
+            dataId +"' id='layer"+ dataId +"'></div>";
+            dataId += 1;
+        }
+    });
+    console.log(_html);
+    layercontrol[0].innerHTML = layercontrol[0].innerHTML + _html;
+    // $("#layers").listview('refresh');
 }
 
 function updateStore()
@@ -994,6 +1004,6 @@ function updateStore()
 $(document).ready(function () {
     $("#menu").mmenu({
         //slidingSubmenus: false
-    }
-  );
+        }
+    );
 });
