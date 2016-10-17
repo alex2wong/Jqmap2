@@ -1,4 +1,4 @@
-﻿/// <reference path="OpenLayers.js" />
+/// <reference path="OpenLayers.js" />
 /// <reference path="access.js" />
 /// <reference path="heatmap.js" />
 
@@ -32,7 +32,7 @@ function init() {
     map = new OpenLayers.Map("mapContain", option);
 
 
-    var osm = new OpenLayers.Layer.OSM("OSM在线地图");
+    osm = new OpenLayers.Layer.OSM("OSM在线地图");
     //map.addLayer(osm);
 
     var base = new OpenLayers.Layer.WMS("世界是亮的", geourl + "geoserver/wms",
@@ -45,7 +45,7 @@ function init() {
 
     var google = new OpenLayers.Layer.Google("Google Streets");
     var bingkey = "AhDAFewd7qaiwPyXoA20cwKQsPWPNObU5FChfNTwBzyU7fdznrYAzW9OCPuEAxb7";
-    var Bingmap = new OpenLayers.Layer.Bing({
+    Bingmap = new OpenLayers.Layer.Bing({
         key:bingkey,
         type:"Aerial"
     });
@@ -353,7 +353,7 @@ function init() {
     if (OpenLayers.Util.alphaHack() == false) { myTile.setOpacity(0.6); }
    
        
-    var gaodelayer = new OpenLayers.Layer.GaodeCache("Gaode", 
+    gaodelayer = new OpenLayers.Layer.GaodeCache("Gaode", 
                 ["http://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7"]
 //                "http://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7",
 //                "http://webrd03.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7",
@@ -374,13 +374,12 @@ function init() {
     voyagelayer = new OpenLayers.Layer.MapboxLayer("航海地图", "https://d.tiles.mapbox.com/v3/examples.a3cad6da");
     HDlayer = new OpenLayers.Layer.MapboxLayer("高清影像", "https://a.tiles.mapbox.com/v3/examples.map-qfyrx5r8");
     
-
-    map.addLayer(osm);
     map.addLayer(gaodelayer);
+    map.addLayer(osm);  
 
-    map.addLayer(basesat);
+    // map.addLayer(basesat);
     map.addLayer(Bingmap);
-    map.addLayers([gamelayer,voyagelayer,HDlayer]);    
+    // map.addLayers([gamelayer,voyagelayer,HDlayer]);    
     map.addLayer(querylayer); 
     map.addLayer(shiplayer);//目前用来绘制查询所得医院点
 
@@ -388,16 +387,16 @@ function init() {
 
     //add control 
     map.zoomToMaxExtent();
-    var center = new OpenLayers.LonLat(110.14, 13.424);
-    center.transform("EPSG:4326", "EPSG:900913");
-    map.setCenter(center,5);
+    var center = new OpenLayers.LonLat(121.14, 30.724);
+    center.transform("EPSG:4326", "EPSG:3857");
+    map.setCenter(center,6);
 
     layercontrol=new OpenLayers.Control.LayerSwitcher({
         div:document.getElementById("layercontrol"),
         'ascending': false,
         roundedCorner:false
     });
-    map.addControl(layercontrol);
+    // map.addControl(layercontrol);
     locate = new OpenLayers.Control.MousePosition({ 'div': OpenLayers.Util.getElement('location') });
     map.addControl(locate);
     scale = new OpenLayers.Control.Scale({ 'div': OpenLayers.Util.getElement('scale') });
@@ -432,144 +431,6 @@ function init() {
     
     map.addControl(vlayerControl);
     vlayerControl.activate();
-//    var panel = new OpenLayers.Control.Panel(
-//                    {
-//                        div: document.getElementById("panel"),
-//                        defaultControl: vlayerControl,
-//                        createControlMarkup: function (control) {
-//                            var button = document.createElement("button"),
-//                                iconSpan = document.createElement("img"),
-//                                textSpan = document.createElement("span");
-
-//                            if (control.icon) {
-//                                iconSpan.src = control.icon;
-//                            }
-//                            button.appendChild(iconSpan);
-//                            if (control.text) {
-//                                textSpan.innerHTML = control.text;
-//                            }
-//                            button.appendChild(textSpan);
-//                            return button;
-//                        }
-//                    });
-
-
-
-//    var clc = new EraseLayer(vlayer, {
-//        icon: "img/marker.png", title: "清除图层", text: ""
-//    });
-//    var edit = new OpenLayers.Control.ModifyFeature(vlayer, {
-//        icon: "theme/default/img/draw_point_on.png",
-//        title: "编辑要素",
-//        text: "",
-//        displayClass: 'olControlModifyFeature'
-//    });
-//    //    var drawfeature = new OpenLayers.Control.EditingToolbar(vlayer, {
-//    //        icon: "theme/default/img/add_point_on.png",
-//    //        title: "绘制要素",
-//    //        text: ' 绘制',
-//    //        displayClass: 'olEditingToolbar'
-//    //    });
-//    var drawPolygon = new OpenLayers.Control.DrawFeature(vlayer, OpenLayers.Handler.Polygon, {
-//        icon: "img/draw_polygon_on.png", title: "绘制多边形"
-//    });
-//    drawPolygon.events.on({ "featureadded": drawCom });
-//    function drawCom(ev) {
-//        var geometry = ev.feature.geometry;
-//    }
-//    function drawCompleted(ev) {
-//        var geometry = ev.feature.geometry;
-//        var wkt = new OpenLayers.Format.WKT();
-//        var feature = ev.feature; //暂时用于popup位置的
-//        var featureCenter = feature.geometry.getBounds().getCenterLonLat();
-//        popup = new OpenLayers.Popup.CSSFramedCloud("featurePopup",
-//                                         featureCenter,
-//                                         null,
-//                                         "<div id='popup' style=' padding:12px;'>" +
-//                                         "</br>" +
-//                                         "type:" + "<input id='type' type='text'>" + "</br>" +
-//                                         "Name:" + "<input id='Name' type='text'>" + "</br>" +
-//                                         "<input id='submit' type='button' value='标注舰船' onclick='insert()' />" + "</br>" +
-//                                          "</div>",
-//                                         null, true, PopupClose);
-//        feature.popup = popup;
-//        popup.feature = feature;
-//        map.addPopup(popup, true);
-
-//        var geometryclone = geometry.clone();
-//        geometryclone.transform("EPSG:900913", "EPSG:4326");
-//        shiptype = document.getElementById('type').value;
-//        shipname = document.getElementById('Name').value;
-//        var feature2 = new OpenLayers.Feature();
-//        feature2.geometry = geometryclone;
-//        insertText = wkt.write(feature2);
-//        //      
-//    }
-
-//    function PopupClose(evt) {
-//        // 'this' is the popup.
-//        //        var feature = this.feature;
-//        //        if (feature.layer) { // The feature is not destroyed
-//        //            vlayerControl.unselect(feature);
-//        //        } else { // After "moveend" or "refresh" events on POIs layer all 
-//        //            //     features have been destroyed by the Strategy.BBOX
-//        this.destroy();
-
-//    }
-
-//    var drawPoint = new OpenLayers.Control.DrawFeature(vlayer, OpenLayers.Handler.Point, {
-//        icon: "img/aircraft.jpg", title: "绘制点"
-//    });
-//    drawPoint.events.on({ "featureadded": drawCompleted }); //当要素添加成功时候执行的函数
-//    //    
-//    var del = new DeleteFeature(vlayer, {
-//        icon: "img/eraseFeature.png", title: "清除图层", text: ""
-//    });
-
-//    var boxquery = new OpenLayers.Control.DrawFeature(vlayer, OpenLayers.Handler.Polygon, {
-//        icon: "img/view_next_on.png", title: "画框查询"
-//    });
-//    boxquery.events.on({ "featureadded": done });
-
-//    function done(evt) {
-//        var geometry = evt.feature.geometry;     //画框查询，开始向数据库发送查询的范围。
-//        geometry.transform("EPSG:900913", "EPSG:4326");
-//        var Bound = geometry.getBounds();
-//        document.getElementById("ulx").value = Bound.left;
-//        document.getElementById("uly").value = Bound.top;
-//        document.getElementById('lrx').value = Bound.right;
-//        document.getElementById('lry').value = Bound.bottom;
-
-//        //$.POST("Handler_mongo.ashx",{            
-//        //    type: "query_spatial_grid", 
-//        //    bound: Bound 
-//        //},
-//        //    function (data) {
-//        //        alert(data);                
-//        //    }
-//        //);
-//        var xmlrequest = new XMLHttpRequest();        
-//        xmlrequest.open("POST", "Handler_mongo.ashx", true);
-//        var content = "type=" + "query_spatial_grid" + "&bound=" + Bound;
-//        xmlrequest.setRequestHeader("CONTENT-TYPE", "application/x-www-form-urlencoded");
-//        xmlrequest.onreadystatechange = function () {
-//            if (xmlrequest.readyState == 4 && xmlrequest.status == 200) {
-//                alert(xmlrequest.responseText);
-//            }
-//            //vlayer.addFeatures(bufferFeature);
-//        }
-//        xmlrequest.send(content);
-//        //alert(Bound);
-
-//    }
-
-
-//    
-
-//    panel.addControls([vlayerControl, world, drawPolygon, drawPoint, edit, del, boxquery]);
-//    //    map.addControl(drawfeature);
-//    //  panel.addControls([nav.next, nav.previous]);
-//    map.addControl(panel);
 
    //查询功能
 
@@ -596,75 +457,6 @@ function init() {
    map.addControl(info);
    info.activate();
 
-//    //    map.events.register('click', map, mapclick);
-
-//    function mapclick(e) {
-//        document.getElementById("nodelist").innerHTML = "loading";
-//        var params = {
-//            REQUEST: "GetFeatureInfo",
-//            EXCEPTIONS: "application/vnd.ogc.se_xml",
-//            BBOX: map.getExtent().toBBOX(),
-//            X: e.xy.x,
-//            Y: e.xy.y,
-//            INFO_FORMAT: 'text/html',
-//            QUERY_LAYERS: map.layers[0].params.LAYERS,
-//            FEATURE_COUNT: 50,
-//            Layers: ['topp:states', 'cite:natcapitals'],
-//            Styles: '',
-//            Srs: 'EPSG:4326',
-//            WIDTH: map.size.w,
-//            HEIGHT: map.size.h,
-//            format: 'image/jpeg'
-//        };
-
-//        OpenLayers.loadURL = function (uri, params, caller, onComplete, onFailure) {
-//            if (typeof params == 'string') { params = OpenLayers.Util.getParameters(params); }
-//            var success = (onComplete) ? onComplete : OpenLayers.nullHandler; var failure = (onFailure) ? onFailure : OpenLayers.nullHandler; return OpenLayers.Request.GET({ url: uri, params: params, success: success, failure: failure, scope: caller });
-//        };
-
-//        OpenLayers.loadURL(geourl + "geoserver/wms", params, this, setHTML, setFail);
-
-//        //  OpenLayers.loadURL("geoserverProxy.aspx?url=http://58.198.182.214:8080/geoserver/wms", params, this, setHTML, setFail);
-//        OpenLayers.Event.stop(e);
-
-//    }
-
-
-//    //create Feature point test 
-//    var point = new OpenLayers.Geometry.Point(125.7, 31.5);
-//    var proj = new OpenLayers.Projection("EPSG:4326");
-//    point.transform("EPSG:4326", map.getProjectionObject());
-//    var pointFeature = new OpenLayers.Feature.Vector(point);
-//    var point2 = new OpenLayers.Geometry.Point(128.2, 42.4);
-//    point2.transform(proj, map.getProjectionObject());
-//    var pointFeature2 = new OpenLayers.Feature.Vector(point2);
-//    pointFeature2.attributes = {
-//        name: "shipfleet",
-//        title: "ship",
-//        type: "FishingBoat",
-//        SUB_REGION: "PACIFIC"
-//    };
-//    pointFeature.attributes = {
-//        name: "No.Bush",
-//        title: "ship",
-//        type: "Aircraft Carrier",
-//        favColor: 'red',
-//        align: 'cm',
-//        Region: 'West Pacific'
-//    };
-//    var wkt1 = new OpenLayers.Format.WKT();
-//    var polygon1 = wkt1.read("POLYGON((7.174072265625 32.5634765625, 57.799072265625 37.4853515625, 92.955322265625 0.2197265625, 73.970947265625 -13.1396484375, 5.767822265625 -23.6865234375, 7.174072265625 32.5634765625))");
-
-//    vlayer.addFeatures([pointFeature, pointFeature2]);
-
-
-//    //// Interaction; not needed for initial display.
-
-
-//    wfstest.events.on({
-//        'featureselected': onFeatureSelect,
-//        'featureunselected': onFeatureUnselect
-//    });
     querylayer.events.on({
         'featureselected': onFeatureSelect,
         'featureunselected': onFeatureUnselect
@@ -674,44 +466,6 @@ function init() {
        'featureselected': onFeatureSelect,
        'featureunselected': onFeatureUnselect
    });
-
-    // function queryTile(evt) {
-    //     var feature = evt.feature;
-
-    //     Qbound = feature.geometry.getBounds();  //判断Bound内的舰船数量。并且显示其名称到div中！
-        
-    //     var featureCenter = feature.geometry.getBounds().getCenterLonLat();
-    //     var Width = Qbound.getWidth(); var Height = Qbound.getHeight();
-    //     var WHratio = Width / Height;
-    //     var imgWidth = 300; imgHeight = Math.round(imgWidth / WHratio);
-
-    //     imgurl = geourl + 'geoserver/wms?bbox=' + Qbound + '&styles=raster&Format=image/png&request=GetMap&layers=cite:landsatSHB5WGS&width=' + imgWidth + '&height=' + imgHeight + '&srs=EPSG:900913';
-    //     //        imgurl=http://localhost:8080/geoserver/wms?bbox=-130,24,-66,50&styles=population&Format=image/png&request=GetMap&layers=topp:states&width=550&height=250&srs=EPSG:4326
-    //     //htmlurl = 'http://localhost:8080/geoserver/wms?bbox=' + Qbound + '&styles=raster&Format=application/openlayers&request=GetMap&layers=cite:landsatSHB5WGS&width=300px&height=250px&srs=EPSG:900913';
-
-    //     popup = new OpenLayers.Popup.CSSFramedCloud("featurePopup",
-    //                                      featureCenter,
-    //                                      null,
-    //                                      "<div  id='popup' style='padding:15px;'>" +
-
-    //                                      //"<img src="+ imgurl +">" + "</br>" +
-    //                                      "瓦片分辨率(米):" + map.getResolution() + "</br>" +
-    //                                      "舰船数量:" + "未知" + "</br>" +
-    //                                      "所属国:" + feature.attributes.ShipOwnCountry + "</br>" +
-    //                                      "活跃时间:" + feature.attributes.ActiveTime + "</br>" +
-    //                                      "船只类型:" + feature.attributes.ShipType + "</br>" +
-    //                                      "<input id='delftr' type='button' value='删除标注' onclick='del()' />" +
-    //                                      "<input id='zscale' type='text' value=1  />" +
-    //                                      "<input id='zoomTo' type='button' value='缩放至' onclick='ZoomTo()' />" + "</div>"
-    //                                      ,
-    //                                      null, true, onPopupClose);
-    //     feature.popup = popup;
-    //     popup.feature = feature;
-    //     map.addPopup(popup, true);
-
-
-    // }
-
 
     // Needed only for interaction, not for the display.
     function onPopupClose(evt) {
@@ -771,36 +525,6 @@ function init() {
     vector = new OpenLayers.Layer.Vector('定位点');  //标注定位点的矢量图层
     map.addLayer(vector);
 
-    //var pulsate = function (feature) {
-    //    var point = feature.geometry.getCentroid(),
-    //        bounds = feature.geometry.getBounds(),
-    //        radius = Math.abs((bounds.right - bounds.left) / 2),
-    //        count = 0,
-    //        grow = 'up';
-
-    //    var resize = function () {
-    //        if (count > 16) {
-    //            clearInterval(window.resizeInterval);
-    //        }
-    //        var interval = radius * 0.03;
-    //        var ratio = interval / radius;
-    //        switch (count) {
-    //            case 4:
-    //            case 12:
-    //                grow = 'down'; break;
-    //            case 8:
-    //                grow = 'up'; break;
-    //        }
-    //        if (grow !== 'up') {
-    //            ratio = -Math.abs(ratio);
-    //        }
-    //        feature.geometry.resize(1 + ratio, point);
-    //        vector.drawFeature(feature);
-    //        count++;
-    //    };
-    //    window.resizeInterval = window.setInterval(resize, 50, point, radius);
-    //};
-
     geolocate = new OpenLayers.Control.Geolocate({
         bind: false,
         geolocationOptions: {
@@ -854,219 +578,11 @@ function init() {
     });
     geolocate.events.register("locationfailed", this, function () {
         OpenLayers.Console.log('Location detection failed');
-    });    
+    });
 
-
-
-
+    layers2list();
 } //end of init() 
 
-
-
-//// 缓冲区 核心功能。。 通过发送post请求到数据库，参数为send（）中的参数content字串
-////      //BuffJson 定向到connect.aspx 页面，请求缓冲区。
-////查询数据库中的记录，直接发送get或者post请求为上策
-//function BuffJson() {
-
-
-//    var wkt = new OpenLayers.Format.WKT();
-//    bufferFeature = new OpenLayers.Feature();
-//    var xmlrequest = new XMLHttpRequest();
-
-//    //  alert(inputwkt);
-//    var bufdist = document.getElementById("BuffDist").value
-//    if (bufdist.toString().length > 5) {
-//        alert("input correct degrees");
-//    }
-//    // 需要验证用户输入的逻辑性,待修改.如果检验提交的表单
-//    //  xmlrequest.open("GET", "connect.aspx?geom=" + inputwkt + "&dist=" + bufdist, true);
-//    xmlrequest.open("POST", "connect.aspx", true);
-//    var content = "geom=" + inputwkt + "&dist=" + bufdist;
-//    //    xmlrequest.setRequestHeader("Content-Length", content.length);
-//    xmlrequest.setRequestHeader("CONTENT-TYPE", "application/x-www-form-urlencoded");
-//    xmlrequest.onreadystatechange = function () {
-//        if (xmlrequest.readyState == 4 && xmlrequest.status == 200) {
-//            var objs = eval(xmlrequest.responseText);
-//            //alert(objs.length); // 2
-//            // alert(objs[0].st_astext.toString());
-//            wktext = objs[0].st_astext.toString();
-//            bufferFeature = wkt.read(wktext);
-//            // bufferFeature.geometry.transform("EPSG:4326","EPSG:3857");
-
-//            //                    var str1 = wkt.write(bufferFeature);
-//            //                    alert(str1);
-//        }
-//        querylayer.addFeatures(bufferFeature);
-//    }
-//    xmlrequest.send(content);
-
-//    //return bufferFeature;                       
-//}
-
-//function MoveToShip2(ary1, ary2) {    
-//    var point = new OpenLayers.LonLat(ary1, ary2);    
-//    point.transform("EPSG:4326", "EPSG:900913");
-//    map.panTo(point);
-//    map.zoomTo(3);
-//    //var geometry = new OpenLayers.Geometry.Point(ary1, ary2);
-//    //geometry.transform("EPSG:4326", "EPSG:900913");
-//    //var feature=new OpenLayers.Feature();
-//    //feature.geometry=geometry;
-//    //vlayer.addFeatures(feature);
-
-//}
-
-
-////WFS查询 代码，返回适合条件的xml ，解析为feature
-
-//function query() {
-
-//    str = document.getElementById("text1").value;
-//    var filter1 = new OpenLayers.Filter.Logical({
-//        type: OpenLayers.Filter.Logical.AND,
-//        filter: [
-//                    new OpenLayers.Filter.Comparison({
-//                        type: OpenLayers.Filter.Comparison.LIKE,
-//                        property: "pop_rank",
-//                        value: "*" + str + "*"
-//                    }),
-//                    new OpenLayers.Filter.Spatial({
-//                        type: OpenLayers.Filter.Spatial.BBOX,
-//                        property: "geom",
-//                        value: map.getExtent()
-//                    })
-//        ]
-//    });
-//    var filter2 = new OpenLayers.Filter.Logical({
-//        type: OpenLayers.Filter.Logical.AND,
-//        filters: [
-//                        new OpenLayers.Filter.Comparison({
-//                            type: OpenLayers.Filter.Comparison.LIKE,
-//                            property: "STATE_NAME",
-//                            value: "*" + str + "*"
-//                        })
-//        //                        new OpenLayers.Filter.Comparison({
-//        //                            type:OpenLayers.Filter.Comparison.BETWEEN,
-//        //                            property: "the_geom",
-//        //                            value: map.getExtent()
-//        //                        })
-//        ]
-//    });
-//    var filter_1_0 = new OpenLayers.Format.Filter.v1_0_0();
-//    var xml = new OpenLayers.Format.XML();
-
-
-//    var xmlPara = '<wfs:GetFeature service="WFS" version="1.0.0" ' +
-//  'outputFormat="GML2" ' +
-//  'xmlns:topp="http://www.openplans.org/topp" ' +
-//  'xmlns:wfs="http://www.opengis.net/wfs" ' +
-//  'xmlns:ogc="http://www.opengis.net/ogc" ' +
-//  'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
-//  'xsi:schemaLocation="http://www.opengis.net/wfs  http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd"> ' +
-//  ' <wfs:Query typeName="topp:states"> ' + xml.write(filter_1_0.write(filter2)) + '</wfs:Query> </wfs:GetFeature>';
-//    //'<ogc:Filter> <PropertyIsEqualTo> <PropertyName>STATE_NAME</PropertyName> <Literal>'+str+'</Literal> </PropertyIsEqualTo> </ogc:Filter> </wfs:Query> </wfs:GetFeature> ';
-
-//    var xmlCapital = '<wfs:GetFeature xmlns:wfs="http://www.opengis.net/wfs" service="WFS" version="1.0.0" ' +
-//    'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
-//    'xmlns:cite="http://www.opengeospatial.net/cite"> ' +
-//    'xmlns:ogc="http://www.opengis.net/ogc" ' +
-//    'xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd"> ' +
-//    '<wfs:Query typeName="cite:natcapitals"  ' + xml.write(filter_1_0.write(filter1)) + '</wfs:Query> </wfs:GetFeature>';
-
-
-//    request = OpenLayers.Request.POST({
-//        url: geourl + "geoserver/wfs",
-//        data: xmlPara,
-//        callback: onComplete
-
-//    });
-//} // end of query function
-
-//function onComplete(request) {
-//    //    alert("send Post OK");
-//    var gmlParse = new OpenLayers.Format.GML();
-//    features = gmlParse.read(request.responseText);
-
-//    for (var f in features) {
-//        feature = features[f];
-//        //clonefeature = feature.clone();
-//        feature.geometry.transform("EPSG:4326", "EPSG:900913");
-//        //                   
-//        //                    feature.attribute = {
-//        //                        title: feature.data.STATE_NAME,
-//        //                        type: "states"
-//        //                    };
-//        //                
-//        querylayer.addFeatures(feature);
-//    }
-
-//}
-
-//function ECregion() {
-//    var point1 = new OpenLayers.LonLat(131.6562, 21.29255);
-//    point1.transform("EPSG:4326", "EPSG:3857");
-//    map.panTo(point1);
-//    map.zoomTo(2);
-
-
-//}
-//function WPregion() {
-//    var point1 = new OpenLayers.LonLat(-95, 34);
-//    point1.transform("EPSG:4326", "EPSG:3857");
-//    map.panTo(point1);
-//    map.zoomTo(2);
-//}
-
-
-//function insert() {
-//    var xmlrequest = new XMLHttpRequest();
-
-//    //  xmlrequest.open("GET", "connect.aspx?geom=" + inputwkt + "&dist=" + bufdist, true);
-//    xmlrequest.open("GET", "connect.aspx?geom=" + insertText + "&shiptype=" + shiptype + "&shipname=" + shipname, true);
-//    //    var content = "geom=" + insertText;
-//    //    xmlrequest.setRequestHeader("Content-Length", content.length);
-//    //    xmlrequest.setRequestHeader("CONTENT-TYPE", "application/x-www-form-urlencoded");
-//    xmlrequest.onreadystatechange = function () {
-//        if (xmlrequest.readyState == 4 && xmlrequest.status == 200) {
-//            alert('Insert ok');
-//            shiplayer.redraw();
-//        }
-//        //shiplayer.addFeatures(feature);
-//    }
-//    xmlrequest.send(null);
-
-
-//}
-
-//function cancel(ev) {
-//    ev.feature.destroy();
-//    vlayer.redraw();
-//}
-
-//function del() {
-
-//    var xmlrequest = new XMLHttpRequest();
-//    var sql = 'del';
-//    //  xmlrequest.open("GET", "connect.aspx?geom=" + inputwkt + "&dist=" + bufdist, true);
-//    xmlrequest.open("GET", "connect.aspx?fid=" + fid + '&sql=' + sql, true);
-//    //    var content = "geom=" + insertText;
-//    //    xmlrequest.setRequestHeader("Content-Length", content.length);
-//    //    xmlrequest.setRequestHeader("CONTENT-TYPE", "application/x-www-form-urlencoded");
-//    xmlrequest.onreadystatechange = function () {
-//        if (xmlrequest.readyState == 4 && xmlrequest.status == 200) {
-//            alert('Delete ok');
-//            shiplayer.redraw();
-//        }
-//        //shiplayer.addFeatures(feature);
-//    }
-//    xmlrequest.send(null);
-
-//}
-
-//function ZoomTo() {
-//    alert("功能待开放");
-//    //map.zoomTo(5);
-//}
 document.getElementById('locate').onclick = function () {
     OpenLayers.Console.log('start locate');
     vector.removeAllFeatures();
@@ -1198,10 +714,7 @@ function onLiSelect(x,y,hosname) {
    }
 
 function DrawPoint(responseTxt) {
-
     var result = responseTxt;
-    
-
     if (result == "")
         {alert("未查询到结果");
         return;}
@@ -1216,7 +729,7 @@ function DrawPoint(responseTxt) {
 
             var polygon = new OpenLayers.Geometry.LineString();
 
-            for (var i in result) {      
+            for (var i in result) {
 //               
                 var hospital= wkt.read(result[i]["st_astext"].toString());
                 var hosname= result[i]["hname"];
@@ -1262,8 +775,17 @@ function searchplace() {
         return;
     }
     var param={"distric":"上海","type":"query","hospital":name};
-    $.get("query.ashx", param,
-    function (json) { templayer.removeAllFeatures(); shiplayer.removeAllFeatures(); DrawPoint(json); $("#list").listview('refresh'); }, "json")
+    $.get(
+        "query.ashx", 
+        param,
+        function (json) { 
+            templayer.removeAllFeatures();
+            shiplayer.removeAllFeatures();
+            DrawPoint(json);
+            $("#list").listview('refresh');
+        },
+        "json"
+    );
     //传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)
     //jsonpCallback:"flightHandler",//自定义的jsonp回调函数名称，默认为jQuery自动生成的随机函数名，也可以写"?"，jQuery会自动为你处理数据
 
@@ -1277,7 +799,6 @@ function searchplace() {
 //            success:function(json){DrawPoint(json);$("#list").listview('refresh');},
 //            error:function(){alert("fail");}    //ajax 是比较复杂的包含错误处理函数的 请求函数
 //    });
-
 }
 
 function searchnear() {
@@ -1285,8 +806,8 @@ function searchnear() {
     var centerFeature = shiplayer.selectedFeatures[0];
     if (centerFeature == undefined)
     {
-        alert("请选择一个中心点")
-        return
+        alert("请选择一个中心点");
+        return;
     }
     var X = centerFeature.geometry.x;var Y = centerFeature.geometry.y;
     centerFeature.geometry.transform("EPSG:3857", "EPSG:4326");
@@ -1296,11 +817,11 @@ function searchnear() {
     $.ajax({
         type: "post",
         async: false,
-        url: "query.ashx",
+        url: "searchnear",
         data: param,
         dataType: "json",
         success: function (json) { shiplayer.removeAllFeatures(); DrawCircle(X, Y, 2200); DrawPoint(json); $("#list").listview('refresh'); },
-        error: function () { alert("fail"); }
+        error: function () { alert("是不是后台宕机了"); }
     });
 
 }
@@ -1374,17 +895,58 @@ function SwitchBase(mapid)
     switch (mapid)
     {
         case 1:
-            map.setBaseLayer(gamelayer);
+            map.setBaseLayer(gaodelayer);
             break;
         case 2:
-            map.setBaseLayer(voyagelayer);
+            map.setBaseLayer(Bingmap);
             break;
         case 3:            
-            map.setBaseLayer(HDlayer);
+            map.setBaseLayer(osm);
             break;
-            
 
     }
+}
+
+function SwitchLayer(target) {
+    var target = target;
+    var dialog = $("#popup1")[0];
+    var btn = $("#forPop")[0];
+    switch (target.id) {
+        case "facChbox":
+            console.log(target.checked);
+            if (target.checked) {
+                dialog.innerHTML = " 数据图层开启 ";
+                btn.click();
+            } else {
+                dialog.innerHTML = " 数据图层关闭 ";
+                btn.click();
+            }
+            // toDo: display factory points..
+            // or .. display Friends Locations....
+    }
+}
+
+function dialog() {
+
+}
+
+function layers2list() {
+    var layercontrol = $("#layercontrol");
+    var layers = map.layers;
+    var _html = "";
+    var dataId = 0;
+    layers.forEach(function(l) {
+        if(l.name == "查询结果" || l.name == "路径" || l.name == "temp") {
+            _html +="<div class='ui-checkbox'><label for='layer"+
+            dataId +"' class='ui-btn ui-corner-all ui-btn-icon-left ui-checkbox-off'>"+
+            l.name +"</label><input type='checkbox' name='layer"+ 
+            dataId +"' id='layer"+ dataId +"'></div>";
+            dataId += 1;
+        }
+    });
+    console.log(_html);
+    layercontrol[0].innerHTML = layercontrol[0].innerHTML + _html;
+    // $("#layers").listview('refresh');
 }
 
 function updateStore()
@@ -1435,39 +997,13 @@ function updateStore()
           error: function () { alert("fail"); }
       });
 
-
-
-      //$('#track').onclick = function () {
-      //    vector.removeAllFeatures();
-      //    geolocate.deactivate();
-      //    if (this.checked) {
-      //        geolocate.watch = true;
-      //        firstGeolocation = true;
-      //        geolocate.activate();
-      //    }
-      //};
-      //$('#track').checked = false;
-
-//      $.ajax({
-//          type: "get",
-//          async: false,
-//          url: "http://58.198.183.143:8099/geoserver/web/",
-//          data: "",
-//          success: function () { alert("ok"); },
-//          error: function () { alert("fail"); }
-//      });
   }
 
 //}
 
-
-    $(document).ready(function () {
-        $("#menu").mmenu({
-            //slidingSubmenus: false
+$(document).ready(function () {
+    $("#menu").mmenu({
+        //slidingSubmenus: false
         }
-      );
-
-
-
-    });
-
+    );
+});
