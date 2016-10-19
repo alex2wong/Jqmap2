@@ -1,4 +1,4 @@
-/// <reference path="OpenLayers.js" />
+﻿/// <reference path="OpenLayers.js" />
 
 
 //define a new class DeleteFeature

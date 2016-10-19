@@ -1,4 +1,4 @@
-/// <reference path="OpenLayers.js" />
+﻿/// <reference path="OpenLayers.js" />
 /// <reference path="access.js" />
 /// <reference path="heatmap.js" />
 
@@ -923,11 +923,32 @@ function SwitchLayer(target) {
             }
             // toDo: display factory points..
             // or .. display Friends Locations....
+            break;
+        default:
+            var layer = getLayerByName(target.id);
+            if (layer) {
+                console.log("changing visibility of " + layer.name);
+                // layer.visibility = target.checked;
+            } else {
+                return;
+            }
+            break;
     }
 }
 
-function dialog() {
-
+function getLayerByName(name) {
+    if (typeof name === "string") {
+        var layers = map.layers;
+        var layer = null;
+        layers.forEach(function(l) {
+            if(l.name == name) {
+                layer = l;
+                
+            }
+        });
+        return layer;
+    }
+    return null;
 }
 
 function layers2list() {
@@ -935,12 +956,18 @@ function layers2list() {
     var layers = map.layers;
     var _html = "";
     var dataId = 0;
+    var visible;
     layers.forEach(function(l) {
         if(l.name == "查询结果" || l.name == "路径" || l.name == "temp") {
-            _html +="<div class='ui-checkbox'><label for='layer"+
-            dataId +"' class='ui-btn ui-corner-all ui-btn-icon-left ui-checkbox-off'>"+
-            l.name +"</label><input type='checkbox' name='layer"+ 
-            dataId +"' id='layer"+ dataId +"'></div>";
+            if (l.visibility) {
+                visible = "checked";
+            } else {
+                visible = "";
+            }
+            _html +="<div class='ui-checkbox'><label for='"+
+            l.name +"' class='ui-btn ui-corner-all ui-btn-icon-left "+ visible +"'>"+
+            l.name +"</label><input type='checkbox' onchange='SwitchLayer(this)' name='"+ 
+            l.name +"' id='"+ l.name +"' "+ visible +"></div>";
             dataId += 1;
         }
     });
