@@ -24,21 +24,56 @@ var map = new mapboxgl.Map({
 });
 
 map.on('load', function() {
-    map.addSource('custom-tms', {
-        'type': 'raster',
-        'tiles': [
-            'http://127.0.0.1:8080/{z}/{x}/{y}.png'
-            // 'https://geodata.state.nj.us/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&width=256&height=256&layers=Natural2015'
-        ],
-        'tileSize': 256
+    // map.addSource('custom-tms', {
+    //     'type': 'raster',
+    //     'tiles': [
+    //         'http://127.0.0.1:8080/{z}/{x}/{y}.png'
+    //         // 'https://geodata.state.nj.us/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&width=256&height=256&layers=Natural2015'
+    //     ],
+    //     'tileSize': 256
+    // });
+
+    map.addSource("locations", {
+        "type":"geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [{
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [121.2454, 31.2]
+              },
+              "properties": {
+                "title": "Mapbox 上海",
+                "icon": "plane"
+              }
+              }, {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [120.414, 29.976]
+              },
+              "properties": {
+                "title": "Mapbox 浙江",
+                "icon": "harbor"
+              }
+              }]
+          }
     });
 
     map.addLayer({
-        'id': 'custom-tms',
-        'type': 'raster',
-        'source': 'custom-tms',
-        'paint': {}
-    }, 'aeroway-taxiway');
+        'id': 'location',
+        'type': 'symbol',
+        'source': 'locations',
+        'paint': {},
+        'layout': {
+            "icon-image": "{icon}-15",
+            "text-field": "{title}",
+            "text-font": ["Open Sans Regular"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
+        }
+    });
 });
 </script>
 

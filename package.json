@@ -1,0 +1,24 @@
+{
+  "name": "jqmap2",
+  "version": "1.0.0",
+  "description": "this is <strong>web mobile map project</strong> based on jQuery Mobile and <a href=\"http://openlayers.org/\">OpenLayers</a> which can run in mobile browser.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alex2wong/Jqmap2.git"
+  },
+  "keywords": [
+    "map",
+    "openlayer",
+    "mapbox"
+  ],
+  "author": "alex2wong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alex2wong/Jqmap2/issues"
+  },
+  "homepage": "https://github.com/alex2wong/Jqmap2#readme"
+}
