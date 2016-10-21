@@ -537,7 +537,7 @@ function init() {
     firstGeolocation = true;
     geolocate.events.register("locationupdated", geolocate, function (e) {
         vector.removeAllFeatures();
-        locationFeature=new OpenLayers.Feature.Vector(e.point)        
+        locationFeature=new OpenLayers.Feature.Vector(e.point)
         var lon = e.point.x; var lat = e.point.y;
         //e.point.transform("EPSG:4326", "EPSG:900913");
         var circle = new OpenLayers.Feature.Vector(
