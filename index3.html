@@ -22,7 +22,12 @@ var map = new mapboxgl.Map({
     zoom: 15,
     pitch: 45,
     bearing: -17.6,
-    container: 'map'
+    container: 'map',
+    light: {
+        anchor: 'viewport',
+        color: 'white',
+        intensity: 0.8
+    }
 });
 
 // the 'building' layer in the mapbox-streets vector source contains building-height
@@ -45,7 +50,7 @@ map.on('load', function() {
                 'type': 'identity',
                 'property': 'min_height'
             },
-            'fill-opacity': .6
+            'fill-opacity': .9
         }
     });
 });

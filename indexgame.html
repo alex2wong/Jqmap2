@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>aaa</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+    </style>
+</head>
+<body>
+
+<div id='map'></div>
+<script>
+// start speed generally about 0.5rad/h. speed range(0, 2)
+var direction = 0, manual = false, speed = 0.1;
+var point = {
+    "type":"Point",
+    "coordinates": [121.321,30.112]
+};
+
+function setPosition(locking) {
+    // direction in Rad. Generally, 1 Rad stands for 100km
+    point.coordinates[0] += speed * Math.sin(direction) / 100;
+    point.coordinates[1] += speed * Math.cos(direction) / 100;
+    map.getSource('drone').setData(point);
+
+    map.setLayoutProperty('drone', 'icon-rotate', direction * (180 / Math.PI));
+    if (!manual && Math.random() > 0.95) {
+        direction += (Math.random() - 0.5) /2;
+    }
+    if (!locking) {
+        map.setCenter(point.coordinates);
+    }
+}
+
+mapboxgl.accessToken = 'pk.eyJ1IjoiaHVhbmd5aXhpdSIsImEiOiI2WjVWR1hFIn0.1P90Q-tkbHS38BvnrhTI6w';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v9',
+    /* actually MapOptions can be set as: {
+        style: 'mapbox://styles/mapbox/streets-v9'
+        name: 'Bright',
+        glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf"
+        sprite: 'mapbox://sprites/mapbox/bright-v8',
+        pitch: 50,
+        sources: {
+            'mb-streets': {
+                type: 'vector',
+                url: 'mapbox://mapbox.mapbox-streets-v6'
+            }
+        }        
+    }
+    */
+    "transition": {
+        "duration": 400,
+        "delay": 0
+    },
+    pitch: 30,
+    light: {
+        'anchor':'viewport',
+        'color':'white',
+        'intensity':0.4
+    },
+    zoom: 8,
+    center: [121.00, 31.0892]
+});
+
+// add control interaction or event listener.
+document.body.addEventListener('keydown', function(e) {
+    if (e.which === 37) {
+        direction -= 0.1;
+        manual = true;
+    }
+    if (e.which === 39) {
+        direction += 0.1;
+        manual = true;
+    }
+    if (e.which === 38) { // faster
+        speed = Math.min(speed + 0.01, 1);
+        manual = true;
+        e.preventDefault();
+    }
+    if (e.which === 40) { // slower
+        speed = Math.max(speed - 0.01, 0);
+        manual = true;
+        e.preventDefault();
+    }
+})
+
+
+
+// sprite contain json and png.
+map.on('load', function() {
+    // map.addSource('custom-tms', {
+    //     'type': 'raster',
+    //     'tiles': [
+    //         'http://127.0.0.1:8080/{z}/{x}/{y}.png'
+    //         // 'https://geodata.state.nj.us/imagerywms/Natural2015?bbox={bbox-epsg-3857}&format=image/png&service=WMS&version=1.1.1&request=GetMap&srs=EPSG:3857&width=256&height=256&layers=Natural2015'
+    //     ],
+    //     'tileSize': 256
+    // });
+    map.addSource('drone', {
+        type: 'geojson',
+        data: point
+    });
+    map.addLayer({
+        'id' :'drone-glow-strong',
+        'type': 'circle',
+        'source': 'drone',
+        'paint': {
+            "circle-radius": 18,
+            "circle-color": "#fff",
+            "circle-opacity": 0.4
+        }
+    })
+    map.addLayer({
+        "id": "drone-glow",
+        "type": "circle",
+        "source": "drone",
+        "paint": {
+            "circle-radius": 40,
+            "circle-color": "#fff",
+            "circle-opacity": 0.1
+        }
+    });
+    map.addLayer({
+        "id": "drone",
+        "type": "symbol",
+        "source": "drone",
+        "layout": {
+            "icon-image": "airport-15"
+        }
+    });
+    window.setInterval(setPosition, 10);
+    
+    // sourcetype: ['geojson', 'vector', 'raster', 'image', 'video']
+    // use 'data' for geojson, 'url' and 'tiles' for vector|raster to set the datasource.
+    map.addSource("locations", {
+        "type":"geojson",
+        // for geojson. set Opts.buffer for extent preCache, Opts.tolerance for simply,
+        // Opts.cluster, clusterRadius
+        "data": {
+            "type": "FeatureCollection",
+            "features": [{
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [121.2454, 31.2]
+              },
+              "properties": {
+                "title": "Mapbox Shanghai",
+                "icon": "monument"
+              }
+              }, {
+              "type": "Feature",
+              "geometry": {
+                "type": "Point",
+                "coordinates": [120.414, 29.976]
+              },
+              "properties": {
+                "title": "Mapbox Zhejiang",
+                "icon": "harbor"
+              }
+              }]
+          }
+    });
+
+    // layertype: ['fill', 'line', 'symbol', 'circle', 'raster']
+    /**
+     * paint layout.visibility, fill.fill-opacity, fill-color,  fill-pattern(Name of image in sprite).
+     * symbol layout.symbol-placement(point, line), symbol-spacing, icon-image, icon-rotate
+     * icon-offset, text-field({title}), paint.icon-color, icon-halo-color,
+     */
+    map.addLayer({
+        'id': 'location',
+        'type': 'symbol',
+        'source': 'locations',
+        'paint': {
+            "text-halo-width": 2,
+            "text-halo-blur": 1,
+            "text-halo-color": "rgba(255,255,255,0.4)",
+            "text-color": "#4466AA"
+        },
+        'layout': {
+            "icon-image": "{icon}-15",
+            "icon-size": 2,
+            "text-field": "{title}",
+            "text-font": ["Open Sans Regular"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
+        }
+    });
+
+    map.addLayer({
+        "id":'location-hover',
+        "type": "symbol",
+        'source': 'locations',
+        'layout':{
+            "text-field": "{title}",
+            "text-font": ["Open Sans Regular"],
+            "text-offset": [0.2, 0.8],
+            "text-anchor": "top"
+        },
+        'paint': {},
+        "filter": ["==", "title", ""]
+    });
+
+    map.addSource('population', {
+        type: 'vector',
+        url: 'mapbox://examples.8fgz4egr'
+    });
+    map.addLayer({
+        'id': 'population',
+        'type': 'circle',
+        'source': 'population',
+        'source-layer': 'sf2010',
+        'paint': {
+            // make circles larger as the user zooms from z12 to z22
+            'circle-radius': {
+                'base': 1.75,
+                'stops': [[12, 2], [22, 180]]
+            },
+            // color circles by ethnicity, using data-driven styles
+            'circle-color': {
+                property: 'ethnicity',
+                type: 'categorical',
+                stops: [
+                    ['White', '#fbb03b'],
+                    ['Black', '#223b53'],
+                    ['Hispanic', '#e55e5e'],
+                    ['Asian', '#3bb2d0'],
+                    ['Other', '#ccc']]
+            }
+        }
+    });
+
+
+    map.on("mousedown", function(e) {
+        var features = map.queryRenderedFeatures(e.point, {layers: ["location"]});
+        if (features.length) {
+            map.setFilter("location-hover", ["==", "title", features[0].properties.title]);
+        } else {
+            map.setFilter("location-hover", ["==", "title", ""]);
+        }
+    })
+
+    // PosAnimation
+
+});
+</script>
+
+</body>
+</html>
