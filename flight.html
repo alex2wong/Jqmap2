@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset='utf-8' />
-    <title>aaa</title>
+    <title> 一休哥飞机大战 </title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='Scripts/mapbox-gl.js'></script>
     <link href='Css/mapbox-gl.css' rel='stylesheet' />
@@ -20,31 +20,100 @@
             left: 50px;
         }
         .btn {
-            width: 95px;
+            width: 55px;
             height: 30px;
             /* padding 会导致盒子ComputedHeight 增大 */
             padding-top: 5px;
-            background: #39BAFA;
+            background: #2D3642;
             color: #fff;
             text-align: center;
             border-radius: 4px;
-            opacity: 0.4;
+            opacity: 0.8;
         }
         .btn:hover{
             cursor: pointer;
-            background: #B2D2CE;
-            color: #626F79;
-            opacity: 0.8;
-            font-weight: bold;
+            background: #00b9d6;
+            opacity: 1;
             transition: background, opacity .4s ease;
         }
+
+        .control-btn {
+            position: absolute;
+            opacity: 0.8;
+            border-radius: 3px;
+            text-align: center;
+            vertical-align: middle;
+            width:40px;
+            height: 40px;
+            transform: rotateZ(45deg);
+            color:#fff;
+            background: #2D3642;
+        }
+        .control-btn div {
+            /*margin-top:6px;
+            margin-right:4px;*/
+            width:20px;
+            /*background: #00b9d6;*/
+            transform: rotateZ(-45deg) translate(0, 50%);
+        }
+        .control-btn:hover {
+            cursor: pointer;
+            opacity: 1;
+            background: #00b9d6;
+            transition: background, opacity .4s ease;
+        }
+
+        #down {
+            bottom: 45px;
+        }
+        #up {
+            bottom: 105px;
+        }
+        #left {
+            bottom: 75px;
+            left: -30px;
+        }
+        #right {
+            bottom: 75px;
+            right: -15px;
+        }
+
+        #right:after {
+            content: "";
+            float: clear;
+        }
+        #fire {
+            position: absolute;
+            right:20px;
+            bottom:8px;
+        }
+        .fire-btn {
+            /*border-radius: 50% 50%;*/
+        }
+        #help-btn {
+            position: absolute;
+            top:10px;
+            right:20px;
+        }
+
     </style>
 </head>
 <body>
 <div id='map'></div>
 <div class="" id="controlPanel">
+    <div id="controller">
+        <div class="control-btn" id="up"><div>U</div></div>
+        <div class="control-btn" id="left"><div>L</div></div>
+        <div class="control-btn" id="right"><div>R</div></div>
+        <div class="control-btn" id="down"><div>D</div></div>
+    </div>
     <div class="btn" id="lockview"><span>解锁</span></div>
 </div>
+<div class="btn fire-btn" id="fire">开火</div>
+<div class="btn" id="help-btn">帮助</div>
+<div class="diag" id="help"></div>
+<audio src="Asset/bgm3.mp3" autoplay="true"></audio>
+<audio src="" id="fireBgm" autoplay="true"></audio>
 <script src="Scripts/drone.js"></script>
 <script>
 // start speed generally about 0.5rad/h. speed range(0, 2)
@@ -123,32 +192,66 @@ var map = new mapboxgl.Map({
     center: [121.00, 31.0892]
 });
 
+function turnLeft() {
+    direction -= 0.1;
+    manual = true;
+}
+
+function turnRight() {
+    direction += 0.1;
+        manual = true;
+}
+
+function accelerate(e) {
+    speed = Math.min(speed + 0.01, 1);
+        manual = true;
+        e.preventDefault();
+}
+
+function brake(e) {
+    speed = Math.max(speed - 0.01, 0);
+        manual = true;
+        e.preventDefault();
+}
+
+function fire(e) {
+    var target;
+    var audio = document.querySelector("#fireBgm");
+    audio.src = "Asset/fire.mp3";
+    target = drone.fire();
+    renderTarget(target);
+        e.preventDefault();
+}
+
+function renderTarget(target) {
+    // target is geojson POINT, add Temp point in layer.
+    if (target.coordinates) {
+        var targetSource = map.getSource('drone-target');
+        targetSource.setData(target);
+    } else {
+        console.log('something wrong with args');
+    }
+}
+
 // add control interaction or event listener.
 document.body.addEventListener('keydown', function(e) {
-    if (e.which === 37) {
-        direction -= 0.1;
-        manual = true;
+    if (e.which === 37||e.which === 65) {
+        turnLeft();
     }
-    if (e.which === 39) {
-        direction += 0.1;
-        manual = true;
+    if (e.which === 39||e.which === 68) {
+        turnRight();
     }
-    if (e.which === 38) { // faster
-        speed = Math.min(speed + 0.01, 1);
-        manual = true;
-        e.preventDefault();
+    if (e.which === 38 ||e.which === 87) { // faster
+        accelerate(e);
     }
-    if (e.which === 40) { // slower
-        speed = Math.max(speed - 0.01, 0);
-        manual = true;
-        e.preventDefault();
+    if (e.which === 40||e.which === 83) { // slower
+        brake(e);
     }
     if (e.which === 32) {
-        drone.fire();
-        e.preventDefault();
+        fire(e);
     }
     if (e.which === 66) {
-        drone.bomb();
+        drone.bomb(e);
     }
     // console.log(e.which);
 })
@@ -165,6 +268,11 @@ map.on('load', function() {
         type: 'geojson',
         data: point
     });
+    map.addSource('drone-target', {
+        type: 'geojson',
+        data: point
+    })
+
     map.addLayer({
         'id' :'drone-glow-strong',
         'type': 'circle',
@@ -191,6 +299,18 @@ map.on('load', function() {
         "source": "drone",
         "layout": {
             "icon-image": "airport-15"
+        }
+    });
+    map.addLayer({
+        "id": "drone-fire",
+        "type": "circle",
+        "source": "drone-target",
+        "paint": {
+            // make circles larger as the user zooms from z12 to z22
+            'circle-radius': 18,
+            // color circles by ethnicity, using data-driven styles
+            'circle-color': '#f00',
+            'circle-opacity':0.6
         }
     });
     window.setInterval(setPosition, 10);
@@ -320,6 +440,37 @@ lockViewBtn.addEventListener('click', function(){
         this.innerHTML = "<span>解锁</span>";
     }
 }, false);
+
+var strategy = {
+    "up": accelerate,
+    "down": brake,
+    "left": turnLeft,
+    "right": turnRight,
+    "U": accelerate,
+    "D": brake,
+    "L": turnLeft,
+    "R": turnRight
+}
+
+var controller = document.querySelector("#controller");
+controller.addEventListener("click", function(evt){
+    var btn = evt.target||evt.srcElement;
+    var func;
+    if (btn.id){
+        func = strategy[btn.id];
+    } else {
+        func = strategy[btn.innerText];
+    }
+    console.log(btn.id);
+    func(evt);
+}, false);
+
+var firebtn = document.querySelector("#fire");
+firebtn.addEventListener('click', function(evt) {
+    fire(evt);
+})
+
+
 </script>
 
 </body>

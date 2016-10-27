@@ -16,7 +16,7 @@ var Bullet = function() {
     this.direction = 0;
     this.speed = 0.1
     // range in rad/h
-    this.range = 2;
+    this.range = 0.2;
 }
 
 
@@ -35,10 +35,10 @@ Drone.prototype.fire = function() {
     bullet.direction = this.direction;
     sx = bullet.spoint.coordinates[0];
     sy = bullet.spoint.coordinates[1];
-    console.log("fire from: " +   sx, sy);
+    // console.log("fire from: " +   sx, sy);
     sx += bullet.range * Math.sin(this.direction);
     sy += bullet.range * Math.cos(this.direction);
-    console.log("target At: " +   sx, sy);
+    // console.log("target At: " +   sx, sy);
     return {
         "type": "Point",
         "coordinates": [sx, sy]
