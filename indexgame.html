@@ -45,9 +45,15 @@
 <div class="" id="controlPanel">
     <div class="btn" id="lockview"><span>解锁</span></div>
 </div>
+<script src="Scripts/drone.js"></script>
 <script>
 // start speed generally about 0.5rad/h. speed range(0, 2)
 var direction = 0, manual = false, speed = 0.01, locking = true;
+var drone = new Drone();
+drone.direction = direction;
+drone.speed = speed;
+drone.point = point;
+
 var point = {
     "type":"Point",
     "coordinates": [121.321,30.112]
@@ -61,7 +67,6 @@ function setPosition() {
     point.coordinates[1] += speed * Math.cos(direction) / 100;
     map.getSource('drone').setData(point);
 
-    console.warn('current_rotate: ' + current_rotate);
     current_rotate = (-current_rotate) + direction * (180 / Math.PI);
     map.setLayoutProperty('drone', 'icon-rotate', current_rotate);
     if (!manual && Math.random() > 0.95) {
@@ -70,6 +75,12 @@ function setPosition() {
     if (window.locking) {
         map.setCenter(point.coordinates);
     }
+
+    // sync drone status..
+    drone.direction = direction;
+    drone.speed = speed;
+    drone.point = point;
+    // console.log("drone direction: " + drone.direction);
 }
 
 mapboxgl.accessToken = false;
@@ -139,7 +150,7 @@ document.body.addEventListener('keydown', function(e) {
     if (e.which === 66) {
         drone.bomb();
     }
-    console.log(e.which);
+    // console.log(e.which);
 })
 
 
