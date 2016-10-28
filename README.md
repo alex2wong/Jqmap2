@@ -16,9 +16,9 @@ is more preferred.
 
 ## Recently Update 2016/10/28:
 Currently <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> is applied to build A totally new flightgame, with pitch, bearing in viewport and webgl render.
-visit: http://alex2wong.github.io/Jqmap2/ to check the JqueryMobile and Openlayer2 webApp.
-visit: http://alex2wong.github.io/Jqmap2/flight.html to check the flight game, Enjoy it!
+visit: <a href="http://alex2wong.github.io/Jqmap2/"> Mobile web map </a> to check the JqueryMobile and Openlayer2 webApp.
+visit: <a href="http://alex2wong.github.io/Jqmap2/flight.html"> Flight Game </a> to check the flight game, press WSAD for move, Space to fire, Enjoy it!
 
 ## Todo:
-- add websocket to support multiplayer
-- optimize touch events to promote mobile performance
+- <input type="checkbox" id="multi" /> add websocket to support multiplayer
+- <input type="checkbox" id="touch" /> optimize touch events to promote mobile performance
