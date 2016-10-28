@@ -87,6 +87,11 @@
             right:20px;
             bottom:8px;
         }
+        #status {
+            position: absolute;
+            left: 300px;
+            bottom: 8px;
+        }
         .fire-btn {
             /*border-radius: 50% 50%;*/
         }
@@ -109,11 +114,14 @@
     </div>
     <div class="btn" id="lockview"><span>解锁</span></div>
 </div>
+<p id="status">状态栏</p>
 <div class="btn fire-btn" id="fire">开火</div>
 <div class="btn" id="help-btn">帮助</div>
+<div class="btn" id="connect">上线</div>
 <div class="diag" id="help"></div>
 <audio src="Asset/bgm3.mp3" autoplay="true" loop="loop"></audio>
 <audio src="" id="fireBgm" autoplay="true"></audio>
+<script src="/socket.io/socket.io.js"></script>
 <script src="Scripts/drone.js"></script>
 <script src="Scripts/flight.js"></script>
 </body>

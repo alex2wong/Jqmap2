@@ -1,7 +1,16 @@
 
 // start speed generally about 0.5rad/h. speed range(0, 2)
 var direction = 0, manual = false, speed = 0.01, locking = true;
+// front-end drones pool.
+var drones = [];
+
 var drone = new Drone();
+var askName = prompt("来，取个名字", "");
+if(askName){
+    drone.name = askName;
+} else {
+    drone.name = '无名氏';
+}
 drone.direction = direction;
 drone.speed = speed;
 drone.point = point;
@@ -10,6 +19,27 @@ var point = {
     "type":"Point",
     "coordinates": [121.321,30.112]
 };
+
+var status = document.querySelector('#status');
+// config socket connection.
+var socket = io.connect("http://localhost:3002");
+socket.on('open', function(){
+    status.innerText = "已经连上服务器..";
+});
+
+socket.on('system', function(json) {
+    var p = "";
+    if(json.type === "welcome") {
+        status.innerText = "system@" + json.time + ': Welcome' + json.text;
+    } else if(json.type === "disconnect") {
+        status.innerText = "system@" + json.time + ': Bye' + json.text;
+    }
+});
+
+// update specific droneStatus.
+socket.on("message", function(json) {
+    
+});
 
 function setPosition() {
     // direction in Rad. Generally, 1 Rad stands for 100km

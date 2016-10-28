@@ -20,5 +20,11 @@
   "bugs": {
     "url": "https://github.com/alex2wong/Jqmap2/issues"
   },
-  "homepage": "https://github.com/alex2wong/Jqmap2#readme"
+  "homepage": "https://github.com/alex2wong/Jqmap2#readme",
+  "dependencies": {
+    "errorhandler": "^1.4.3",
+    "express": "^4.14.0",
+    "logger": "0.0.1",
+    "socket.io": "^1.5.1"
+  }
 }
