@@ -29,10 +29,6 @@ app.get('/flight', function(req, res) {
   });
 });
 
-server.listen(app.get('port'), function() {
-  console.log("Express server listening on port " + app.get('port'));
-});
-
 io.set('log level', 1);
 
 // clients Array. store realtime status of all drones.
@@ -40,11 +36,12 @@ var clients = [];
 
 // register WebSocket connect listener, each connection has one socket.
 io.on('connection', function(socket) {
+  console.log('One client connected..');
   socket.emit('open');
 
   // init client drone obj for each connection !!
   var client = {
-    socket: socket,
+    // socket: socket,
     name: false,
     color: getColor(),
     // direction in Rad, coordinates in LngLat
@@ -60,14 +57,16 @@ io.on('connection', function(socket) {
       time: getTime(),
       color: client.color
     };
-    var droneStatus = JSON.parse(msg);
+    var droneStatus = msg;
 
     // if it is first msg, init the drone! and push to pool!
     if (!client.name && droneStatus.name) {
       client.name = droneStatus.name;
       client.direction = droneStatus.direction;
-      client.coordinates = droneStatus.coordinates;
-      client.life = droneStatus.life;
+      if (droneStatus.point) {
+        client.coordinates = droneStatus.point.coordinates;
+      }
+      // client.life = droneStatus.life;
       clients.push(client);
 
       // this welcome obj is ready to emit to All clients.
@@ -78,13 +77,13 @@ io.on('connection', function(socket) {
 
       socket.emit('system', obj);
       // broadcast the welcome from system.
-      socket.broadcast.emit('system', obj);      
+      socket.broadcast.emit('system', obj);
 
     } else {
       // if it is not the first message, sync the droneStatus
       client.direction = droneStatus.direction;
-      client.coordinates = droneStatus.coordinates;
-      client.life = droneStatus.life;
+      client.coordinates = droneStatus.point.coordinates;
+      // client.life = droneStatus.life;
 
       obj['text'] = client;
       obj['author'] = client.name;
@@ -99,21 +98,23 @@ io.on('connection', function(socket) {
     }
   });
 
-
-  var randomEnemy = {
-    name: '敌机',
-    direction: 0,
-    coordinates: randInfo
-  }
-  // for each client connection, emit a random enemy 
-  timer1 = setInterval(function(){ 
-    obj['text'] = randomEnemy;
-    obj['time'] = getTime();
-    socket.emit('message', obj);
-    console.log(' virtual points: ' + obj['text'][0].toString()+ "," +obj['text'][1].toString() );
-
-  }, 5000);
-
+  // for each client connection, emit a robot enemy every 5 seconds.
+  timer1 = setInterval(function(){
+    var randomCoord =  randInfo();
+    var randomEnemy = {
+      name: '敌机',
+      direction: 0,
+      coordinates: randomCoord
+    }
+    var EnemyMsg = {
+      'author': 'System',
+      'type': 'message'
+    };
+    EnemyMsg['text'] = randomEnemy;
+    EnemyMsg['time'] = getTime();
+    socket.emit('message', EnemyMsg);
+    console.log('Robot Enemy generated @'+ randomEnemy.coordinates[0] +', '+ randomEnemy.coordinates[1]);
+  }, 10000);
 
   socket.on('disconnect', function() {
     var obj = {

@@ -1,4 +1,7 @@
-// DRONE.JS
+/*
+ * author: alex2wong
+ *  DRONE.JS
+ */
 
 var Drone = function() {
     this.direction = 0;

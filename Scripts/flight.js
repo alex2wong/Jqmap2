@@ -5,52 +5,130 @@ var direction = 0, manual = false, speed = 0.01, locking = true;
 var drones = [];
 
 var drone = new Drone();
-var askName = prompt("来，取个名字", "");
-if(askName){
-    drone.name = askName;
-} else {
-    drone.name = '无名氏';
-}
-drone.direction = direction;
-drone.speed = speed;
-drone.point = point;
-
 var point = {
     "type":"Point",
     "coordinates": [121.321,30.112]
 };
+drone.name = "无名氏"
+drone.direction = direction;
+drone.speed = speed;
+drone.point = point;
 
-var status = document.querySelector('#status');
+let featureCol = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+              "type": "Feature",
+              "geometry": point,
+              "properties": {
+                "name": drone.name
+              }
+          }]
+      };
+
+
+var statusBar = document.querySelector('#status');
 // config socket connection.
-var socket = io.connect("http://localhost:3002");
+var socket = io.connect("http://127.0.0.1:3002");
 socket.on('open', function(){
-    status.innerText = "已经连上服务器..";
+    statusBar.innerText = "已经连上服务器..";
+    var askName = prompt("来，取个名字", "");
+    if(askName){
+        drone.name = askName;
+    }
+    socket.send(drone);
 });
 
-socket.on('system', function(json) {
-    var p = "";
-    if(json.type === "welcome") {
-        status.innerText = "system@" + json.time + ': Welcome' + json.text;
-    } else if(json.type === "disconnect") {
-        status.innerText = "system@" + json.time + ': Bye' + json.text;
-    }
-});
+// socket.on('system', function(json) {
+//     var p = "";
+//     if(json.type === "welcome") {
+//         statusBar.innerText = "system@" + json.time + ': Welcome' + json.text;
+//     } else if(json.type === "disconnect") {
+//         statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
+//     } else if(json.type === "message" && json.text.name === "敌机") {
+//         statusBar.innerText = "system@" + json.time + ': 发现敌机！！位置 ' +
+//          json.text.coordinates[0] + ',' + json.text.coordinates[1];
+//     }
+// });
 
 // update specific droneStatus.
 socket.on("message", function(json) {
-    
+    console.log("received message @"+ json.time);
+    if (json.type === "welcome" && json.text.name) {
+        statusBar.innerText = "system@" + json.time + ': Welcome' + json.text.name;
+    } else if(json.type === "disconnect" && json.text.name) {
+        statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
+    } else if(json.type === "message" && json.text.name === "敌机") {
+        statusBar.innerText = "system@" + json.time + ': 发现敌机！' +
+          json.text.coordinates[0] + ',' + json.text.coordinates[1];
+        // new Drone()!!
+        let robot = new Drone();
+        let point = {
+            "type":"Point",
+            "coordinates": json.text.coordinates
+        };
+        robot.name = json.text.name;
+        robot.direction = 0;
+        robot.point = point;
+        drones.push(robot);
+        // 将敌机状态直接加入用于渲染的geojson对象
+        let feature = {
+            "type": "feature",
+            "geometry": point,
+            "properties": {
+                "name" : robot.name,
+                "direction": robot.direction
+            }
+        };
+        featureCol.features.push(feature);
+    }
+    // if drone info from server is not Me!! 
+    else if (json.text.name != drone.name) {
+        statusBar.innerText = "system@" + json.time + ': 收到其他用户战机位置';
+        let droneName = json.text.name;
+        let current_location = {
+            "type":"Point",
+            "coordinates": json.text.coordinates
+        };
+        let existed = false;
+        drones.forEach((drone) => {
+            // find existed drone, sync this drone Status!!
+            if (drone.name == droneName) {
+                drone.direction = json.text.direction;
+                drone.point = current_location;
+                existed = true;
+            }
+        });
+        if (!existed) {
+            // new login drone.
+            let drone = new Drone();
+            drone.name = droneName;
+            drone.direction = json.text.direction;
+            drone.point = current_location;
+            // push to drones !
+            drones.push(drone);
+        }
+    }
 });
 
+// setPostion is to update Mydrone position.
 function setPosition() {
     // direction in Rad. Generally, 1 Rad stands for 100km
-    var current_rotate = map.getBearing();
-
+    let current_rotate = map.getBearing();
+    
     point.coordinates[0] += speed * Math.sin(direction) / 100;
     point.coordinates[1] += speed * Math.cos(direction) / 100;
-    map.getSource('drone').setData(point);
 
     current_rotate = (-current_rotate) + direction * (180 / Math.PI);
+
+    if (featureCol.features.length>0){
+        featureCol.features[0].geometry = point;
+        featureCol.features[0].properties.name = drone.name;
+        featureCol.features[0].properties.rotate = current_rotate;
+    }
+    map.getSource('drone').setData(featureCol);
     map.setLayoutProperty('drone', 'icon-rotate', current_rotate);
+
     if (!manual && Math.random() > 0.95) {
         direction += (Math.random() - 0.5) /2;
     }
@@ -58,11 +136,33 @@ function setPosition() {
         map.setCenter(point.coordinates);
     }
 
-    // sync drone status..
+    // sync Mydrone status..
     drone.direction = direction;
     drone.speed = speed;
     drone.point = point;
     // console.log("drone direction: " + drone.direction);
+}
+
+// update non-ego drones status
+function updateDrones() {
+    let index = 0;
+    let current_rotate = map.getBearing();
+
+    featureCol.features.forEach((feature) => {
+        // 跳过本客户端所操作的飞机
+        if (index > 0){
+            let enemySpeed = Math.random() * 0.4;
+            feature.properties.direction += (Math.random() - 0.5) /2;
+            feature.geometry.coordinates[0] += enemySpeed * Math.sin(feature.properties.direction) / 100;
+            feature.geometry.coordinates[1] += enemySpeed * Math.cos(feature.properties.direction) / 100;
+            current_rotate = (-current_rotate) + feature.properties.direction * (180 / Math.PI);
+            feature.properties.rotate = current_rotate;
+        }
+        
+        // map.setLayoutProperty('drone', 'icon-rotate', current_rotate);      
+        
+        index += 1;
+    });
 }
 
 mapboxgl.accessToken = false;
@@ -134,11 +234,11 @@ function fire(e) {
     target = drone.fire();
     pointCopy.coordinates[0] = drone.point.coordinates[0];
     pointCopy.coordinates[1] = drone.point.coordinates[1];
-    renderTarget(pointCopy, target, drone.direction, 400);
+    renderBullet(pointCopy, target, drone.direction, 400);
         e.preventDefault();
 }
 
-function renderTarget(start, target, direction, duration) {
+function renderBullet(start, target, direction, duration) {
     // target is geojson POINT, add Temp point in layer.. 
     var interval = 10, ratio = interval/duration, real_point = start, range = 0.2, count = 0;
     if (target.coordinates) {
@@ -191,7 +291,7 @@ map.on('load', function() {
 
     map.addSource('drone', {
         type: 'geojson',
-        data: point
+        data: featureCol
     });
     map.addSource('drone-target', {
         type: 'geojson',
@@ -222,8 +322,18 @@ map.on('load', function() {
         "id": "drone",
         "type": "symbol",
         "source": "drone",
+        'paint': {
+            "text-halo-width": 2,
+            "text-halo-blur": 1,
+            "text-halo-color": "rgba(255,255,255,0.4)",
+            "text-color": "#4466AA"
+        },
         "layout": {
-            "icon-image": "airport-15"
+            "icon-image": "airport-15",
+            "text-field": "{name}",
+            "text-font": ["Noto Sans Hans Light"],
+            "text-offset": [0, 0.6],
+            "text-anchor": "top"
         }
     });
     map.addLayer({
@@ -250,7 +360,7 @@ map.on('load', function() {
             'circle-opacity':0.4
         }
     });
-    window.setInterval(setPosition, 10);
+    window.setInterval(setPosition, 20);
     
     // sourcetype: ['geojson', 'vector', 'raster', 'image', 'video']
     // use 'data' for geojson, 'url' and 'tiles' for vector|raster to set the datasource.
