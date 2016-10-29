@@ -32,7 +32,7 @@ var statsBar = document.querySelector('#totalkill');
 
 // config socket connection.
 try {
-    var socket = io.connect("http://127.0.0.1:3002");
+    var socket = io.connect("http://123.206.201.245:3002");
     socket.on('open', function(){
         statusBar.innerText = "已经连上服务器..";
         var askName = prompt("来，取个名字", "");
