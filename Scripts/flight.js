@@ -26,8 +26,9 @@ let featureCol = {
           }]
       };
 
-
+var totalKill = 0;
 var statusBar = document.querySelector('#status');
+var statsBar = document.querySelector('#totalkill');
 
 // config socket connection.
 try {
@@ -138,7 +139,7 @@ function setPosition() {
     // map.setLayoutProperty('drone', 'icon-rotate', current_rotate);
 
     if (!manual && Math.random() > 0.95) {
-        direction += (Math.random() - 0.5) /2;
+        direction += (Math.random() - 0.5) /5;
     }
     if (window.locking) {
         map.setCenter(point.coordinates);
@@ -249,9 +250,52 @@ function fire(e) {
         e.preventDefault();
 }
 
+// report current drones status every 1 seconds.
+function updateStatusBar() {
+    let drone_number = featureCol.features.length -1;
+    statusBar.innerText = "system: 目前战场中有敌机"+ drone_number + "架";
+}
+window.setInterval(updateStatusBar, 2000);
+
+/* 
+ * 简化的碰撞检测.
+ * coordinates: bullet coordinates
+ */
+function testCrash(coordinates) {
+    // all other drones! calc distance between bullet and drones..
+    // here we add zoom into calculation as a ratio.
+    let zoom = map.getZoom();
+    let distance, volume = 0.2/zoom, index = 0, damagedIndex = 0, hitted = false;
+    featureCol.features.forEach((drone) => {
+        if (index > 0){
+            distance = calcDist(coordinates, drone.geometry.coordinates);
+            // if distance less than the Volume of drone, Damage it!
+            if (distance < volume) {
+                damagedIndex = index;
+                statusBar.innerText = "system: 厉害！你击中第"+ damagedIndex +'号敌机！';
+            }
+        }
+        index += 1;
+    });
+
+    if (damagedIndex > 0){
+        console.warn('ready to remove damaged drone with index: '+ damagedIndex +
+            "current zoom "+ zoom +', crash tolerance in Rad: '+ volume);
+        totalKill += 1;
+        statsBar.innerText = "击" + totalKill + "架"; 
+        featureCol.features.splice(damagedIndex, 1);
+        hitted = true;
+    }
+    return hitted;
+}
+// source, target is coordinates. return distance in Rad.
+function calcDist(source, target) {
+    return  Math.sqrt(Math.pow((source[0] - target[0]), 2) + Math.pow((source[1] - target[1]), 2));
+}
+
 function renderBullet(start, target, direction, duration) {
     // target is geojson POINT, add Temp point in layer.. 
-    var interval = 10, ratio = interval/duration, real_point = start, range = 0.4, count = 0;
+    var interval = 20, ratio = interval/duration, real_point = start, range = 0.4, count = 0, hitted = false;
     if (target.coordinates) {
         var targetSource = map.getSource('drone-target');
         window.setInterval(function(){
@@ -261,6 +305,10 @@ function renderBullet(start, target, direction, duration) {
                 real_point.coordinates[0] += Math.sin(direction)*ratio*range;
                 real_point.coordinates[1] += Math.cos(direction)*ratio*range;
                 targetSource.setData(real_point);
+                // test
+                if (!hitted){
+                    hitted = testCrash(real_point.coordinates);
+                }
                 count += 1;
             }
         }, interval);

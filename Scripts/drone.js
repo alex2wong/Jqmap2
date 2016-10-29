@@ -4,6 +4,7 @@
  */
 
 var Drone = function() {
+    this.name;
     this.direction = 0;
     this.speed = 0.01;
     this.manual = false;
