@@ -13,6 +13,7 @@ var Drone = function() {
         "coordinates": [121.321,30.112]
     };
     this.weapon = {};
+    this.life = true;
 }
 
 var Bullet = function() {

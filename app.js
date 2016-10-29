@@ -77,16 +77,16 @@ io.on('connection', function(socket) {
 
       socket.emit('system', obj);
       // broadcast the welcome from system.
-      socket.broadcast.emit('system', obj);
+      socket.broadcast.emit('message', obj);
 
-    } else {
+    } else if (client.name == droneStatus.name){
       // if it is not the first message, sync the droneStatus
       client.direction = droneStatus.direction;
       client.coordinates = droneStatus.point.coordinates;
       // client.life = droneStatus.life;
 
       obj['text'] = client;
-      obj['author'] = client.name;
+      obj['author'] = 'System';
       obj['type'] = 'message';
       // console.log(client.name + ' sync status: ' + msg);
 
@@ -95,7 +95,17 @@ io.on('connection', function(socket) {
 
       // broadcast this droneStatus to all other clients.
       socket.broadcast.emit('message', obj);
+    } 
+    // if receive DamageDrone info
+    else if(!droneStatus.life){
+      // droneStatus Now reprensent 
+      obj['text'] = droneStatus;
+      obj['author'] = client.name;
+      obj['type'] = 'defeat';
+      console.warn(client.name + ' defeated ' + droneStatus.name);
+      socket.broadcast.emit('message', obj);
     }
+
   });
 
   // for each client connection, emit a robot enemy every 5 seconds.
@@ -113,8 +123,7 @@ io.on('connection', function(socket) {
     EnemyMsg['text'] = randomEnemy;
     EnemyMsg['time'] = getTime();
     socket.emit('message', EnemyMsg);
-    console.log('Robot Enemy generated @'+ randomEnemy.coordinates[0] +', '+ randomEnemy.coordinates[1]);
-  }, 10000);
+  }, 20000);
 
   socket.on('disconnect', function() {
     var obj = {
