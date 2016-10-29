@@ -19,7 +19,7 @@ var Bullet = function() {
     this.direction = 0;
     this.speed = 0.1
     // range in rad/h
-    this.range = 0.2;
+    this.range = 0.4;
 }
 
 

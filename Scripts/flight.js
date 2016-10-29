@@ -126,8 +126,10 @@ function setPosition() {
         featureCol.features[0].properties.name = drone.name;
         featureCol.features[0].properties.rotate = current_rotate;
     }
+    // update other drones status.
+    updateDrones();
     map.getSource('drone').setData(featureCol);
-    map.setLayoutProperty('drone', 'icon-rotate', current_rotate);
+    // map.setLayoutProperty('drone', 'icon-rotate', current_rotate);
 
     if (!manual && Math.random() > 0.95) {
         direction += (Math.random() - 0.5) /2;
@@ -151,8 +153,11 @@ function updateDrones() {
     featureCol.features.forEach((feature) => {
         // 跳过本客户端所操作的飞机
         if (index > 0){
-            let enemySpeed = Math.random() * 0.4;
-            feature.properties.direction += (Math.random() - 0.5) /2;
+            let enemySpeed = Math.random() * 0.05 + 0.01;
+            // this is great!! which changes direction 5 times every 100 times updates !
+            if (Math.random() > 0.95) {
+                feature.properties.direction += (Math.random() - 0.5) /2;
+            }
             feature.geometry.coordinates[0] += enemySpeed * Math.sin(feature.properties.direction) / 100;
             feature.geometry.coordinates[1] += enemySpeed * Math.cos(feature.properties.direction) / 100;
             current_rotate = (-current_rotate) + feature.properties.direction * (180 / Math.PI);
@@ -240,7 +245,7 @@ function fire(e) {
 
 function renderBullet(start, target, direction, duration) {
     // target is geojson POINT, add Temp point in layer.. 
-    var interval = 10, ratio = interval/duration, real_point = start, range = 0.2, count = 0;
+    var interval = 10, ratio = interval/duration, real_point = start, range = 0.4, count = 0;
     if (target.coordinates) {
         var targetSource = map.getSource('drone-target');
         window.setInterval(function(){
@@ -305,7 +310,7 @@ map.on('load', function() {
         'paint': {
             "circle-radius": 18,
             "circle-color": "#fff",
-            "circle-opacity": 0.4
+            "circle-opacity": 0.5
         }
     })
     map.addLayer({
@@ -330,6 +335,10 @@ map.on('load', function() {
         },
         "layout": {
             "icon-image": "airport-15",
+            "icon-rotate": {
+                "property": "rotate",
+                "type": "identity"
+            },
             "text-field": "{name}",
             "text-font": ["Noto Sans Hans Light"],
             "text-offset": [0, 0.6],
