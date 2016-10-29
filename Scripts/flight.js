@@ -28,88 +28,94 @@ let featureCol = {
 
 
 var statusBar = document.querySelector('#status');
+
 // config socket connection.
-var socket = io.connect("http://127.0.0.1:3002");
-socket.on('open', function(){
-    statusBar.innerText = "已经连上服务器..";
-    var askName = prompt("来，取个名字", "");
-    if(askName){
-        drone.name = askName;
-    }
-    socket.send(drone);
-});
+try {
+    var socket = io.connect("http://127.0.0.1:3002");
+    socket.on('open', function(){
+        statusBar.innerText = "已经连上服务器..";
+        var askName = prompt("来，取个名字", "");
+        if(askName){
+            drone.name = askName;
+        }
+        socket.send(drone);
+    });
 
-// socket.on('system', function(json) {
-//     var p = "";
-//     if(json.type === "welcome") {
-//         statusBar.innerText = "system@" + json.time + ': Welcome' + json.text;
-//     } else if(json.type === "disconnect") {
-//         statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
-//     } else if(json.type === "message" && json.text.name === "敌机") {
-//         statusBar.innerText = "system@" + json.time + ': 发现敌机！！位置 ' +
-//          json.text.coordinates[0] + ',' + json.text.coordinates[1];
-//     }
-// });
+    // socket.on('system', function(json) {
+    //     var p = "";
+    //     if(json.type === "welcome") {
+    //         statusBar.innerText = "system@" + json.time + ': Welcome' + json.text;
+    //     } else if(json.type === "disconnect") {
+    //         statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
+    //     } else if(json.type === "message" && json.text.name === "敌机") {
+    //         statusBar.innerText = "system@" + json.time + ': 发现敌机！！位置 ' +
+    //          json.text.coordinates[0] + ',' + json.text.coordinates[1];
+    //     }
+    // });
 
-// update specific droneStatus.
-socket.on("message", function(json) {
-    console.log("received message @"+ json.time);
-    if (json.type === "welcome" && json.text.name) {
-        statusBar.innerText = "system@" + json.time + ': Welcome' + json.text.name;
-    } else if(json.type === "disconnect" && json.text.name) {
-        statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
-    } else if(json.type === "message" && json.text.name === "敌机") {
-        statusBar.innerText = "system@" + json.time + ': 发现敌机！' +
-          json.text.coordinates[0] + ',' + json.text.coordinates[1];
-        // new Drone()!!
-        let robot = new Drone();
-        let point = {
-            "type":"Point",
-            "coordinates": json.text.coordinates
-        };
-        robot.name = json.text.name;
-        robot.direction = 0;
-        robot.point = point;
-        drones.push(robot);
-        // 将敌机状态直接加入用于渲染的geojson对象
-        let feature = {
-            "type": "feature",
-            "geometry": point,
-            "properties": {
-                "name" : robot.name,
-                "direction": robot.direction
-            }
-        };
-        featureCol.features.push(feature);
-    }
-    // if drone info from server is not Me!! 
-    else if (json.text.name != drone.name) {
-        statusBar.innerText = "system@" + json.time + ': 收到其他用户战机位置';
-        let droneName = json.text.name;
-        let current_location = {
-            "type":"Point",
-            "coordinates": json.text.coordinates
-        };
-        let existed = false;
-        drones.forEach((drone) => {
-            // find existed drone, sync this drone Status!!
-            if (drone.name == droneName) {
+    // update specific droneStatus.
+    socket.on("message", function(json) {
+        console.log("received message @"+ json.time);
+        if (json.type === "welcome" && json.text.name) {
+            statusBar.innerText = "system@" + json.time + ': Welcome' + json.text.name;
+        } else if(json.type === "disconnect" && json.text.name) {
+            statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
+        } else if(json.type === "message" && json.text.name === "敌机") {
+            statusBar.innerText = "system@" + json.time + ': 发现敌机！' +
+              json.text.coordinates[0] + ',' + json.text.coordinates[1];
+            // new Drone()!!
+            let robot = new Drone();
+            let point = {
+                "type":"Point",
+                "coordinates": json.text.coordinates
+            };
+            robot.name = json.text.name;
+            robot.direction = 0;
+            robot.point = point;
+            drones.push(robot);
+            // 将敌机状态直接加入用于渲染的geojson对象
+            let feature = {
+                "type": "feature",
+                "geometry": point,
+                "properties": {
+                    "name" : robot.name,
+                    "direction": robot.direction
+                }
+            };
+            featureCol.features.push(feature);
+        }
+        // if drone info from server is not Me!! 
+        else if (json.text.name != drone.name) {
+            statusBar.innerText = "system@" + json.time + ': 收到其他用户战机位置';
+            let droneName = json.text.name;
+            let current_location = {
+                "type":"Point",
+                "coordinates": json.text.coordinates
+            };
+            let existed = false;
+            drones.forEach((drone) => {
+                // find existed drone, sync this drone Status!!
+                if (drone.name == droneName) {
+                    drone.direction = json.text.direction;
+                    drone.point = current_location;
+                    existed = true;
+                }
+            });
+            if (!existed) {
+                // new login drone.
+                let drone = new Drone();
+                drone.name = droneName;
                 drone.direction = json.text.direction;
                 drone.point = current_location;
-                existed = true;
+                // push to drones !
+                drones.push(drone);
             }
-        });
-        if (!existed) {
-            // new login drone.
-            let drone = new Drone();
-            drone.name = droneName;
-            drone.direction = json.text.direction;
-            drone.point = current_location;
-            // push to drones !
-            drones.push(drone);
         }
-    }
-});
+    });
+}
+catch(e) {
+    console.log(e);
+}
 
 // setPostion is to update Mydrone position.
 function setPosition() {
