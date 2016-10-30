@@ -19,8 +19,11 @@ Currently <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> is app
 
 ### **Demos** for you:
 <a href="http://alex2wong.github.io/Jqmap2/"> Mobile web map </a>, the JqueryMobile and Openlayer2 webApp.
-<a href="http://alex2wong.github.io/Jqmap2/flight.html"> Flight Game </a>, press WSAD for move, Space to fire, Enjoy it!
+<a href="http://123.206.201.245:3002/flight.html"> Flight Game </a>, press WSAD for move, Space to fire, Enjoy it!
 
 ## Todo:
-- <input type="checkbox" id="multi" /> add websocket to support multiplayer
-- <input type="checkbox" id="touch" /> optimize touch events to promote mobile performance
+- add websocket to support multiplayer (completed!)
+- optimize touch events to promote mobile performance
+- display other player's fire action and sync Robot Status to all client, not emit to client speratedly anymore.
+- optimize calculation in fire animation. promote game influence.
+
