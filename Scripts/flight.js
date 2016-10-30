@@ -40,12 +40,14 @@ try {
         statusBar.innerText = "已经连上服务器..";
         var askName = prompt("来，取个名字", "");
         if(askName){
-            drone.name = askName;
+            if (drone) {
+                drone.name = askName;
+            }            
         }
         // 定时上传本飞机实时状态，同步显示到其他客户端
         window.setInterval(function() {
             socket.send(drone);
-        }, 200);
+        }, 100);
     });
 
     socket.on('system', function(json) {
@@ -60,7 +62,6 @@ try {
 
     // update specific droneStatus.
     socket.on("message", function(json) {
-        console.log("received message @"+ json.time);
         if (json.type === "welcome" && json.text.name) {
             statusBar.innerText = "system@" + json.time + ': 歡迎，' + json.text.name;
         } else if(json.type === "disconnect" && json.text.name) {
@@ -112,7 +113,7 @@ try {
             featureCol.features.push(feature);
         }
         // if drone info from server is not Me!! 
-        else if (json.text.name != drone.name ) {
+        else if (drone && json.text.name != drone.name) {
             // statusBar.innerText = "system@" + json.time + ': 收到其他用户战机位置';
             var droneName = json.text.name;
             var current_location = {
@@ -138,19 +139,19 @@ try {
             // if not found, add!
             if (!existed) {
                 // new login drone.
-                var drone = new Drone();
-                drone.name = droneName;
-                drone.direction = json.text.direction;
-                drone.point = current_location;
+                var tmpdrone = new Drone();
+                tmpdrone.name = droneName;
+                tmpdrone.direction = json.text.direction;
+                tmpdrone.point = current_location;
                 // push to drones !
-                drones.push(drone);
+                drones.push(tmpdrone);
                 // add client drones status to featureCol for render.
                 var feature = {
                     "type": "feature",
-                    "geometry": drone.point,
+                    "geometry": tmpdrone.point,
                     "properties": {
-                        "name" : drone.name,
-                        "direction": drone.direction
+                        "name" : tmpdrone.name,
+                        "direction": tmpdrone.direction
                     }
                 };
                 featureCol.features.push(feature);
@@ -448,6 +449,9 @@ map.on('load', function() {
         },
         "layout": {
             "icon-image": "airport-15",
+            "icon-allow-overlap": true,
+            "icon-ignore-placement": true,
+            "icon-optional": true,
             "icon-rotate": {
                 "property": "rotate",
                 "type": "identity"
@@ -455,7 +459,10 @@ map.on('load', function() {
             "text-field": "{name}",
             "text-font": ["Noto Sans Hans Light"],
             "text-offset": [0, 0.6],
-            "text-anchor": "top"
+            "text-anchor": "top",
+            "text-allow-overlap": true,
+            "text-ignore-placement": true,
+            "text-optional": true
         }
     });
     map.addLayer({
