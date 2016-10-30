@@ -14,7 +14,7 @@ drone.direction = direction;
 drone.speed = speed;
 drone.point = point;
 
-let featureCol = {
+var featureCol = {
         "type": "FeatureCollection",
         "features": [
             {
@@ -43,18 +43,18 @@ try {
             drone.name = askName;
         }
         // 定时上传本飞机实时状态，同步显示到其他客户端
-        window.setInterval(() => {
+        window.setInterval(function() {
             socket.send(drone);
-        }, 1000);
+        }, 200);
     });
 
     socket.on('system', function(json) {
         var p = "";
         if(json.type === "welcome") {
             // welcome other client and render it in feautreCol
-            statusBar.innerText = "system@" + json.time + ': Welcome' + json.text.name;            
+            statusBar.innerText = "system@" + json.time + ': 歡迎， ' + json.text.name;            
         } else if(json.type === "disconnect") {
-            statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
+            statusBar.innerText = "system@" + json.time + ': 再見， ' + json.text;
         }
     });
 
@@ -62,9 +62,9 @@ try {
     socket.on("message", function(json) {
         console.log("received message @"+ json.time);
         if (json.type === "welcome" && json.text.name) {
-            statusBar.innerText = "system@" + json.time + ': Welcome' + json.text.name;
+            statusBar.innerText = "system@" + json.time + ': 歡迎，' + json.text.name;
         } else if(json.type === "disconnect" && json.text.name) {
-            statusBar.innerText = "system@" + json.time + ': Bye' + json.text;
+            statusBar.innerText = "system@" + json.time + ': 再見， ' + json.text;
         } else if(json.type === "defeat") {
             statusBar.innerText = "system@" + json.time + ": " + json.author +
                 "defeated " + json.text.name;
@@ -74,15 +74,15 @@ try {
                 drone.point.coordinates = [121.321,30.112];
                 drone.life = true;
             } else {
-                let index = 0, damagedIndex =0;
-                featureCol.features.forEach((feature) => {
+                var index = 0, damagedIndex =0;
+                featureCol.features.forEach(function(feature) {
                     if (feature.properties.name == json.text.name) {
                         damagedIndex = index;
                     }
                     index += 1;
                 });
                 if (damagedIndex > 0) {
-                    // delete the damaged drone in this location!
+                    // devare the damaged drone in this location!
                     featureCol.features.splice(damagedIndex, 1);
                 }
             }
@@ -91,8 +91,8 @@ try {
             statusBar.innerText = "system@" + json.time + ': 发现敌机！' +
               json.text.coordinates[0] + ',' + json.text.coordinates[1];
             // new Drone()!!
-            let robot = new Drone();
-            let point = {
+            var robot = new Drone();
+            var point = {
                 "type":"Point",
                 "coordinates": json.text.coordinates
             };
@@ -101,7 +101,7 @@ try {
             robot.point = point;
             // drones.push(robot);
             // 将敌机状态直接加入用于渲染的geojson对象
-            let feature = {
+            var feature = {
                 "type": "feature",
                 "geometry": point,
                 "properties": {
@@ -114,15 +114,15 @@ try {
         // if drone info from server is not Me!! 
         else if (json.text.name != drone.name ) {
             // statusBar.innerText = "system@" + json.time + ': 收到其他用户战机位置';
-            let droneName = json.text.name;
-            let current_location = {
+            var droneName = json.text.name;
+            var current_location = {
                 "type":"Point",
                 "coordinates": json.text.coordinates
             };
-            let existed = false;
+            var existed = false;
             // if found specific drone, update the status.
-            let index = 0, droneIndex = 0, newStatus = {};
-            featureCol.features.forEach((drone) => {
+            var index = 0, droneIndex = 0, newStatus = {};
+            featureCol.features.forEach(function(drone) {
                 if (drone.properties.name == droneName) {
                     // found droneIndex.
                     droneIndex = index;
@@ -131,21 +131,21 @@ try {
                 index += 1;
             });
             if (droneIndex > 0) {
-                let drone2Update = featureCol.features[droneIndex];
+                var drone2Update = featureCol.features[droneIndex];
                 drone2Update.properties.direction = json.text.direction;
                 drone2Update.geometry.coordinates = json.text.coordinates;
             }
             // if not found, add!
             if (!existed) {
                 // new login drone.
-                let drone = new Drone();
+                var drone = new Drone();
                 drone.name = droneName;
                 drone.direction = json.text.direction;
                 drone.point = current_location;
                 // push to drones !
                 drones.push(drone);
                 // add client drones status to featureCol for render.
-                let feature = {
+                var feature = {
                     "type": "feature",
                     "geometry": drone.point,
                     "properties": {
@@ -165,7 +165,7 @@ catch(e) {
 // setPostion is to update Mydrone position.
 function setPosition() {
     // direction in Rad. Generally, 1 Rad stands for 100km
-    let current_rotate = map.getBearing();
+    var current_rotate = map.getBearing();
     if (!manual && Math.random() > 0.95) {
         direction += (Math.random() - 0.5) /5;
     }
@@ -199,13 +199,13 @@ function setPosition() {
 
 // update non-ego drones status
 function updateDrones() {
-    let index = 0;   
+    var index = 0;   
 
-    for (let i = featureCol.features.length - 1; i > 0; i--) {
-        let current_rotate = map.getBearing();
-        let feature = featureCol.features[i];
+    for (var i = featureCol.features.length - 1; i > 0; i--) {
+        var current_rotate = map.getBearing();
+        var feature = featureCol.features[i];
         if (feature.properties.name === "敌机") {
-            let enemySpeed = Math.random() * 0.05 + 0.01;
+            var enemySpeed = Math.random() * 0.05 + 0.01;
             // this is great!! which changes direction 5 times every 100 times updates !
             if (Math.random() > 0.95) {
                 feature.properties.direction += (Math.random() - 0.5) /2;
@@ -275,7 +275,7 @@ function turnRight() {
 
 function accelerate(e) {
     // limit the max speed to 0.2 ╭(╯^╰)╮!
-    speed = Math.min(speed + 0.01, 0.2);
+    speed = Math.min(speed + 0.01, 0.5);
         manual = true;
         e.preventDefault();
 }
@@ -293,27 +293,27 @@ function fire(e) {
     target = drone.fire();
     pointCopy.coordinates[0] = drone.point.coordinates[0];
     pointCopy.coordinates[1] = drone.point.coordinates[1];
-    renderBullet(pointCopy, target, drone.direction, 400);
+    renderBulvar(pointCopy, target, drone.direction, 400);
         e.preventDefault();
 }
 
 // report current drones status every 1 seconds.
 function updateStatusBar() {
-    let drone_number = featureCol.features.length -1;
+    var drone_number = featureCol.features.length -1;
     statusBar.innerText = "system: 目前战场中有敌机"+ drone_number + "架";
 }
-window.setInterval(updateStatusBar, 2000);
+window.setInterval(updateStatusBar, 8000);
 
 /* 
  * 简化的碰撞检测.
- * coordinates: bullet coordinates
+ * coordinates: bulvar coordinates
  */
 function testCrash(coordinates) {
-    // all other drones! calc distance between bullet and drones..
+    // all other drones! calc distance between bulvar and drones..
     // here we add zoom into calculation as a ratio.
-    let zoom = map.getZoom();
-    let distance, volume = 0.2/zoom, index = 0, damagedIndex = 0, hitted = false;
-    featureCol.features.forEach((drone) => {
+    var zoom = map.getZoom();
+    var distance, volume = 0.2/zoom, index = 0, damagedIndex = 0, hitted = false;
+    featureCol.features.forEach(function(drone) {
         if (index > 0){
             distance = calcDist(coordinates, drone.geometry.coordinates);
             // if distance less than the Volume of drone, Damage it!
@@ -332,8 +332,8 @@ function testCrash(coordinates) {
         statsBar.innerText = "击" + totalKill + "架";
 
         // try to send damageDrone info to server.
-        let damagedFeature = featureCol.features[damagedIndex];
-        let damagedDrone = new Drone();
+        var damagedFeature = featureCol.features[damagedIndex];
+        var damagedDrone = new Drone();
         damagedDrone.name = damagedFeature.properties.name;
         damagedDrone.point = damagedFeature.geometry;
         damagedDrone.life = false;
@@ -352,7 +352,7 @@ function calcDist(source, target) {
     return  Math.sqrt(Math.pow((source[0] - target[0]), 2) + Math.pow((source[1] - target[1]), 2));
 }
 
-function renderBullet(start, target, direction, duration) {
+function renderBulvar(start, target, direction, duration) {
     // target is geojson POINT, add Temp point in layer.. 
     var interval = 20, ratio = interval/duration, real_point = start, range = 0.4, count = 0, hitted = false;
     if (target.coordinates) {
@@ -482,7 +482,7 @@ map.on('load', function() {
             'circle-opacity':0.4
         }
     });
-    window.setInterval(setPosition, 50);
+    window.setInterval(setPosition, 40);
     
     // sourcetype: ['geojson', 'vector', 'raster', 'image', 'video']
     // use 'data' for geojson, 'url' and 'tiles' for vector|raster to set the datasource.
