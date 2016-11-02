@@ -237,7 +237,9 @@ var map = new mapboxgl.Map({
                 'type': 'raster',
                 'tiles': [
                     // "http://127.0.0.1:8080/Tiles/{z}/{x}/{y}.png"
-                    "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    // "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
+                    "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                 ],
                 'tileSize': 256
             }
@@ -443,9 +445,9 @@ map.on('load', function() {
         "source": "drone",
         'paint': {
             "text-halo-width": 2,
-            "text-halo-blur": 1,
-            "text-halo-color": "rgba(255,255,255,0.4)",
-            "text-color": "#4466AA"
+            // "text-halo-blur": 1,
+            "text-halo-color": "rgba(255,255,255,0.7)",
+            "text-color": "#222"
         },
         "layout": {
             "icon-image": "airport-15",
@@ -507,7 +509,7 @@ map.on('load', function() {
               },
               "properties": {
                 "title": "上海",
-                "icon": "monument"
+                "icon": ""
               }
               }, {
               "type": "Feature",
@@ -516,8 +518,8 @@ map.on('load', function() {
                 "coordinates": [120.414, 29.976]
               },
               "properties": {
-                "title": "Mapbox Zhejiang",
-                "icon": "harbor"
+                "title": "浙江",
+                "icon": ""
               }
               }]
           }
