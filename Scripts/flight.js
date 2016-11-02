@@ -26,7 +26,7 @@ var featureCol = {
           }]
       };
 
-var totalKill = 0;
+var totalKill = 0, bulletTimer;
 var statusBar = document.querySelector('#status');
 var statsBar = document.querySelector('#totalkill');
 
@@ -290,13 +290,19 @@ function brake(e) {
 }
 
 function fire(e) {
+    if (drone.firing) {
+        console.warn('do not rush..slow down');
+        return;
+    }
     var target = {}, pointCopy = {"type": "Point", 'coordinates': [0, 0]};
     var audio = document.querySelector("#fireBgm");
     audio.src = "Asset/fire.mp3";
     target = drone.fire();
     pointCopy.coordinates[0] = drone.point.coordinates[0];
     pointCopy.coordinates[1] = drone.point.coordinates[1];
-    renderBulvar(pointCopy, target, drone.direction, 400);
+    drone.firing = true;
+    socket.send(drone);
+    renderBullet(pointCopy, target, drone.direction, 400);
         e.preventDefault();
 }
 
@@ -315,7 +321,7 @@ function testCrash(coordinates) {
     // all other drones! calc distance between bulvar and drones..
     // here we add zoom into calculation as a ratio.
     var zoom = map.getZoom();
-    var distance, volume = 0.2/zoom, index = 0, damagedIndex = 0, hitted = false;
+    var distance, volume = 0.1/zoom, index = 0, damagedIndex = 0, hitted = false;
     featureCol.features.forEach(function(drone) {
         if (index > 0){
             distance = calcDist(coordinates, drone.geometry.coordinates);
@@ -355,18 +361,36 @@ function calcDist(source, target) {
     return  Math.sqrt(Math.pow((source[0] - target[0]), 2) + Math.pow((source[1] - target[1]), 2));
 }
 
-function renderBulvar(start, target, direction, duration) {
+function renderBullet(start, target, direction, duration) {
     // target is geojson POINT, add Temp point in layer.. 
-    var interval = 20, ratio = interval/duration, real_point = start, range = 0.4, count = 0, hitted = false;
+    var interval = 10, ratio = interval/duration, real_point = start, range = 0.4,
+         count = 0, hitted = false, zoom = map.getZoom();
     if (target.coordinates) {
         var targetSource = map.getSource('drone-target');
-        window.setInterval(function(){
+        var particles = {
+                'type': "MultiPoint",
+                'coordinates': []
+            };
+        bulletTimer = window.setInterval(function(){
             if (count > duration/interval) {
-
+                // this timer should be cleared when count over or hitted!
+                drone.firing = false;
+                particles.coordinates = [];
+                targetSource.setData(particles);
+                clearInterval(bulletTimer);
+                console.warn('bullet reach destination!');
             } else {
+                particles.coordinates = [];
                 real_point.coordinates[0] += Math.sin(direction)*ratio*range;
                 real_point.coordinates[1] += Math.cos(direction)*ratio*range;
-                targetSource.setData(real_point);
+                particles.coordinates.push(real_point.coordinates);
+                for (var i = 0; i < 9; i++) {
+                    var particle = [];
+                    particle.push(real_point.coordinates[0] - Math.sin(direction)*ratio*range*i/zoom);
+                    particle.push(real_point.coordinates[1] - Math.cos(direction)*ratio*range*i/zoom);
+                    particles.coordinates.push(particle);
+                }
+                targetSource.setData(particles);
                 // test
                 if (!hitted){
                     hitted = testCrash(real_point.coordinates);
@@ -377,6 +401,17 @@ function renderBulvar(start, target, direction, duration) {
     } else {
         console.log('something wrong with args');
     }
+}
+
+/*
+ * calc surrounding particles based on center and direct.
+ */
+function calcParticles(centerPoint, direction) {
+    var particles = [], numbers = 5, zoom = map.getZoom();
+    // for (var i = 5; i >= 0; i--) {
+    //     [i]
+    // }
+    // centerPoint[0]
 }
 
 // add control interaction or event listener.
@@ -473,24 +508,24 @@ map.on('load', function() {
         "source": "drone-target",
         "paint": {
             // make circles larger as the user zooms from z12 to z22
-            'circle-radius': 4,
+            'circle-radius': 2,
             // color circles by ethnicity, using data-driven styles
-            'circle-color': '#f00',
+            'circle-color': '#FFFD0C',
             'circle-opacity':0.8
         }
     });
-    map.addLayer({
-        "id": "drone-fire2",
-        "type": "circle",
-        "source": "drone-target",
-        "paint": {
-            // make circles larger as the user zooms from z12 to z22
-            'circle-radius': 6,
-            // color circles by ethnicity, using data-driven styles
-            'circle-color': '#f00',
-            'circle-opacity':0.4
-        }
-    });
+    // map.addLayer({
+    //     "id": "drone-fire2",
+    //     "type": "circle",
+    //     "source": "drone-target",
+    //     "paint": {
+    //         // make circles larger as the user zooms from z12 to z22
+    //         'circle-radius': 6,
+    //         // color circles by ethnicity, using data-driven styles
+    //         'circle-color': '#f00',
+    //         'circle-opacity':0.4
+    //     }
+    // });
     window.setInterval(setPosition, 40);
     
     // sourcetype: ['geojson', 'vector', 'raster', 'image', 'video']
