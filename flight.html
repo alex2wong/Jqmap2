@@ -128,6 +128,19 @@
             display: block;
         }
 
+        #message {
+            position: absolute;
+            top:50%;
+            left: 50%;
+            width: 200px;
+            height: 80px;
+            margin-left: -100px;
+            margin-top: -40px;
+            display: none;
+            font-size: 1.8em;
+            color: #CA1111;
+        }
+
     </style>
 </head>
 <body>
@@ -145,6 +158,7 @@
     <textarea id="chatOutput" class="chat-contain" readonly></textarea>
     <input type="text" id="chatInput" class="chat-contain" placeholder="输入聊天信息">
 </div>
+<div id="message" >击败了。胜败乃兵家常事，大侠请重新来过</div>
 <div id="status">未连接服务器</div>
 <div class="btn fire-btn" id="fire">开火</div>
 <div class="btn" id="help-btn">帮助</div>

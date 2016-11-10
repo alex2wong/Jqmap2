@@ -29,6 +29,7 @@ var featureCol = {
 var totalKill = 0, bulletTimer;
 var statusBar = document.querySelector('#status');
 var statsBar = document.querySelector('#totalkill');
+var defeatedMsg = document.querySelector("#message");
 
 var socket;
 // config socket connection.
@@ -72,8 +73,15 @@ try {
                 "defeated " + json.text.name;
             // if myDrone defeated. reset the DroneStatus
             if (json.text.name == drone.name) {
-                alert('you are defeated by '+ json.author);
-                drone.point.coordinates = [121.321,30.112];
+                defeatedMsg.innerHTML = '你惨被 '+ json.author + " 爆菊!\n" + "真是皂滑弄人\n大侠请重新来过";
+                defeatedMsg.style.display = "block";
+                var curPlace = drone.point.coordinates.concat();
+                var bornPlace = [121.321,30.112];
+                locking = false;
+                lockViewBtn.innerHTML = "<span>锁定</span>";
+                speed = 0.001;
+                fly2position(curPlace, bornPlace);
+                drone.point.coordinates = bornPlace;
                 drone.life = true;
             } else {
                 var index = 0, damagedIndex =0;
@@ -170,6 +178,32 @@ try {
 }
 catch(e) {
     console.log(e);
+}
+
+// smoothly move viewport 2 born place.  not Finished .
+function fly2position(curCoords, targetCoords) {
+    var duration = 3500, inter = 20, ratio = inter/duration;
+    var dist = calcDist(curCoords, targetCoords);
+    var realCoords = curCoords.concat();
+    var direction = calcDirection(curCoords, targetCoords);
+    var counter = 0;
+    deadflyTimer = setInterval(function() {
+        if (counter > 1/ratio) {
+            defeatedMsg.style.display = "none";
+            clearInterval(deadflyTimer);
+            return;
+        }
+        realCoords[0] -= Math.sin(direction) * ratio * dist;
+        realCoords[1] -= Math.cos(direction) * ratio * dist;
+        map.setCenter(realCoords);
+        counter += 1;
+    }, inter);
+}
+
+// north is 0. east is Math.PI/2.  return dir in Rad.
+function calcDirection(source, target) {
+    var dir = Math.atan((target[0] - source[0])/(target[1] - source[1]));
+    return dir;
 }
 
 // setPostion is to update Mydrone position.
@@ -287,7 +321,7 @@ function turnRight() {
 
 function accelerate(e) {
     // limit the max speed to 0.2 ╭(╯^╰)╮!
-    speed = Math.min(speed + 0.01, 0.5);
+    speed = Math.min(speed + 0.01, 1.2/map.getZoom());
         manual = true;
         e.preventDefault();
 }
