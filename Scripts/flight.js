@@ -34,6 +34,7 @@ var socket;
 // config socket connection.
 try {
     // locally test.. 192.168.1.107.  LAN test.
+    // locally test.. 10.103.14.66
     // deploy to Server use 123.206.201.245 !important
     socket = io.connect("http://123.206.201.245:3002");
     socket.on('open', function(){
@@ -111,6 +112,14 @@ try {
                 }
             };
             featureCol.features.push(feature);
+        } else if (drone && json.text.name != drone.name 
+            && json.text.message) {
+            // display other's chat msg.
+            if (chatOutput) {
+                chatOutput.innerHTML += json.text.name + ": " + json.text.message + "\n";
+            } else {
+                console.error("can't find chatOutput div");
+            }
         }
         // if drone info from server is not Me!! 
         else if (drone && json.text.name != drone.name) {
@@ -156,7 +165,7 @@ try {
                 };
                 featureCol.features.push(feature);
             }
-        }
+        } 
     });
 }
 catch(e) {
@@ -291,7 +300,7 @@ function brake(e) {
 
 function fire(e) {
     if (drone.firing) {
-        console.warn('do not rush..slow down');
+        // console.warn('do not rush..slow down');
         return;
     }
     var target = {}, pointCopy = {"type": "Point", 'coordinates': [0, 0]};
@@ -301,6 +310,7 @@ function fire(e) {
     pointCopy.coordinates[0] = drone.point.coordinates[0];
     pointCopy.coordinates[1] = drone.point.coordinates[1];
     drone.firing = true;
+    // upload firestatus..
     socket.send(drone);
     renderBullet(pointCopy, target, drone.direction, 400);
         e.preventDefault();
@@ -361,6 +371,8 @@ function calcDist(source, target) {
     return  Math.sqrt(Math.pow((source[0] - target[0]), 2) + Math.pow((source[1] - target[1]), 2));
 }
 
+
+// common function for render myDrone and other client's fire. drone
 function renderBullet(start, target, direction, duration) {
     // target is geojson POINT, add Temp point in layer.. 
     var interval = 10, ratio = interval/duration, real_point = start, range = 0.4,
@@ -642,6 +654,7 @@ map.on('load', function() {
     // PosAnimation
 
 });
+
 
 var lockViewBtn = document.querySelector("#lockview");
 lockViewBtn.addEventListener('click', function(){

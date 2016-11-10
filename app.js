@@ -83,12 +83,16 @@ io.on('connection', function(socket) {
       // if it is not the first message, sync the droneStatus
       client.direction = droneStatus.direction;
       client.coordinates = droneStatus.point.coordinates;
+      client.message = droneStatus.message;
       // client.life = droneStatus.life;
 
       obj['text'] = client;
       obj['author'] = 'System';
       obj['type'] = 'message';
-      // console.log(client.name + ' sync status: ' + msg);
+      if (client.message) {
+        console.log(client.name + ' say: ' + client.message);
+      }
+
 
       // // 返回消息（可以省略）
       // socket.emit('message', obj);

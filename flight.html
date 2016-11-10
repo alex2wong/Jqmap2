@@ -89,6 +89,9 @@
         }
         #status {
             position: absolute;
+            background: #2D3642;
+            color: #E7E7E7;
+            opacity: .7;
             left: 110px;
             bottom: 8px;
         }
@@ -110,6 +113,20 @@
             top: 90px;
             right: 20px;
         }
+        #chatContainer {
+            position: absolute;
+            bottom: 50px;
+            left: 130px;
+        }
+        #chatOutput {
+        
+            height: 75px;
+        }
+        .chat-contain {
+            opacity: 0.4;
+            width: 300px;
+            display: block;
+        }
 
     </style>
 </head>
@@ -124,6 +141,10 @@
     </div>
     <div class="btn" id="lockview"><span>解锁</span></div>
 </div>
+<div id="chatContainer">
+    <textarea id="chatOutput" class="chat-contain" readonly></textarea>
+    <input type="text" id="chatInput" class="chat-contain" placeholder="输入聊天信息">
+</div>
 <div id="status">未连接服务器</div>
 <div class="btn fire-btn" id="fire">开火</div>
 <div class="btn" id="help-btn">帮助</div>
@@ -135,5 +156,6 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="Scripts/drone.js"></script>
 <script src="Scripts/flight.js"></script>
+<script src="Scripts/add_controls.js"></script>
 </body>
 </html>
