@@ -28,5 +28,6 @@ Game ScreenShot:
 - add websocket to support multiplayer (completed!)
 - optimize touch events to promote mobile performance
 - display other player's fire action and sync Robot Status to all client, not emit to client speratedly anymore.
-- optimize calculation in fire animation. promote game influence.
+- optimize calculation in fire animation. promote game influence.(completed!)
+- add mini map to navigate enemy drone.
 
