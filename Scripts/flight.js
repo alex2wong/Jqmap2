@@ -80,7 +80,16 @@ try {
                 locking = false;
                 lockViewBtn.innerHTML = "<span>锁定</span>";
                 speed = 0.001;
-                fly2position(curPlace, bornPlace);
+                map.flyTo({
+                    center: bornPlace,
+                    bearing: 0,
+                    zoom: 10,
+                    pitch: 60
+                });
+                setTimeout(function(){
+                    defeatedMsg.style.display = "none";
+                }, 4500);
+                // fly2position(curPlace, bornPlace);
                 drone.point.coordinates = bornPlace;
                 drone.life = true;
             } else {
@@ -295,11 +304,11 @@ var map = new mapboxgl.Map({
         }]
     },
     "transition": {
-        "duration": 400,
+        "duration": 2500,
         "delay": 0
     },
     // bearing: 45,
-    pitch: 30,
+    pitch: 60,
     light: {
         'anchor':'viewport',
         'color':'white',
@@ -346,7 +355,7 @@ function fire(e) {
     drone.firing = true;
     // upload firestatus..
     socket.send(drone);
-    renderBullet(pointCopy, target, drone.direction, 400);
+    renderBullet(pointCopy, target, drone.direction, 300);
         e.preventDefault();
 }
 
