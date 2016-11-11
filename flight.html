@@ -12,6 +12,7 @@
             width:100%;
             font-family: "MicroSoft Yahei";
             font-size: 1.0em;
+            overflow: hidden;
          }
         #map { position:absolute; top:0; bottom:0; width:100%; }
         #controlPanel {
@@ -133,12 +134,25 @@
             top:50%;
             left: 50%;
             width: 200px;
-            height: 80px;
+            height: 100px;
             margin-left: -100px;
-            margin-top: -40px;
+            margin-top: -70px;
             display: none;
             font-size: 1.8em;
             color: #FF0505;
+        }
+        #help {
+            position: absolute;
+            top: 50%;
+            right: 50%;
+            width: 300px;
+            height: 220px;
+            margin-right: -150px;
+            margin-top: -150px;
+            color: #FFF;
+            font-size: .9em;
+            line-height: 1.2em;
+            background: rgba(100, 100, 100, 0.3);
         }
 
     </style>
@@ -147,10 +161,10 @@
 <div id='map'></div>
 <div class="" id="controlPanel">
     <div id="controller">
-        <div class="control-btn" id="up"><div>U</div></div>
-        <div class="control-btn" id="left"><div>L</div></div>
-        <div class="control-btn" id="right"><div>R</div></div>
-        <div class="control-btn" id="down"><div>D</div></div>
+        <div class="control-btn" id="up"><div>W</div></div>
+        <div class="control-btn" id="left"><div>A</div></div>
+        <div class="control-btn" id="right"><div>D</div></div>
+        <div class="control-btn" id="down"><div>S</div></div>
     </div>
     <div class="btn" id="lockview"><span>解锁</span></div>
 </div>
@@ -164,8 +178,19 @@
 <div class="btn" id="help-btn">帮助</div>
 <div class="btn" id="connect">上线</div>
 <div class="btn" id="totalkill">战绩</div>
-<div class="diag" id="help"></div>
-<audio src="Asset/bgm3.mp3" autoplay="true" loop="loop"></audio>
+<div class="diag" id="help">帮助
+    <div id="close" class="btn" style="float: right;"> X </div>
+    <br><br>
+    WSAD&nbsp;&nbsp;&nbsp;控制飞机上下左右<br><br>
+    空格键&nbsp;&nbsp;&nbsp;控制开火，可连续按键开火<br><br>
+    解锁&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;解锁视角，可随意拖动缩放地图<br><br>
+    锁定&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;锁定视角，跟随飞机运行，可缩放地图<br><br>
+    鼠标右&nbsp;&nbsp;&nbsp;拖动可倾斜视角(webgl)<br><br>
+    滚轮&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;缩放地图视野，可查看敌情
+</div>
+<audio src="http://m5.file.xiami.com/259/58259/71695147/1771959699_10559682_l.mp3?auth_key=6c6b471b73ad33a1cf5c9114cfed8bfd-1479438000-0-null" autoplay="true" loop="loop"></audio>
+<!-- src="Asset/bgm3.mp3" -->
+
 <audio src="" id="fireBgm" autoplay="true"></audio>
 <script src="/socket.io/socket.io.js"></script>
 <script src="Scripts/drone.js"></script>

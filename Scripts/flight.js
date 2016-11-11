@@ -241,6 +241,7 @@ function setPosition() {
     
     if (window.locking) {
         map.setCenter(point.coordinates);
+        // map.setBearing(current_rotate);
     }
 
     // sync Mydrone status..
@@ -252,7 +253,7 @@ function setPosition() {
 
 // update non-ego drones status
 function updateDrones() {
-    var index = 0;   
+    var index = 0;
 
     for (var i = featureCol.features.length - 1; i > 0; i--) {
         var current_rotate = map.getBearing();
@@ -268,7 +269,7 @@ function updateDrones() {
             current_rotate = (-current_rotate) + feature.properties.direction * (180 / Math.PI);
             feature.properties.rotate = current_rotate;
         } else {
-            // 其他客户端飞机的坐标是在socket.on('message', func) 中更新了，这里只根据bearing校正显示方向
+            // 其他客户端飞机的坐标是在socket.on('message', func) 中更新了，这里只根据bearing(deg)校正显示方向
             current_rotate = (-current_rotate) + feature.properties.direction * (180 / Math.PI);
             feature.properties.rotate = current_rotate;
         }
@@ -715,10 +716,10 @@ var strategy = {
     "down": brake,
     "left": turnLeft,
     "right": turnRight,
-    "U": accelerate,
-    "D": brake,
-    "L": turnLeft,
-    "R": turnRight
+    "W": accelerate,
+    "S": brake,
+    "A": turnLeft,
+    "D": turnRight
 }
 
 var controller = document.querySelector("#controller");

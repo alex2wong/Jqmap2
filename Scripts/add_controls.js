@@ -16,3 +16,25 @@ function handleChat(evt){
     }
 }
 
+var help = true;
+
+var helpBtn = document.querySelector("#help-btn");
+var helpDiv = document.querySelector("#help");
+var helpClose = document.querySelector("#close");
+
+// close help
+helpClose.addEventListener("click", function(){
+    helpDiv.style.display = "none";
+    help = false;
+});
+
+// toggle help
+helpBtn.addEventListener("click", function() {
+    if (help) {
+        helpDiv.style.display = "none";
+        help = false;
+    } else {
+        helpDiv.style.display = "block";
+        help = true;
+    }
+})
