@@ -84,6 +84,7 @@ io.on('connection', function(socket) {
       client.direction = droneStatus.direction;
       client.coordinates = droneStatus.point.coordinates;
       client.message = droneStatus.message;
+      client.firing = droneStatus.firing;
       // client.life = droneStatus.life;
 
       obj['text'] = client;

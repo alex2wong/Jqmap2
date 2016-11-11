@@ -14,6 +14,7 @@ drone.direction = direction;
 drone.speed = speed;
 drone.point = point;
 
+drones.push(drone);
 var featureCol = {
         "type": "FeatureCollection",
         "features": [
@@ -101,7 +102,7 @@ try {
                     index += 1;
                 });
                 if (damagedIndex > 0) {
-                    // devare the damaged drone in this location!
+                    // delete the damaged drone in this location!
                     featureCol.features.splice(damagedIndex, 1);
                 }
             }
@@ -146,7 +147,22 @@ try {
                 "type":"Point",
                 "coordinates": json.text.coordinates
             };
-            var existed = false;
+            var existed = false, j = 0, droneModelIndex = 0;
+            // found in drones.. trigger fire event!
+            drones.forEach(function(droneModel) {
+                if (droneModel.name == droneName) {
+                    droneModelIndex = j;
+                }
+                j += 1;
+            });
+            if (droneModelIndex > 0) {
+                // json.text is stanceOf Drone sent by Server.
+                drones[droneModelIndex] = json.text;
+                if (drone.firing) {
+                    drone.fire();
+                }
+            }
+
             // if found specific drone, update the status.
             var index = 0, droneIndex = 0, newStatus = {};
             featureCol.features.forEach(function(drone) {
@@ -162,6 +178,7 @@ try {
                 drone2Update.properties.direction = json.text.direction;
                 drone2Update.geometry.coordinates = json.text.coordinates;
             }
+
             // if not found, add!
             if (!existed) {
                 // new login drone.
@@ -220,7 +237,7 @@ function setPosition() {
     // direction in Rad. Generally, 1 Rad stands for 100km
     var current_rotate = map.getBearing();
     if (!manual && Math.random() > 0.95) {
-        direction += (Math.random() - 0.5) /5;
+        // direction += (Math.random() - 0.5) /5;
     }
     
     point.coordinates[0] += speed * Math.sin(direction) / 100;
@@ -241,7 +258,7 @@ function setPosition() {
     
     if (window.locking) {
         map.setCenter(point.coordinates);
-        // map.setBearing(current_rotate);
+        // console.warn('calc current_rotate in deg: ' + current_rotate, " cur_drone_direction: "+ direction);
     }
 
     // sync Mydrone status..
@@ -249,6 +266,10 @@ function setPosition() {
     drone.speed = speed;
     drone.point = point;
     // console.log("drone direction: " + drone.direction);
+}
+
+function easing(t) {
+    return t * (2 - t);
 }
 
 // update non-ego drones status
@@ -322,11 +343,19 @@ var map = new mapboxgl.Map({
 function turnLeft() {
     direction -= 0.1;
     manual = true;
+    // map.easeTo({
+    //     bearing: map.getBearing() - 0.1 * (180 / Math.PI),
+    //     easing: easing
+    // });
 }
 
 function turnRight() {
     direction += 0.1;
-        manual = true;
+    manual = true;
+    // map.easeTo({
+    //     bearing: map.getBearing() + 0.1 * (180 / Math.PI),
+    //     easing: easing
+    // });
 }
 
 function accelerate(e) {
@@ -347,17 +376,17 @@ function fire(e) {
         // console.warn('do not rush..slow down');
         return;
     }
-    var target = {}, pointCopy = {"type": "Point", 'coordinates': [0, 0]};
+    pointCopy = {"type": "Point", 'coordinates': [0, 0]};
     var audio = document.querySelector("#fireBgm");
     audio.src = "Asset/fire.mp3";
-    target = drone.fire();
+    // firing, calculate bullet path !!
+    drone.fire();
     pointCopy.coordinates[0] = drone.point.coordinates[0];
     pointCopy.coordinates[1] = drone.point.coordinates[1];
     drone.firing = true;
     // upload firestatus..
     socket.send(drone);
-    renderBullet(pointCopy, target, drone.direction, 300);
-        e.preventDefault();
+    e.preventDefault();
 }
 
 // report current drones status every 1 seconds.
@@ -375,7 +404,7 @@ function testCrash(coordinates) {
     // all other drones! calc distance between bulvar and drones..
     // here we add zoom into calculation as a ratio.
     var zoom = map.getZoom();
-    var distance, volume = 0.1/zoom, index = 0, damagedIndex = 0, hitted = false;
+    var distance, volume = 0.2/zoom, index = 0, damagedIndex = 0, hitted = false;
     featureCol.features.forEach(function(drone) {
         if (index > 0){
             distance = calcDist(coordinates, drone.geometry.coordinates);
@@ -415,47 +444,46 @@ function calcDist(source, target) {
     return  Math.sqrt(Math.pow((source[0] - target[0]), 2) + Math.pow((source[1] - target[1]), 2));
 }
 
+// bullet particles
+var particles = {
+    'type': "MultiPoint",
+    'coordinates': []
+};
+var bulletSource;
+// global unique bulletTimer
+var bulletTimer = setInterval(renderBullet, 20);
 
-// common function for render myDrone and other client's fire. drone
-function renderBullet(start, target, direction, duration) {
-    // target is geojson POINT, add Temp point in layer.. 
-    var interval = 10, ratio = interval/duration, real_point = start, range = 0.4,
-         count = 0, hitted = false, zoom = map.getZoom();
-    if (target.coordinates) {
-        var targetSource = map.getSource('drone-target');
-        var particles = {
-                'type': "MultiPoint",
-                'coordinates': []
-            };
-        bulletTimer = window.setInterval(function(){
-            if (count > duration/interval) {
-                // this timer should be cleared when count over or hitted!
-                drone.firing = false;
-                particles.coordinates = [];
-                targetSource.setData(particles);
-                clearInterval(bulletTimer);
-                console.warn('bullet reach destination!');
-            } else {
-                particles.coordinates = [];
-                real_point.coordinates[0] += Math.sin(direction)*ratio*range;
-                real_point.coordinates[1] += Math.cos(direction)*ratio*range;
-                particles.coordinates.push(real_point.coordinates);
-                for (var i = 0; i < 9; i++) {
-                    var particle = [];
-                    particle.push(real_point.coordinates[0] - Math.sin(direction)*ratio*range*i/zoom);
-                    particle.push(real_point.coordinates[1] - Math.cos(direction)*ratio*range*i/zoom);
-                    particles.coordinates.push(particle);
-                }
-                targetSource.setData(particles);
-                // test
-                if (!hitted){
-                    hitted = testCrash(real_point.coordinates);
-                }
-                count += 1;
+// common function for render myDrone and other client's fire
+function renderBullet() {
+    var zoom = map.getZoom();
+    particles.coordinates = [];
+    // if drone is firing, it's bullet coordiantes be calculated and rendered.
+    for (var j = 0; j < drones.length; j++) {
+        var hitted = false;
+        if (drones[j].firing) {
+
+            drones[j].bullet.spoint.coordinates[0] += Math.sin(drones[j].bullet.direction)*0.02;
+            drones[j].bullet.spoint.coordinates[1] += Math.cos(drones[j].bullet.direction)*0.02;
+            var real_point = drones[j].bullet.spoint;
+
+            // calculate MyDrone if it's bullet hit any enemy
+            if (!hitted && drone.name && drones[j].name == drone.name){
+                hitted = testCrash(real_point.coordinates);
             }
-        }, interval);
-    } else {
-        console.log('something wrong with args');
+            particles.coordinates.push(real_point.coordinates);
+            for (var i = 0; i < 9; i++) {
+                var particle = [];
+                // 0.02 is step length of bullet each frames..
+                particle.push(real_point.coordinates[0] - Math.sin(direction)*0.02*i/zoom);
+                particle.push(real_point.coordinates[1] - Math.cos(direction)*0.02*i/zoom);
+                particles.coordinates.push(particle);
+            }
+        }
+    }
+
+    bulletSource = map.getSource('drone-target');
+    if (bulletSource) {
+        bulletSource.setData(particles);
     }
 }
 
