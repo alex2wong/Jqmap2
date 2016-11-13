@@ -21,7 +21,7 @@
             left: 50px;
         }
         .btn {
-            width: 55px;
+            width: 60px;
             height: 30px;
             /* padding 会导致盒子ComputedHeight 增大 */
             padding-top: 5px;
@@ -114,6 +114,26 @@
             top: 90px;
             right: 20px;
         }
+        #playerlist {
+            position: absolute;
+            top: 150px;
+            right:10px;
+            width: 70px;
+            height: auto;
+            overflow: hidden;
+            font-size: 0.7em;
+            color: #EEE;
+            background: rgba(100, 100, 100, 0.4);
+        }
+        .item {
+            display: block;
+            width: 65px;
+        }
+        .item:hover {
+            background: #00b9d6;
+            cursor: pointer;
+        }
+
         #chatContainer {
             position: absolute;
             bottom: 50px;
@@ -152,7 +172,7 @@
             color: #FFF;
             font-size: .9em;
             line-height: 1.2em;
-            background: rgba(100, 100, 100, 0.3);
+            background: rgba(100, 100, 100, 0.4);
         }
 
     </style>
@@ -187,6 +207,9 @@
     锁定&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;锁定视角，跟随飞机运行，可缩放地图<br><br>
     鼠标右&nbsp;&nbsp;&nbsp;拖动可倾斜视角(webgl)<br><br>
     滚轮&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;缩放地图视野，可查看敌情
+</div>
+<div id="playerlist">
+&nbsp;玩家列表:<br>
 </div>
 <audio src="http://m5.file.xiami.com/259/58259/71695147/1771959699_10559682_l.mp3?auth_key=6c6b471b73ad33a1cf5c9114cfed8bfd-1479438000-0-null" autoplay="true" loop="loop"></audio>
 <!-- src="Asset/bgm3.mp3" -->

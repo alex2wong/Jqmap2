@@ -31,21 +31,23 @@ var totalKill = 0, bulletTimer;
 var statusBar = document.querySelector('#status');
 var statsBar = document.querySelector('#totalkill');
 var defeatedMsg = document.querySelector("#message");
+var playerList = document.querySelector("#playerlist");
 
 var socket;
 // config socket connection.
 try {
     // locally test.. 192.168.1.107.  LAN test.
+    // 127.0.0.1
     // locally test.. 10.103.14.66
     // deploy to Server use 123.206.201.245 !important
-    socket = io.connect("http://123.206.201.245:3002");
+    socket = io.connect("http://127.0.0.1:3002");
     socket.on('open', function(){
         statusBar.innerText = "已经连上服务器..";
         var askName = prompt("来，取个名字", "");
         if(askName){
             if (drone) {
                 drone.name = askName;
-            }            
+            }
         }
         // 定时上传本飞机实时状态，同步显示到其他客户端
         window.setInterval(function() {
@@ -60,6 +62,8 @@ try {
             statusBar.innerText = "system@" + json.time + ': 歡迎， ' + json.text.name;            
         } else if(json.type === "disconnect") {
             statusBar.innerText = "system@" + json.time + ': 再見， ' + json.text;
+            delInDrones(json.text);
+            delInFeatureCol(json.text);
         }
     });
 
@@ -94,17 +98,8 @@ try {
                 drone.point.coordinates = bornPlace;
                 drone.life = true;
             } else {
-                var index = 0, damagedIndex =0;
-                featureCol.features.forEach(function(feature) {
-                    if (feature.properties.name == json.text.name) {
-                        damagedIndex = index;
-                    }
-                    index += 1;
-                });
-                if (damagedIndex > 0) {
-                    // delete the damaged drone in this location!
-                    featureCol.features.splice(damagedIndex, 1);
-                }
+                delInDrones(json.text.name);
+                delInFeatureCol(json.text.name);
             }
 
         } else if(json.type === "message" && json.text.name === "敌机") {
@@ -119,7 +114,7 @@ try {
             robot.name = json.text.name;
             robot.direction = 0;
             robot.point = point;
-            // drones.push(robot);
+            drones.push(robot);
             // 将敌机状态直接加入用于渲染的geojson对象
             var feature = {
                 "type": "feature",
@@ -148,19 +143,19 @@ try {
                 "coordinates": json.text.coordinates
             };
             var existed = false, j = 0, droneModelIndex = 0;
-            // found in drones.. trigger fire event!
-            drones.forEach(function(droneModel) {
-                if (droneModel.name == droneName) {
-                    droneModelIndex = j;
-                }
-                j += 1;
-            });
-            if (droneModelIndex > 0) {
-                // json.text is stanceOf Drone sent by Server.
-                drones[droneModelIndex] = json.text;
-                if (drone.firing) {
-                    drone.fire();
-                }
+            // found in drones.. update status!
+            var whichDrone = findInDrones(droneName);
+            
+            // update the droneStatus in drones.
+            updateDrone(whichDrone, json.text);
+
+            if (whichDrone.firing && !whichDrone.bullet) {
+                whichDrone.fire();
+                console.warn('Multi client bullet created and ready2 render...');
+                setTimeout(function(){
+                    whichDrone.firing = false;
+                    whichDrone.bullet = null;
+                }, 4400);
             }
 
             // if found specific drone, update the status.
@@ -204,6 +199,51 @@ try {
 }
 catch(e) {
     console.log(e);
+}
+
+function findInDrones(name) {
+    var droneIndex = -1;
+    for (var i = 0; i < drones.length; i++) {
+        if (drones[i].name == name) {
+            droneIndex = i;
+            return drones[i];
+        }
+    }
+}
+
+// delete Drone in drones by name
+function delInDrones(name) {
+    var droneIndex = -1;
+    for (var i = 0; i < drones.length; i++) {
+        if (drones[i].name == name) {
+            droneIndex = i;
+        }
+    }
+    drones.splice(droneIndex, 1);
+    console.warn("Delete drone: " + name + " in drones.");
+}
+
+function delInFeatureCol(name) {
+    var index = 0, damagedIndex =0;
+    featureCol.features.forEach(function(feature) {
+        if (feature.properties.name == name) {
+            damagedIndex = index;
+        }
+        index += 1;
+    });
+    if (damagedIndex > 0) {
+        // delete the damaged drone in this location!
+        featureCol.features.splice(damagedIndex, 1);
+    }
+}
+
+// update drone status..
+function updateDrone(drone2Update, text) {
+    drone2Update.point.coordinates[0] = text.coordinates[0];
+    drone2Update.point.coordinates[1] = text.coordinates[1];
+    drone2Update.direction = text.direction;
+    drone2Update.firing = text.firing;
+    drone2Update.life = text.life ? text.life: 0;
 }
 
 // smoothly move viewport 2 born place.  not Finished .
@@ -373,28 +413,40 @@ function brake(e) {
 
 function fire(e) {
     if (drone.firing) {
-        // console.warn('do not rush..slow down');
+        console.warn('Master, do not rush..slow down');
         return;
     }
     pointCopy = {"type": "Point", 'coordinates': [0, 0]};
     var audio = document.querySelector("#fireBgm");
     audio.src = "Asset/fire.mp3";
-    // firing, calculate bullet path !!
+    // firing, create bullet for drone.
     drone.fire();
-    pointCopy.coordinates[0] = drone.point.coordinates[0];
-    pointCopy.coordinates[1] = drone.point.coordinates[1];
+    setTimeout(function(){
+        drone.firing = false;
+        drone.bullet = null;
+    }, 4400);
+
     drone.firing = true;
     // upload firestatus..
     socket.send(drone);
     e.preventDefault();
 }
 
+
+
 // report current drones status every 1 seconds.
 function updateStatusBar() {
-    var drone_number = featureCol.features.length -1;
+    var drone_number = drones.length -1;
     statusBar.innerText = "system: 目前战场中有敌机"+ drone_number + "架";
+    // print player names in list
+    playerList.innerHTML = "&nbsp;玩家列表:<br>";
+    drones.forEach(function(thisDrone){
+        if (thisDrone.name != "敌机") {
+            playerList.innerHTML += "<a class='item'>" + thisDrone.name + "</a>";
+        }
+    });
 }
-window.setInterval(updateStatusBar, 8000);
+window.setInterval(updateStatusBar, 4000);
 
 /* 
  * 简化的碰撞检测.
@@ -432,7 +484,7 @@ function testCrash(coordinates) {
         if (socket) {
             socket.send(damagedDrone);
         }
-
+        delInDrones(damagedDrone.name);
         featureCol.features.splice(damagedIndex, 1);
 
         hitted = true;
@@ -451,19 +503,19 @@ var particles = {
 };
 var bulletSource;
 // global unique bulletTimer
-var bulletTimer = setInterval(renderBullet, 20);
+var bulletTimer = setInterval(renderBullet, 1200);
 
 // common function for render myDrone and other client's fire
 function renderBullet() {
-    var zoom = map.getZoom();
+    var zoom = map.getZoom(), steplength = 0.01
     particles.coordinates = [];
     // if drone is firing, it's bullet coordiantes be calculated and rendered.
     for (var j = 0; j < drones.length; j++) {
         var hitted = false;
-        if (drones[j].firing) {
+        if (drones[j].name == "sara" && drones[j].firing && drones[j].bullet) {
 
-            drones[j].bullet.spoint.coordinates[0] += Math.sin(drones[j].bullet.direction)*0.02;
-            drones[j].bullet.spoint.coordinates[1] += Math.cos(drones[j].bullet.direction)*0.02;
+            drones[j].bullet.spoint.coordinates[0] += Math.sin(drones[j].bullet.direction)*steplength;
+            drones[j].bullet.spoint.coordinates[1] += Math.cos(drones[j].bullet.direction)*steplength;
             var real_point = drones[j].bullet.spoint;
 
             // calculate MyDrone if it's bullet hit any enemy
@@ -473,9 +525,9 @@ function renderBullet() {
             particles.coordinates.push(real_point.coordinates);
             for (var i = 0; i < 9; i++) {
                 var particle = [];
-                // 0.02 is step length of bullet each frames..
-                particle.push(real_point.coordinates[0] - Math.sin(direction)*0.02*i/zoom);
-                particle.push(real_point.coordinates[1] - Math.cos(direction)*0.02*i/zoom);
+                // 0.01 is step length of bullet each frames..
+                particle.push(real_point.coordinates[0] - Math.sin(drones[j].bullet.direction)*steplength*i/zoom);
+                particle.push(real_point.coordinates[1] - Math.cos(drones[j].bullet.direction)*steplength*i/zoom);
                 particles.coordinates.push(particle);
             }
         }
@@ -516,7 +568,7 @@ document.body.addEventListener('keydown', function(e) {
         fire(e);
     }
     if (e.which === 66) {
-        drone.bomb(e);
+        // drone.bomb(e);
     }
     // console.log(e.which);
 })

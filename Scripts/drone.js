@@ -17,7 +17,10 @@ var Drone = function() {
 }
 
 var Bullet = function() {
-    this.spoint = {};
+    this.spoint = {
+        'type': "Point",
+        'coordinates': []
+    };
     this.direction = 0;
     this.speed = 0.1
     // range in rad/h
@@ -40,39 +43,16 @@ var Bullet = function() {
 */
 Drone.prototype.fire = function() {
     // body... direction in Rad !! this represent current Drone
-    if (this.firing) {
-        console.warn('you are firing.. hold your horses');
+    if (this.firing && this.bullet) {
+        console.warn('clients are firing..');
         return;
     }
     var bullet = new Bullet();
     var sx, sy;
-    bullet.spoint = this.point;
+    // Bug !!! here should be deepCopy.. not shallow. fixed
+    bullet.spoint.coordinates[0] = this.point.coordinates[0];
+    bullet.spoint.coordinates[1] = this.point.coordinates[1];
     bullet.direction = this.direction;
     this.bullet = bullet;
-    this.firing = true;
-    sx = bullet.spoint.coordinates[0];
-    sy = bullet.spoint.coordinates[1];
-    // console.log("fire from: " +   sx, sy);
-    sx += bullet.range * Math.sin(this.direction);
-    sy += bullet.range * Math.cos(this.direction);
-    // console.log("target At: " +   sx, sy);
-    var target = {
-        "type": "Point",
-        "coordinates": [sx, sy]
-    }
-    //// timer for each drone to calculate it's bullets coordinates.
-    // var privateTimer = setInterval(function(){
-    //     var that = this;
-    //     if (count > duration/interval) {
-    //             // this timer should be cleared when count over or hitted!
-    //             that.firing = false;
-    //             clearInterval(privateTimer);
-    //             // console.warn('bullet reach destination!');
-    //         } else {
-    //             that.bullet.spoint.coordinates[0] += Math.sin(bullet.direction)*ratio*range;
-    //             that.bullet.spoint.coordinates[1] += Math.cos(bullet.direction)*ratio*range;
 
-    //             count += 1;
-    //         }
-    // }, interval);
 };
