@@ -9,7 +9,7 @@ var point = {
     "type":"Point",
     "coordinates": [121.321,30.112]
 };
-drone.name = "无名氏"
+drone.name = "";
 drone.direction = direction;
 drone.speed = speed;
 drone.point = point;
@@ -34,7 +34,11 @@ var defeatedMsg = document.querySelector("#message");
 var playerList = document.querySelector("#playerlist");
 
 // time for bullet fly.
-var firingTime = 500;
+var firingTime = 600;
+
+function randomName() {
+    return "玩家" + (Math.random()*10000).toFixed(0);
+}
 
 var socket;
 // config socket connection.
@@ -43,15 +47,19 @@ try {
     // 127.0.0.1
     // locally test.. 10.103.14.66
     // deploy to Server use 123.206.201.245 !important
-    socket = io.connect("http://127.0.0.1:3002");
+    socket = io.connect("http://123.206.201.245:3002");
     socket.on('open', function(){
         statusBar.innerText = "已经连上服务器..";
-        var askName = prompt("来，取个名字", "");
-        if(askName){
-            if (drone) {
-                drone.name = askName;
+        var randName = randomName();
+        while(!drone.name) {
+            var askName = prompt("来，取一个别致的名字", randName);
+            if(askName && !findInDrones(askName)){
+                if (drone) {
+                    drone.name = askName;
+                }
             }
         }
+        
         // 定时上传本飞机实时状态，同步显示到其他客户端
         window.setInterval(function() {
             socket.send(drone);
@@ -630,7 +638,7 @@ map.on('load', function() {
         },
         "layout": {
             "icon-image": "airport-15",
-            "icon-size": 1.5,
+            "icon-size": 1.2,
             "icon-allow-overlap": true,
             "icon-ignore-placement": true,
             "icon-optional": true,

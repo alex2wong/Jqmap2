@@ -128,7 +128,7 @@ io.on('connection', function(socket) {
     EnemyMsg['text'] = randomEnemy;
     EnemyMsg['time'] = getTime();
     socket.emit('message', EnemyMsg);
-  }, 20000);
+  }, 12000);
 
   socket.on('disconnect', function() {
     var obj = {
