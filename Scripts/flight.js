@@ -33,6 +33,9 @@ var statsBar = document.querySelector('#totalkill');
 var defeatedMsg = document.querySelector("#message");
 var playerList = document.querySelector("#playerlist");
 
+// time for bullet fly.
+var firingTime = 500;
+
 var socket;
 // config socket connection.
 try {
@@ -85,12 +88,15 @@ try {
                 locking = false;
                 lockViewBtn.innerHTML = "<span>锁定</span>";
                 speed = 0.001;
-                map.flyTo({
-                    center: bornPlace,
-                    bearing: 0,
-                    zoom: 10,
-                    pitch: 60
-                });
+                setTimeout(function() {
+                    map.flyTo({
+                        center: bornPlace,
+                        bearing: 0,
+                        zoom: 10,
+                        pitch: 60
+                    });
+                }, 1000);
+                
                 setTimeout(function(){
                     defeatedMsg.style.display = "none";
                 }, 4500);
@@ -146,16 +152,18 @@ try {
             // found in drones.. update status!
             var whichDrone = findInDrones(droneName);
             
-            // update the droneStatus in drones.
-            updateDrone(whichDrone, json.text);
+            if (whichDrone) {
+                // update the droneStatus in drones.
+                updateDrone(whichDrone, json.text);
 
-            if (whichDrone.firing && !whichDrone.bullet) {
-                whichDrone.fire();
-                console.warn('Multi client bullet created and ready2 render...');
-                setTimeout(function(){
-                    whichDrone.firing = false;
-                    whichDrone.bullet = null;
-                }, 4400);
+                if (whichDrone.firing && !whichDrone.bullet) {
+                    whichDrone.fire();
+                    console.warn('Multi client bullet created and ready2 render...');
+                    setTimeout(function(){
+                        whichDrone.firing = false;
+                        whichDrone.bullet = null;
+                    }, firingTime);
+                }
             }
 
             // if found specific drone, update the status.
@@ -424,7 +432,7 @@ function fire(e) {
     setTimeout(function(){
         drone.firing = false;
         drone.bullet = null;
-    }, 4400);
+    }, firingTime);
 
     drone.firing = true;
     // upload firestatus..
@@ -503,7 +511,7 @@ var particles = {
 };
 var bulletSource;
 // global unique bulletTimer
-var bulletTimer = setInterval(renderBullet, 1200);
+var bulletTimer = setInterval(renderBullet, 20);
 
 // common function for render myDrone and other client's fire
 function renderBullet() {
@@ -512,7 +520,7 @@ function renderBullet() {
     // if drone is firing, it's bullet coordiantes be calculated and rendered.
     for (var j = 0; j < drones.length; j++) {
         var hitted = false;
-        if (drones[j].name == "sara" && drones[j].firing && drones[j].bullet) {
+        if (drones[j].firing && drones[j].bullet) {
 
             drones[j].bullet.spoint.coordinates[0] += Math.sin(drones[j].bullet.direction)*steplength;
             drones[j].bullet.spoint.coordinates[1] += Math.cos(drones[j].bullet.direction)*steplength;
@@ -622,6 +630,7 @@ map.on('load', function() {
         },
         "layout": {
             "icon-image": "airport-15",
+            "icon-size": 1.5,
             "icon-allow-overlap": true,
             "icon-ignore-placement": true,
             "icon-optional": true,
