@@ -1,0 +1,184 @@
+body { margin:0; padding:0;
+    height: 100%;
+    width:100%;
+    font-family: "MicroSoft Yahei";
+    font-size: 1.0em;
+    overflow: hidden;
+    }
+#map { position:absolute; top:0; bottom:0; width:100%; }
+#miniMap {
+    position: absolute; 
+    top:110px;
+    left: 10px;
+    width: 150px;
+    height: 100px;
+    border-radius: 2px 2px;
+    box-shadow: 2px 3px 1px rgba(0,0,0,0.3);
+    border: 2px solid #FBF7D9;
+}
+#controlPanel {
+    position: absolute;
+    bottom: 8px;
+    left: 50px;
+}
+.btn {
+    width: 60px;
+    height: 30px;
+    /* padding 会导致盒子ComputedHeight 增大 */
+    padding-top: 5px;
+    background: #2D3642;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    opacity: 0.8;
+}
+.btn:hover{
+    cursor: pointer;
+    background: #00b9d6;
+    opacity: 1;
+    transition: background, opacity .4s ease;
+}
+
+.control-btn {
+    position: absolute;
+    opacity: 0.8;
+    border-radius: 3px;
+    text-align: center;
+    vertical-align: middle;
+    width:40px;
+    height: 40px;
+    transform: rotateZ(45deg);
+    color:#fff;
+    background: #2D3642;
+}
+.control-btn div {
+    /*margin-top:6px;
+    margin-right:4px;*/
+    width:20px;
+    /*background: #00b9d6;*/
+    transform: rotateZ(-45deg) translate(0, 50%);
+}
+.control-btn:hover {
+    cursor: pointer;
+    opacity: 1;
+    background: #00b9d6;
+    transition: background, opacity .4s ease;
+}
+
+#down {
+    bottom: 45px;
+}
+#up {
+    bottom: 105px;
+}
+#left {
+    bottom: 75px;
+    left: -30px;
+}
+#right {
+    bottom: 75px;
+    right: -15px;
+}
+
+#right:after {
+    content: "";
+    float: clear;
+}
+#fire {
+    position: absolute;
+    right:20px;
+    bottom:8px;
+}
+#status {
+    position: absolute;
+    background: #2D3642;
+    color: #E7E7E7;
+    opacity: .7;
+    left: 110px;
+    bottom: 8px;
+}
+.fire-btn {
+    /*border-radius: 50% 50%;*/
+}
+#github {
+    position: absolute;
+    top: 10px;
+    right: 100px;
+    width: 70px;
+    text-decoration: none;
+}
+#help-btn {
+    position: absolute;            
+    top:10px;
+    right:20px;
+}
+#connect {
+    position: absolute;
+    top:50px;
+    right:20px;
+}
+#totalkill {
+    position: absolute;
+    top: 90px;
+    right: 20px;
+}
+#playerlist {
+    position: absolute;
+    top: 150px;
+    right:10px;
+    width: 70px;
+    height: auto;
+    overflow: hidden;
+    font-size: 0.7em;
+    color: #EEE;
+    background: rgba(100, 100, 100, 0.4);
+}
+.item {
+    display: block;
+    width: 65px;
+}
+.item:hover {
+    background: #00b9d6;
+    cursor: pointer;
+}
+
+#chatContainer {
+    position: absolute;
+    bottom: 50px;
+    left: 130px;
+}
+#chatOutput {
+
+    height: 75px;
+}
+.chat-contain {
+    opacity: 0.4;
+    width: 300px;
+    display: block;
+}
+
+#message {
+    position: absolute;
+    top:50%;
+    left: 50%;
+    width: 200px;
+    height: 100px;
+    margin-left: -100px;
+    margin-top: -70px;
+    display: none;
+    font-size: 1.8em;
+    color: #FF0505;
+}
+#help {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    width: 300px;
+    height: 220px;
+    margin-right: -150px;
+    margin-top: -150px;
+    color: #FFF;
+    font-size: .9em;
+    line-height: 1.2em;
+    background: rgba(100, 100, 100, 0.4);
+}

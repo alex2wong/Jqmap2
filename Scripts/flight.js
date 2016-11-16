@@ -1,3 +1,4 @@
+// require('./drone.js');
 
 // start speed generally about 0.5rad/h. speed range(0, 2)
 var direction = 0, manual = false, speed = 0.01, locking = true;
@@ -309,10 +310,17 @@ function setPosition() {
     // update other drones status.
     updateDrones();
     map.getSource('drone').setData(featureCol);
+    if (miniMap && miniMap.getSource("drone") && featureCol){
+        miniMap.getSource("drone").setData(featureCol);
+        miniMap.getSource("myDrone").setData(point);
+    }
     // map.setLayoutProperty('drone', 'icon-rotate', current_rotate);
 
     
     if (window.locking) {
+        if (miniMap) {
+            miniMap.setCenter(point.coordinates);
+        }
         map.setCenter(point.coordinates);
         // console.warn('calc current_rotate in deg: ' + current_rotate, " cur_drone_direction: "+ direction);
     }
@@ -355,6 +363,7 @@ function updateDrones() {
 }
 
 mapboxgl.accessToken = false;
+var miniMap = null;
 var map = new mapboxgl.Map({
     container: 'map',
     // style: 'mapbox://styles/mapbox/light-v9',
