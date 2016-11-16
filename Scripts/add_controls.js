@@ -81,24 +81,24 @@ miniMap.on('load', function() {
     })
     // var droneSource = map.getSource('drone');
     miniMap.addLayer({
-        'id': 'drone-icon',
+        'id': 'drones',
         'type': 'circle',
         'source': 'drone',
         'paint': {
             "circle-radius": 4,
             "circle-color": "#fff",
-            "circle-opacity": 0.4
+            "circle-opacity": 0.7
         }
     });
 
     miniMap.addLayer({
-        'id': 'drone-icon',
+        'id': 'drone',
         'type': 'circle',
         'source': 'myDrone',
         'paint': {
-            "circle-radius": 6,
+            "circle-radius": 5,
             "circle-color": "#f00",
-            "circle-opacity": 0.6
+            "circle-opacity": 0.8
         }
     });
     
