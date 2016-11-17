@@ -18,7 +18,7 @@ is more preferred.
 Currently <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> is applied to build A totally new flightgame, with pitch, bearing in viewport and webgl render.
 
 Game ScreenShot:
-![flight_screenshot](https://github.com/alex2wong/Jqmap2/blob/master/Asset/flight_screenshot.png?raw=true)
+![flight_screenshot](https://github.com/alex2wong/Jqmap2/blob/master/Asset/flight_screenshot.jpg?raw=true)
 
 ### **Demos** for you:
 <a href="http://alex2wong.github.io/Jqmap2/"> Mobile web map </a>, the JqueryMobile and Openlayer2 webApp.
@@ -29,5 +29,5 @@ Game ScreenShot:
 - optimize touch events to promote mobile performance
 - display other player's fire action and sync Robot Status to all client, not emit to client speratedly anymore.
 - optimize calculation in fire animation. promote game influence.(completed!)
-- add mini map to navigate enemy drone.
+- add mini map to navigate enemy drone(completed).
 
