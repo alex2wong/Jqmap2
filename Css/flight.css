@@ -170,15 +170,19 @@ body { margin:0; padding:0;
 
 #message {
     position: absolute;
+    padding:20px;
     top:50%;
     left: 50%;
     width: 200px;
     height: 100px;
     margin-left: -100px;
     margin-top: -70px;
-    display: none;
-    font-size: 1.8em;
-    color: #FF0505;
+    display: block;
+    font-size: 1.4em;
+    color: #FFF;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.4);
+    box-shadow: 2px 3px 2px rgba(0,0,0,.2);
 }
 #help {
     position: absolute;
