@@ -424,8 +424,8 @@ function turnRight() {
 }
 
 function accelerate(e) {
-    // limit the max speed to 0.2 ╭(╯^╰)╮!
-    speed = Math.min(speed + 0.01, 1.2/map.getZoom());
+    // limit the max speed to 2.8 ╭(╯^╰)╮!
+    speed = Math.min(speed + 0.01, 2.8/map.getZoom());
         manual = true;
         e.preventDefault();
 }
