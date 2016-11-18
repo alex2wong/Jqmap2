@@ -14,7 +14,7 @@ is more preferred.
 - 4 -> mapbox load offline tiles.
 - 5 -> mapbox animate positions like slideshow.
 
-## Recently Update 2016/10/28:
+## Recently Update 2016/11/18:
 Currently <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> is applied to build A totally new flightgame, with pitch, bearing in viewport and webgl render.
 
 Game ScreenShot:

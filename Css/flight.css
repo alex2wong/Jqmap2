@@ -103,13 +103,13 @@ body { margin:0; padding:0;
 #github {
     position: absolute;
     top: 10px;
-    right: 100px;
+    right: 10px;
     width: 70px;
     text-decoration: none;
 }
 #help-btn {
     position: absolute;            
-    top:10px;
+    top:50px;
     right:20px;
 }
 #connect {
@@ -144,13 +144,24 @@ body { margin:0; padding:0;
 
 #chatContainer {
     position: absolute;
-    bottom: 50px;
+    bottom: 60px;
     left: 130px;
+    color: #FFF;
 }
 #chatOutput {
-
     height: 75px;
 }
+#chatInput {
+    height:28px;
+    border-color: #bbb;
+    font-size: 14px;
+    border-radius: 2px;
+    /* -webkit-transition: box-shadow .4s; */
+}
+/*#chatInput:hover {
+    border:1px solid #56b4ef;
+    box-shadow: 0 1px 3px rgba(0,0,0,.5);
+}*/
 .chat-contain {
     opacity: 0.4;
     width: 300px;

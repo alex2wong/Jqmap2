@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset='utf-8' />
-    <title> 一休哥飞机大战 </title>
+    <title> Drone Battle by Alex </title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <link href='Css/mapbox-gl.css' rel='stylesheet' />
     <link href="Css/flight.css" rel="stylesheet" />
@@ -16,32 +16,32 @@
         <div class="control-btn" id="right"><div>D</div></div>
         <div class="control-btn" id="down"><div>S</div></div>
     </div>
-    <div class="btn" id="lockview"><span>解锁</span></div>
+    <div class="btn" id="lockview"><span>Unlock</span></div>
 </div>
 <div id="chatContainer">
     <textarea id="chatOutput" class="chat-contain" readonly></textarea>
-    <input type="text" id="chatInput" class="chat-contain" placeholder="输入聊天信息">
+    <input type="text" id="chatInput" class="chat-contain" placeholder="Input you message">
 </div>
 <div id="miniMap"></div>
-<div id="message" >击败了。胜败乃兵家常事，大侠请重新来过</div>
-<div id="status">未连接服务器</div>
-<div class="btn fire-btn" id="fire">开火</div>
+<div id="message" >Defeated, don't cry and come again</div>
+<div id="status">Not connected with server</div>
+<div class="btn fire-btn" id="fire">Fire</div>
 <a class="btn" id="github" href='https://github.com/alex2wong/Jqmap2'>ForkMe!</a>
-<div class="btn" id="help-btn">帮助</div>
-<div class="btn" id="connect">上线</div>
-<div class="btn" id="totalkill">战绩</div>
-<div class="diag" id="help">帮助
+<div class="btn" id="help-btn">Help</div>
+<!-- <div class="btn" id="connect">上线</div> -->
+<div class="btn" id="totalkill">Kills</div>
+<div class="diag" id="help">Game Help
     <div id="close" class="btn" style="float: right;"> X </div>
     <br><br>
-    WSAD&nbsp;&nbsp;&nbsp;控制飞机上下左右<br><br>
-    空格键&nbsp;&nbsp;&nbsp;控制开火，可连续按键开火<br><br>
-    解锁&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;解锁视角，可随意拖动缩放地图<br><br>
-    锁定&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;锁定视角，跟随飞机运行，可缩放地图<br><br>
-    鼠标右&nbsp;&nbsp;&nbsp;拖动可倾斜视角(webgl)<br><br>
-    滚轮&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;缩放地图视野，可查看敌情
+    WSAD&nbsp;&nbsp;&nbsp;->Control drone's movement<br><br>
+    Space&nbsp;&nbsp;&nbsp;&nbsp;->Fire<br><br>
+    Unlock&nbsp;&nbsp;&nbsp;&nbsp;->Unlock view and map is draggable<br><br>
+    Lock&nbsp;&nbsp;&nbsp;&nbsp;->Lock view to make drone center of viewport<br><br>
+    Drag with mouseRight&nbsp;&nbsp;->Tilt and rotate the view(webgl)<br><br>
+    Wheel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;->Zoom in or out the map scale
 </div>
 <div id="playerlist">
-&nbsp;玩家列表:<br>
+&nbsp;PlayerList:<br>
 </div>
 <audio src="http://m5.file.xiami.com/259/58259/71695147/1771959699_10559682_l.mp3?auth_key=6c6b471b73ad33a1cf5c9114cfed8bfd-1479438000-0-null" autoplay="true" loop="loop"></audio>
 <!-- src="Asset/bgm3.mp3" -->

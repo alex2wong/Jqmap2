@@ -38,7 +38,7 @@ var playerList = document.querySelector("#playerlist");
 var firingTime = 600;
 
 function randomName() {
-    return "玩家" + (Math.random()*10000).toFixed(0);
+    return "Player" + (Math.random()*10000).toFixed(0);
 }
 
 var socket;
@@ -50,10 +50,10 @@ try {
     // deploy to Server use 123.206.201.245 !important
     socket = io.connect("http://123.206.201.245:3002");
     socket.on('open', function(){
-        statusBar.innerText = "已经连上服务器..";
+        statusBar.innerText = "Connected to server..";
         var randName = randomName();
         while(!drone.name) {
-            var askName = prompt("来，取一个别致的名字", randName);
+            var askName = prompt("Name your drone with a special one", randName);
             if(askName && !findInDrones(askName)){
                 if (drone) {
                     drone.name = askName;
@@ -61,7 +61,7 @@ try {
             }
         }
         
-        // 定时上传本飞机实时状态，同步显示到其他客户端
+        // upload drone status to other client.
         window.setInterval(function() {
             socket.send(drone);
         }, 100);
@@ -71,9 +71,9 @@ try {
         var p = "";
         if(json.type === "welcome") {
             // welcome other client and render it in feautreCol
-            statusBar.innerText = "system@" + json.time + ': 歡迎， ' + json.text.name;            
+            statusBar.innerText = "system@" + json.time + ': welcom, ' + json.text.name;            
         } else if(json.type === "disconnect") {
-            statusBar.innerText = "system@" + json.time + ': 再見， ' + json.text;
+            statusBar.innerText = "system@" + json.time + ': bye, ' + json.text;
             delInDrones(json.text);
             delInFeatureCol(json.text);
         }
@@ -82,20 +82,20 @@ try {
     // update specific droneStatus.
     socket.on("message", function(json) {
         if (json.type === "welcome" && json.text.name) {
-            statusBar.innerText = "system@" + json.time + ': 歡迎，' + json.text.name;
+            statusBar.innerText = "system@" + json.time + ': welcom, ' + json.text.name;
         } else if(json.type === "disconnect" && json.text.name) {
-            statusBar.innerText = "system@" + json.time + ': 再見， ' + json.text;
+            statusBar.innerText = "system@" + json.time + ': bye, ' + json.text;
         } else if(json.type === "defeat") {
             statusBar.innerText = "system@" + json.time + ": " + json.author +
                 "defeated " + json.text.name;
             // if myDrone defeated. reset the DroneStatus
             if (json.text.name == drone.name) {
-                defeatedMsg.innerHTML = '你惨被 '+ json.author + " 爆菊!\n" + "真是皂滑弄人\n大侠请重新来过";
+                defeatedMsg.innerHTML = 'You are defeated by <span style="color:orange">'+ json.author + "</span> !\n" + "\n";
                 defeatedMsg.style.display = "block";
                 var curPlace = drone.point.coordinates.concat();
                 var bornPlace = [121.321,30.112];
                 locking = false;
-                lockViewBtn.innerHTML = "<span>锁定</span>";
+                lockViewBtn.innerHTML = "<span>Lock</span>";
                 speed = 0.001;
                 setTimeout(function() {
                     map.flyTo({
@@ -118,7 +118,7 @@ try {
             }
 
         } else if(json.type === "message" && json.text.name === "敌机") {
-            statusBar.innerText = "system@" + json.time + ': 发现敌机！' +
+            statusBar.innerText = "system@" + json.time + ': enemy found！' +
               json.text.coordinates[0] + ',' + json.text.coordinates[1];
             // new Drone()!!
             var robot = new Drone();
@@ -462,9 +462,9 @@ function fire(e) {
 // report current drones status every 1 seconds.
 function updateStatusBar() {
     var drone_number = drones.length -1;
-    statusBar.innerText = "system: 目前战场中有敌机"+ drone_number + "架";
+    statusBar.innerText = "system: "+ drone_number + " drones in battle field right now";
     // print player names in list
-    playerList.innerHTML = "&nbsp;玩家列表:<br>";
+    playerList.innerHTML = "&nbsp;PlayerList:<br>";
     drones.forEach(function(thisDrone){
         if (thisDrone.name != "敌机") {
             playerList.innerHTML += "<a class='item'>" + thisDrone.name + "</a>";
@@ -488,7 +488,7 @@ function testCrash(coordinates) {
             // if distance less than the Volume of drone, Damage it!
             if (distance < volume ) {
                 damagedIndex = index;
-                statusBar.innerText = "system: 厉害！您打败了" + drone.properties.name;
+                statusBar.innerText = "system: Great！You defeat " + drone.properties.name;
             }
         }
         index += 1;
@@ -498,7 +498,7 @@ function testCrash(coordinates) {
         console.warn('ready to remove damaged drone with index: '+ damagedIndex +
             "current zoom "+ zoom +', crash tolerance in Rad: '+ volume);
         totalKill += 1;
-        statsBar.innerText = "击" + totalKill + "架";
+        statsBar.innerText = "Kill " + totalKill;
 
         // try to send damageDrone info to server.
         var damagedFeature = featureCol.features[damagedIndex];
@@ -810,10 +810,10 @@ var lockViewBtn = document.querySelector("#lockview");
 lockViewBtn.addEventListener('click', function(){
     if (window.locking) {
         window.locking = false;
-        this.innerHTML = "<span>锁定</span>";
+        this.innerHTML = "<span>Lock</span>";
     } else {
         window.locking = true;
-        this.innerHTML = "<span>解锁</span>";
+        this.innerHTML = "<span>Unlock</span>";
     }
 }, false);
 
