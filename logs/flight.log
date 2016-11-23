@@ -1,0 +1,14 @@
+[2016-11-23 11:02:57.716] [INFO] normal - Express server listening on port 3002
+[2016-11-23 11:02:57.789] [INFO] normal - One client connected..
+[2016-11-23 11:02:57.794] [INFO] normal - One client connected..
+[2016-11-23 11:02:57.807] [INFO] normal - 谁啊 login
+[2016-11-23 11:02:57.812] [INFO] normal - 一休哥 login
+[2016-11-23 11:03:19.528] [INFO] normal - 谁啊 say: 说啥呢
+[2016-11-23 11:03:21.668] [INFO] normal - 谁啊 say: 你妹啊
+[2016-11-23 11:03:22.972] [INFO] normal - 谁啊 say: 老妹儿
+[2016-11-23 11:03:30.812] [INFO] normal - 一休哥 say: 你谁啊！！
+[2016-11-23 11:03:38.380] [INFO] normal - 一休哥 say: 打你丫的
+[2016-11-23 11:03:55.764] [INFO] normal - 一休哥 say: 干！！
+[2016-11-23 11:04:17.905] [WARN] normal - 谁啊 disconnect
+[2016-11-23 11:04:18.042] [INFO] normal - One client connected..
+[2016-11-23 11:04:22.617] [INFO] normal - 我是谁 login

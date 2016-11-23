@@ -9,7 +9,8 @@ var express = require('express'),
   path = require('path'),
   app = express(),
   server = require('http').createServer(app),
-  io = require('socket.io').listen(server);
+  io = require('socket.io').listen(server),
+  log4js = require('log4js');
 
 
 app.set('port', process.env.PORT || 3002);
@@ -30,13 +31,31 @@ app.get('/flight', function(req, res) {
 });
 
 io.set('log level', 1);
+// config the back-end log.
+log4js.configure({
+  appenders: [
+    {type: 'console'},
+    {
+      type: 'file',
+      filename: 'logs/flight.log',
+      maxLogSize: 1024,
+      backups: 3,
+      category: 'normal'  
+    }
+  ],
+  replaceConsole: true
+});
+var logger = log4js.getLogger('normal');
+logger.setLevel("INFO");
+
+app.use(log4js.connectLogger(logger, {level: log4js.levels.INFO}));
 
 // clients Array. store realtime status of all drones.
 var clients = [];
 
 // register WebSocket connect listener, each connection has one socket.
 io.on('connection', function(socket) {
-  console.log('One client connected..');
+  logger.info('One client connected..');
   socket.emit('open');
 
   // init client drone obj for each connection !!
@@ -73,7 +92,7 @@ io.on('connection', function(socket) {
       obj['text'] = client;
       obj['author'] = 'System';
       obj['type'] = 'welcome';
-      console.log(client.name + ' login');
+      logger.info(client.name + ' login');
 
       socket.emit('system', obj);
       // broadcast the welcome from system.
@@ -91,7 +110,7 @@ io.on('connection', function(socket) {
       obj['author'] = 'System';
       obj['type'] = 'message';
       if (client.message) {
-        console.log(client.name + ' say: ' + client.message);
+        logger.info(client.name + ' say: ' + client.message);
       }
 
 
@@ -107,7 +126,7 @@ io.on('connection', function(socket) {
       obj['text'] = droneStatus;
       obj['author'] = client.name;
       obj['type'] = 'defeat';
-      console.warn(client.name + ' defeated ' + droneStatus.name);
+      logger.warn(client.name + ' defeated ' + droneStatus.name);
       socket.broadcast.emit('message', obj);
     }
 
@@ -142,13 +161,13 @@ io.on('connection', function(socket) {
     // 广播用户已退出
     socket.broadcast.emit('system', obj);
     clearInterval(timer1);
-    console.log(client.name + 'Disconnect');
+    logger.warn(client.name + ' disconnect');
   });
 
 });
 
 server.listen(app.get('port'), function() {
-  console.log("Express server listening on port " + app.get('port'));
+  logger.info("Express server listening on port " + app.get('port'));
 });
 
 // 随机生成坐标点，模拟实时坐标数据
