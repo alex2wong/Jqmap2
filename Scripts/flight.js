@@ -23,7 +23,9 @@ var featureCol = {
               "type": "Feature",
               "geometry": point,
               "properties": {
-                "name": drone.name
+                "name": drone.name,
+                "gradius": 22,
+                "gopacity": 0.5
               }
           }]
       };
@@ -33,6 +35,8 @@ var statusBar = document.querySelector('#status');
 var statsBar = document.querySelector('#totalkill');
 var defeatedMsg = document.querySelector("#message");
 var playerList = document.querySelector("#playerlist");
+var audio = document.querySelector("#fireBgm");
+var defeatedAudio = document.querySelector("#crashBgm");
 
 // time for bullet fly.
 var firingTime = 600;
@@ -92,6 +96,7 @@ try {
             if (json.text.name == drone.name) {
                 defeatedMsg.innerHTML = 'You are defeated by <span style="color:orange">'+ json.author + "</span> !\n" + "\n";
                 defeatedMsg.style.display = "block";
+                defeatedAudio.src = "Asset/crash.mp3";
                 var curPlace = drone.point.coordinates.concat();
                 var bornPlace = [121.321,30.112];
                 locking = false;
@@ -104,14 +109,15 @@ try {
                         zoom: 10,
                         pitch: 60
                     });
-                }, 1000);
+                    drone.point.coordinates = bornPlace;
+                    drone.life = true;
+                }, 1500);
                 
                 setTimeout(function(){
                     defeatedMsg.style.display = "none";
                 }, 4500);
                 // fly2position(curPlace, bornPlace);
-                drone.point.coordinates = bornPlace;
-                drone.life = true;
+                
             } else {
                 delInDrones(json.text.name);
                 delInFeatureCol(json.text.name);
@@ -136,7 +142,9 @@ try {
                 "geometry": point,
                 "properties": {
                     "name" : robot.name,
-                    "direction": robot.direction
+                    "direction": robot.direction,
+                    "gradius": 18,
+                    "gopacity": 0.4
                 }
             };
             featureCol.features.push(feature);
@@ -206,7 +214,9 @@ try {
                     "geometry": tmpdrone.point,
                     "properties": {
                         "name" : tmpdrone.name,
-                        "direction": tmpdrone.direction
+                        "direction": tmpdrone.direction,
+                        "gradius": 18,
+                        "gopacity": 0.4
                     }
                 };
                 featureCol.features.push(feature);
@@ -423,26 +433,30 @@ function turnRight() {
     // });
 }
 
-function accelerate(e) {
+function accelerate() {
     // limit the max speed to 2.8 ╭(╯^╰)╮!
     speed = Math.min(speed + 0.01, 2.8/map.getZoom());
         manual = true;
-        e.preventDefault();
+        if (arguments[0]) {
+            arguments[0].preventDefault();
+        }
 }
 
-function brake(e) {
+function brake() {
     speed = Math.max(speed - 0.01, 0);
         manual = true;
-        e.preventDefault();
+        if (arguments[0]) {
+            arguments[0].preventDefault();
+        }
 }
 
-function fire(e) {
+function fire() {
+    console.warn('Firing!');
     if (drone.firing) {
         console.warn('Master, do not rush..slow down');
         return;
     }
-    pointCopy = {"type": "Point", 'coordinates': [0, 0]};
-    var audio = document.querySelector("#fireBgm");
+    pointCopy = {"type": "Point", 'coordinates': [0, 0]};    
     audio.src = "Asset/fire.mp3";
     // firing, create bullet for drone.
     drone.fire();
@@ -454,7 +468,9 @@ function fire(e) {
     drone.firing = true;
     // upload firestatus..
     socket.send(drone);
-    e.preventDefault();
+    if (arguments[0]) {
+        arguments[0].preventDefault();
+    }
 }
 
 
@@ -481,14 +497,19 @@ function testCrash(coordinates) {
     // all other drones! calc distance between bulvar and drones..
     // here we add zoom into calculation as a ratio.
     var zoom = map.getZoom();
-    var distance, volume = 0.2/zoom, index = 0, damagedIndex = 0, hitted = false;
+    var distance, volume = 0.15/zoom, index = 0, damagedIndex = 0, hitted = false;
     featureCol.features.forEach(function(drone) {
         if (index > 0){
             distance = calcDist(coordinates, drone.geometry.coordinates);
             // if distance less than the Volume of drone, Damage it!
             if (distance < volume ) {
                 damagedIndex = index;
-                statusBar.innerText = "system: Great！You defeat " + drone.properties.name;
+                defeatedAudio.src = "Asset/crash.mp3";
+                // defeatedMsg.innerHTML = 'You defeated <span style="color:orange">'+ drone.properties.name + "</span> !\n" + "\n";
+                // defeatedMsg.style.display = "block";
+                // setTimeout(function() {
+                //     defeatedMsg.style.display = 'none';
+                // }, 2500);
             }
         }
         index += 1;
@@ -500,7 +521,8 @@ function testCrash(coordinates) {
         totalKill += 1;
         statsBar.innerText = "Kill " + totalKill;
 
-        // try to send damageDrone info to server.
+        // try to send damageDrone info to server. 
+        // shallowCopy ?? explode on damagedFeature directly
         var damagedFeature = featureCol.features[damagedIndex];
         var damagedDrone = new Drone();
         damagedDrone.name = damagedFeature.properties.name;
@@ -509,8 +531,14 @@ function testCrash(coordinates) {
         if (socket) {
             socket.send(damagedDrone);
         }
-        delInDrones(damagedDrone.name);
-        featureCol.features.splice(damagedIndex, 1);
+
+        // explode effect on damagedFeature.
+        explode(damagedFeature, 1500);
+        
+        setTimeout(function(){
+            delInDrones(damagedDrone.name);
+            featureCol.features.splice(damagedIndex, 1);
+        }, 1500);
 
         hitted = true;
     }
@@ -528,7 +556,7 @@ var particles = {
 };
 var bulletSource;
 // global unique bulletTimer
-var bulletTimer = setInterval(renderBullet, 20);
+var bulletTimer = setInterval(renderBullet, 30);
 
 // common function for render myDrone and other client's fire
 function renderBullet() {
@@ -598,7 +626,29 @@ document.body.addEventListener('keydown', function(e) {
     // console.log(e.which);
 })
 
-
+// Animate the glow color and radius before disappear..
+function explode(droneObj, duration) {
+    console.error("Exploding!")
+    if (droneObj.properties.gradius > 18) return;
+    var count = 0, explodeInter, steps = 40, inter = parseInt(duration/steps);    
+    if (droneObj.properties && droneObj.properties.gradius && droneObj.properties.gopacity) {
+        explodeInter = setInterval(function() {
+            // enlarge radius and darker color.
+            // droneObj.properties.gcolor = droneObj.properties.gcolor
+            if (count > steps) {
+                droneObj.properties.gradius = 18;
+                droneObj.properties.gopacity = 0.5;
+                clearInterval(explodeInter);
+            } else {
+                // console.error("Explode effect.. radius: " + droneObj.properties.gradius);
+                droneObj.properties.gradius += 1;
+                droneObj.properties.gopacity -= 0.01;
+                count += 1;
+            }
+        }, inter);
+    }
+    return droneObj;
+}
 
 // sprite contain json and png.
 map.on('load', function() {
@@ -620,9 +670,15 @@ map.on('load', function() {
         'type': 'circle',
         'source': 'drone',
         'paint': {
-            "circle-radius": 18,
+            "circle-radius": {
+                "property": "gradius",
+                "type": "identity"
+            },
             "circle-color": "#fff",
-            "circle-opacity": 0.5
+            "circle-opacity": {
+                "property": "gopacity",
+                "type": "identity"
+            }
         }
     })
     map.addLayer({
@@ -844,5 +900,32 @@ controller.addEventListener("click", function(evt){
 var firebtn = document.querySelector("#fire");
 firebtn.addEventListener('click', function(evt) {
     fire(evt);
+})
+
+// for Mobile device..
+controller.addEventListener("touchstart", function(evt){
+    var btn = evt.target||evt.srcElement;
+    var func;
+    if (btn.id){
+        func = strategy[btn.id];
+    } else {
+        func = strategy[btn.innerText];
+    }
+    var touchInter = setInterval(func, 100);
+    controller.addEventListener("touchend", function(){
+        clearInterval(touchInter);
+    });
+    
+}, false);
+
+firebtn.addEventListener('touchstart', function(evt) {
+    try {
+        var touchInter = setInterval(fire, 500);
+        firebtn.addEventListener('touchend', function(){
+            clearInterval(touchInter);
+        });
+    } catch(e) {
+        console.error(e.message);
+    }
 })
 
