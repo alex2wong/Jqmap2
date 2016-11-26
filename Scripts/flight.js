@@ -451,12 +451,10 @@ function brake() {
 }
 
 function fire() {
-    console.warn('Firing!');
+    // console.warn('Firing!');
     if (drone.firing) {
-        console.warn('Master, do not rush..slow down');
         return;
-    }
-    pointCopy = {"type": "Point", 'coordinates': [0, 0]};    
+    }    
     audio.src = "Asset/fire.mp3";
     // firing, create bullet for drone.
     drone.fire();
@@ -555,12 +553,12 @@ var particles = {
     'coordinates': []
 };
 var bulletSource;
-// global unique bulletTimer
+// global unique bulletTimer, fps 1000/30.. about 33.3 fps
 var bulletTimer = setInterval(renderBullet, 30);
 
 // common function for render myDrone and other client's fire
 function renderBullet() {
-    var zoom = map.getZoom(), steplength = 0.01
+    var zoom = map.getZoom(), steplength = 0.02
     particles.coordinates = [];
     // if drone is firing, it's bullet coordiantes be calculated and rendered.
     for (var j = 0; j < drones.length; j++) {
@@ -574,6 +572,10 @@ function renderBullet() {
             // calculate MyDrone if it's bullet hit any enemy
             if (!hitted && drone.name && drones[j].name == drone.name){
                 hitted = testCrash(real_point.coordinates);
+                if (hitted) {
+                    drones[j].firing = false;
+                    drones[j].bullet = null;
+                }
             }
             particles.coordinates.push(real_point.coordinates);
             for (var i = 0; i < 9; i++) {
