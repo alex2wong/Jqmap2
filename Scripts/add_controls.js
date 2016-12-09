@@ -23,6 +23,10 @@ var helpBtn = document.querySelector("#help-btn");
 var helpDiv = document.querySelector("#help");
 var helpClose = document.querySelector("#close");
 
+var displayMini = false;
+var miniBtn = document.querySelector("#miniBtn");
+var miniDiv = document.querySelector("#miniMap");
+
 // close help
 helpClose.addEventListener("click", function(){
     helpDiv.style.display = "none";
@@ -40,6 +44,16 @@ helpBtn.addEventListener("click", function() {
     }
 })
 
+miniBtn.addEventListener("click", function() {
+    if (displayMini) {
+        displayMini = !displayMini;
+        // hide the miniMap div
+        miniDiv.style.display = "none";
+    } else {
+        displayMini = !displayMini;
+        miniDiv.style.display = "block";
+    }
+});
 
 miniMap = new mapboxgl.Map({
     container: 'miniMap',
