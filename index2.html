@@ -2,58 +2,26 @@
 <html>
 <head>
     <meta charset='utf-8' />
-    <title></title>
+    <title> First View Flight </title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.css' rel='stylesheet' />
-    <style>
-        body { margin:0; padding:0; }
-        #map { position:absolute; top:0; bottom:0; width:100%; }
-    </style>
+    <link rel="stylesheet" type="text/css" href="Css/index2.css">
 </head>
 <body>
-
 <div id='map'></div>
-<script>
-mapboxgl.accessToken = 'pk.eyJ1IjoiaHVhbmd5aXhpdSIsImEiOiI2WjVWR1hFIn0.1P90Q-tkbHS38BvnrhTI6w';
-var map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/light-v9',
-    zoom: 12,
-    center: [-122.447303, 37.753574]
-});
-
-map.on('load', function () {
-    map.addSource('population', {
-        type: 'vector',
-        url: 'mapbox://examples.8fgz4egr'
-    });
-    map.addLayer({
-        'id': 'population',
-        'type': 'circle',
-        'source': 'population',
-        'source-layer': 'sf2010',
-        'paint': {
-            // make circles larger as the user zooms from z12 to z22
-            'circle-radius': {
-                'base': 1.75,
-                'stops': [[12, 2], [22, 180]]
-            },
-            // color circles by ethnicity, using data-driven styles
-            'circle-color': {
-                property: 'ethnicity',
-                type: 'categorical',
-                stops: [
-                    ['White', '#fbb03b'],
-                    ['Black', '#223b53'],
-                    ['Hispanic', '#e55e5e'],
-                    ['Asian', '#3bb2d0'],
-                    ['Other', '#ccc']]
-            }
-        }
-    });
-});
-</script>
-
+<div id="drone">
+    <img src="Asset/drone.png">
+</div>
+<div id="controller">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+</div>
+<div id="fire" class="btn">  </div>
+<audio src="Asset/pacific-rim.mp3" autoplay="true" loop="loop"></audio>
+<audio src="" id="crashBgm" autoplay="true"></audio>
 </body>
+<script src="Scripts/index2.js"></script>
 </html>

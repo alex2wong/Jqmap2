@@ -52,10 +52,37 @@ app.use(log4js.connectLogger(logger, {level: log4js.levels.INFO}));
 
 // clients Array. store realtime status of all drones.
 var clients = [];
+var sockets = [];
+var robots = [];
+
+// Emit a robot enemy every 12 seconds.
+timer1 = setInterval(function(){
+  var randomCoord =  randInfo();
+  var randomEnemy = {
+    name: '敌机',
+    direction: 0,
+    coordinates: randomCoord
+  }
+  var EnemyMsg = {
+    'author': 'System',
+    'type': 'message'
+  };
+  EnemyMsg['text'] = randomEnemy;
+  EnemyMsg['time'] = getTime();
+  if (sockets.length > 0) {
+    logger.info("Currently, connection number is: " + sockets.length);
+    robots.push(randomEnemy);  
+    sockets[0].sock.broadcast.emit('message', EnemyMsg);
+  }
+  // socket.emit('message', EnemyMsg);
+}, 12000);
 
 // register WebSocket connect listener, each connection has one socket.
 io.on('connection', function(socket) {
   logger.info('One client connected..');
+  sockets.push({
+    "sock": socket
+  });
   socket.emit('open');
 
   // init client drone obj for each connection !!
@@ -113,7 +140,6 @@ io.on('connection', function(socket) {
         logger.info(client.name + ' say: ' + client.message);
       }
 
-
       // // 返回消息（可以省略）
       // socket.emit('message', obj);
 
@@ -130,24 +156,7 @@ io.on('connection', function(socket) {
       socket.broadcast.emit('message', obj);
     }
 
-  });
-
-  // for each client connection, emit a robot enemy every 5 seconds.
-  timer1 = setInterval(function(){
-    var randomCoord =  randInfo();
-    var randomEnemy = {
-      name: '敌机',
-      direction: 0,
-      coordinates: randomCoord
-    }
-    var EnemyMsg = {
-      'author': 'System',
-      'type': 'message'
-    };
-    EnemyMsg['text'] = randomEnemy;
-    EnemyMsg['time'] = getTime();
-    socket.emit('message', EnemyMsg);
-  }, 12000);
+  });  
 
   socket.on('disconnect', function() {
     var obj = {

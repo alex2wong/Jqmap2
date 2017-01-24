@@ -8,7 +8,7 @@ body { margin:0; padding:0;
 #map { position:absolute; top:0; bottom:0; width:100%; }
 #miniMap {
     position: absolute; 
-    top:110px;
+    top: 125px;
     left: 10px;
     width: 150px;
     height: 100px;
@@ -37,6 +37,15 @@ body { margin:0; padding:0;
     background: #00b9d6;
     opacity: 1;
     transition: background, opacity .4s ease;
+}
+
+.miniBtn {
+    width: 30px;
+    height: 19px;
+    font-size: 0.6em;
+    position: absolute; 
+    top: 105px;
+    left: 10px;
 }
 
 .control-btn {
