@@ -44,16 +44,16 @@ helpBtn.addEventListener("click", function() {
     }
 })
 
-miniBtn.addEventListener("click", function() {
-    if (displayMini) {
-        displayMini = !displayMini;
-        // hide the miniMap div
-        miniDiv.style.display = "none";
-    } else {
-        displayMini = !displayMini;
-        miniDiv.style.display = "block";
-    }
-});
+// miniBtn.addEventListener("click", function() {
+//     if (displayMini) {
+//         displayMini = !displayMini;
+//         // hide the miniMap div
+//         miniDiv.style.display = "none";
+//     } else {
+//         displayMini = !displayMini;
+//         miniDiv.style.display = "block";
+//     }
+// });
 
 miniMap = new mapboxgl.Map({
     container: 'miniMap',
@@ -65,23 +65,22 @@ miniMap = new mapboxgl.Map({
             "custom-tms": {   
                 'type': 'raster',
                 'tiles': [
-                    // "http://127.0.0.1:8080/Tiles/{z}/{x}/{y}.png"
-                    // "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
                     "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                 ],
                 'tileSize': 256
-            }
+            },
         },
-        "layers": [{
-        'id': 'custom-tms',
-        'type': 'raster',
-        'source': 'custom-tms',
-        'paint': {}
-        }]
+        "layers": [
+            {
+                'id': 'custom-tms',
+                'type': 'raster',
+                'source': 'custom-tms',
+                'paint': {}
+            },
+        ]
     },
     zoom: 2,
-    center: [121.00, 31.0892]
+    // center: [121.00, 31.0892]
 });
 
 miniMap.on('load', function() {
