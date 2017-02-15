@@ -52,7 +52,7 @@ try {
     // 127.0.0.1
     // locally test.. 10.103.14.66
     // deploy to Server use 123.206.201.245 !important
-    socket = io.connect("http://127.0.0.1:3002");
+    socket = io.connect("http://123.206.201.245:3002");
     socket.on('open', function(){
         statusBar.innerText = "Connected to server..";
         var randName = randomName();
