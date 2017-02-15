@@ -179,6 +179,13 @@ server.listen(app.get('port'), function() {
   logger.info("Express server listening on port " + app.get('port'));
 });
 
+/**
+ * return random initial direction for Robot Drone. unit: rad.
+ */
+var randDirect = function() {
+  return Math.random() * 2 * Math.PI;
+}
+
 // 随机生成坐标点，模拟实时坐标数据
 var randInfo = function() {
   var lng = Math.random() * 2 + 119;
