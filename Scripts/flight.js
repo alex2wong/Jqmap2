@@ -37,6 +37,7 @@ var defeatedMsg = document.querySelector("#message");
 var playerList = document.querySelector("#playerlist");
 var audio = document.querySelector("#fireBgm");
 var defeatedAudio = document.querySelector("#crashBgm");
+var chatInput = document.querySelector("#chatInput");
 
 // time for bullet fly.
 var firingTime = 600;
@@ -106,7 +107,7 @@ try {
                     map.flyTo({
                         center: bornPlace,
                         bearing: 0,
-                        zoom: 10,
+                        zoom: 9,
                         pitch: 60
                     });
                     drone.point.coordinates = bornPlace;
@@ -331,7 +332,9 @@ function setPosition() {
         if (miniMap) {
             miniMap.setCenter(point.coordinates);
         }
-        map.setCenter(point.coordinates);
+        map.flyTo({
+                center: point.coordinates,
+            });
         // console.warn('calc current_rotate in deg: ' + current_rotate, " cur_drone_direction: "+ direction);
     }
 
@@ -431,7 +434,7 @@ var map = new mapboxgl.Map({
         'color':'white',
         'intensity':0.4
     },
-    maxZoom: 10,
+    maxZoom: 9,
     minZoom: 7,
     zoom: 9,
     center: [121.00, 31.0892]
@@ -493,17 +496,22 @@ function fire() {
     }
 }
 
-
-
 // report current drones status every 1 seconds.
 function updateStatusBar() {
-    var drone_number = drones.length -1;
+    var drone_number = drones.length - 1;
     statusBar.innerText = "system: "+ drone_number + " drones in battle field right now";
     // print player names in list
     playerList.innerHTML = "&nbsp;PlayerList:<br>";
     drones.forEach(function(thisDrone){
+        // Delegate the click listener to PlayerList DIV.
         if (thisDrone.name != "敌机") {
             playerList.innerHTML += "<a class='item'>" + thisDrone.name + "</a>";
+        }
+    });
+    playerList.addEventListener("click", function(evt){
+        var target = evt.target || evt.srcElement;
+        if (target.innerText) {
+            chatInput.value = "@" + target.innerText + "  " + chatInput.value;
         }
     });
 }
@@ -665,7 +673,7 @@ function explode(droneObj, duration) {
                 clearInterval(explodeInter);
             } else {
                 // console.error("Explode effect.. radius: " + droneObj.properties.gradius);
-                droneObj.properties.gradius += 1;
+                droneObj.properties.gradius += 2;
                 droneObj.properties.gopacity -= 0.01;
                 count += 1;
             }
@@ -898,6 +906,7 @@ lockViewBtn.addEventListener('click', function(){
     }
 }, false);
 
+// 策略对象池
 var strategy = {
     "up": accelerate,
     "down": brake,
@@ -913,10 +922,11 @@ var controller = document.querySelector("#controller");
 controller.addEventListener("click", function(evt){
     var btn = evt.target||evt.srcElement;
     var func;
+    // 根据点击的按钮不同，调用不同策略函数.
     if (btn.id){
         func = strategy[btn.id];
-    } else {
-        func = strategy[btn.innerText];
+    } else if (btn.parentElement.id) {        
+        func = strategy[btn.parentElement.id];
     }
     console.log(btn.id);
     func(evt);
@@ -936,7 +946,7 @@ controller.addEventListener("touchstart", function(evt){
     } else {
         func = strategy[btn.innerText];
     }
-    var touchInter = setInterval(func, 100);
+    var touchInter = setInterval(func, 50);
     controller.addEventListener("touchend", function(){
         clearInterval(touchInter);
     });

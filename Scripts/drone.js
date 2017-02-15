@@ -56,3 +56,10 @@ Drone.prototype.fire = function() {
     this.bullet = bullet;
 
 };
+
+/**
+ * autofire by robot drone.
+ */
+Drone.prototype.autofire = function () {
+
+}

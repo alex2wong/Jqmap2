@@ -26,6 +26,7 @@
     "express": "^4.14.0",
     "log4js": "^1.0.1",
     "logger": "0.0.1",
+    "node-uuid": "^1.4.7",
     "socket.io": "^1.5.1"
   },
   "devDependencies": {

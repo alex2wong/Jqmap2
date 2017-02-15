@@ -44,16 +44,18 @@ helpBtn.addEventListener("click", function() {
     }
 })
 
-// miniBtn.addEventListener("click", function() {
-//     if (displayMini) {
-//         displayMini = !displayMini;
-//         // hide the miniMap div
-//         miniDiv.style.display = "none";
-//     } else {
-//         displayMini = !displayMini;
-//         miniDiv.style.display = "block";
-//     }
-// });
+miniBtn.addEventListener("click", function() {
+    if (displayMini) {
+        displayMini = !displayMini;
+        // hide the miniMap div
+        miniBtn.style.left = "10px";
+        miniDiv.style.visibility = "hidden";
+    } else {
+        displayMini = !displayMini;
+        miniBtn.style.left = "133px";
+        miniDiv.style.visibility = "visible";
+    }
+});
 
 miniMap = new mapboxgl.Map({
     container: 'miniMap',
