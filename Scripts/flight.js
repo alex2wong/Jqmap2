@@ -29,7 +29,7 @@ var featureCol = {
               }
           }]
       };
-var enemyUid = 1;
+
 var totalKill = 0, bulletTimer;
 var statusBar = document.querySelector('#status');
 var statsBar = document.querySelector('#totalkill');
@@ -37,6 +37,7 @@ var defeatedMsg = document.querySelector("#message");
 var playerList = document.querySelector("#playerlist");
 var audio = document.querySelector("#fireBgm");
 var defeatedAudio = document.querySelector("#crashBgm");
+var chatInput = document.querySelector("#chatInput");
 
 // time for bullet fly.
 var firingTime = 600;
@@ -106,7 +107,7 @@ try {
                     map.flyTo({
                         center: bornPlace,
                         bearing: 0,
-                        zoom: 10,
+                        zoom: 9,
                         pitch: 60
                     });
                     drone.point.coordinates = bornPlace;
@@ -125,15 +126,14 @@ try {
 
         } else if(json.type === "message" && json.text.name === "敌机") {
             statusBar.innerText = "system@" + json.time + ': enemy found！' +
-              json.text.coordinates[0] + ',' + json.text.coordinates[1];
+              json.text.coordinates[0].toFixed(5) + ',' + json.text.coordinates[1].toFixed(5);
             // new Drone()!!
             var robot = new Drone();
             var point = {
                 "type":"Point",
                 "coordinates": json.text.coordinates
             };
-            enemyUid += 1;
-            robot.name = json.text.name + enemyUid;
+            robot.name = json.text.name;
             robot.direction = 0;
             robot.point = point;
             drones.push(robot);
@@ -332,7 +332,9 @@ function setPosition() {
         if (miniMap) {
             miniMap.setCenter(point.coordinates);
         }
-        map.setCenter(point.coordinates);
+        map.flyTo({
+                center: point.coordinates,
+            });
         // console.warn('calc current_rotate in deg: ' + current_rotate, " cur_drone_direction: "+ direction);
     }
 
@@ -354,7 +356,7 @@ function updateDrones() {
     for (var i = featureCol.features.length - 1; i > 0; i--) {
         var current_rotate = map.getBearing();
         var feature = featureCol.features[i];
-        if (feature.properties.name.indexOf("敌机") > -1) {
+        if (feature.properties.name === "敌机") {
             var enemySpeed = Math.random() * 0.05 + 0.01;
             // this is great!! which changes direction 5 times every 100 times updates !
             if (Math.random() > 0.95) {
@@ -392,27 +394,49 @@ var map = new mapboxgl.Map({
                     "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                 ],
                 'tileSize': 256
-            }
+            },
+            // "bgsource": {
+            //     "type": "image",
+            //     "url": "http://localhost:3002/Asset/bg.jpg",
+            //     "coordinates": [
+            //         [116.425, 35.437],
+            //         [126.425, 35.437],
+            //         [126.425, 25.437],
+            //         [116.425, 25.437]
+            //     ]
+            // }
         },
-        "layers": [{
-        'id': 'custom-tms',
-        'type': 'raster',
-        'source': 'custom-tms',
-        'paint': {}
-        }]
+        "layers": [
+            {
+                'id': 'custom-tms',
+                'type': 'raster',
+                'source': 'custom-tms',
+                'paint': {}
+            },
+            // {
+            //     "id": "bglayer",
+            //     "source": "bgsource",
+            //     "type": "raster",
+            //     "paint": {
+            //         // "raster-opacity": 0.85
+            //     }
+            // }
+        ]
     },
     "transition": {
         "duration": 2500,
         "delay": 0
     },
     // bearing: 45,
-    pitch: 60,
+    pitch: 30,
     light: {
         'anchor':'viewport',
         'color':'white',
         'intensity':0.4
     },
-    zoom: 10,
+    maxZoom: 9,
+    minZoom: 7,
+    zoom: 9,
     center: [121.00, 31.0892]
 });
 
@@ -472,17 +496,22 @@ function fire() {
     }
 }
 
-
-
 // report current drones status every 1 seconds.
 function updateStatusBar() {
-    var drone_number = drones.length -1;
+    var drone_number = drones.length - 1;
     statusBar.innerText = "system: "+ drone_number + " drones in battle field right now";
     // print player names in list
     playerList.innerHTML = "&nbsp;PlayerList:<br>";
     drones.forEach(function(thisDrone){
-        if (thisDrone.name.indexOf("敌机") !== 0) {
+        // Delegate the click listener to PlayerList DIV.
+        if (thisDrone.name != "敌机") {
             playerList.innerHTML += "<a class='item'>" + thisDrone.name + "</a>";
+        }
+    });
+    playerList.addEventListener("click", function(evt){
+        var target = evt.target || evt.srcElement;
+        if (target.innerText) {
+            chatInput.value = "@" + target.innerText + "  " + chatInput.value;
         }
     });
 }
@@ -516,7 +545,7 @@ function testCrash(coordinates) {
 
     if (damagedIndex > 0){
         console.warn('ready to remove damaged drone with index: '+ damagedIndex +
-            "current zoom "+ zoom +', crash tolerance in Rad: '+ volume);
+            ", current zoom "+ zoom +', crash tolerance in Rad: '+ volume);
         totalKill += 1;
         statsBar.innerText = "Kill " + totalKill;
 
@@ -532,13 +561,12 @@ function testCrash(coordinates) {
         }
 
         // explode effect on damagedFeature.
-        explode(damagedFeature, 1500);
+        explode(damagedFeature, 1000);
         
         setTimeout(function(){
-            // del droneObj in drones by name... incorrect for Robot.
             delInDrones(damagedDrone.name);
             featureCol.features.splice(damagedIndex, 1);
-        }, 1500);
+        }, 1000);
 
         hitted = true;
     }
@@ -574,9 +602,8 @@ function renderBullet() {
             // calculate MyDrone if it's bullet hit any enemy
             if (!hitted && drone.name && drones[j].name == drone.name){
                 hitted = testCrash(real_point.coordinates);
-                // if MyDrone has hitted enemy, continue render other drone ..
                 if (hitted) {
-                    drones[j].firing = false;
+                    // drones[j].firing = false;
                     drones[j].bullet = null;
                     continue;
                 }
@@ -634,7 +661,6 @@ document.body.addEventListener('keydown', function(e) {
 
 // Animate the glow color and radius before disappear..
 function explode(droneObj, duration) {
-    console.error("Exploding!")
     if (droneObj.properties.gradius > 18) return;
     var count = 0, explodeInter, steps = 40, inter = parseInt(duration/steps);    
     if (droneObj.properties && droneObj.properties.gradius && droneObj.properties.gopacity) {
@@ -647,7 +673,7 @@ function explode(droneObj, duration) {
                 clearInterval(explodeInter);
             } else {
                 // console.error("Explode effect.. radius: " + droneObj.properties.gradius);
-                droneObj.properties.gradius += 1;
+                droneObj.properties.gradius += 2;
                 droneObj.properties.gopacity -= 0.01;
                 count += 1;
             }
@@ -709,7 +735,8 @@ map.on('load', function() {
         },
         "layout": {
             "icon-image": "airport-15",
-            "icon-size": 1.2,
+            // "icon-image": 'drone',
+            "icon-size": 1.3,
             "icon-allow-overlap": true,
             "icon-ignore-placement": true,
             "icon-optional": true,
@@ -790,40 +817,40 @@ map.on('load', function() {
      * symbol layout.symbol-placement(point, line), symbol-spacing, icon-image, icon-rotate
      * icon-offset, text-field({title}), paint.icon-color, icon-halo-color,
      */
-    map.addLayer({
-        'id': 'location',
-        'type': 'symbol',
-        'source': 'locations',
-        'paint': {
-            "text-halo-width": 2,
-            "text-halo-blur": 1,
-            "text-halo-color": "rgba(255,255,255,0.4)",
-            "text-color": "#4466AA"
-        },
-        'layout': {
-            "icon-image": "{icon}-15",
-            "icon-size": 2,
-            "text-field": "{title}",
-            "text-font": ["Noto Sans Hans Light"],
-            "text-offset": [0, 0.6],
-            "text-anchor": "top"
-        }
-    });
+    // map.addLayer({
+    //     'id': 'location',
+    //     'type': 'symbol',
+    //     'source': 'locations',
+    //     'paint': {
+    //         "text-halo-width": 2,
+    //         "text-halo-blur": 1,
+    //         "text-halo-color": "rgba(255,255,255,0.4)",
+    //         "text-color": "#4466AA"
+    //     },
+    //     'layout': {
+    //         // "icon-image": "{icon}-15",
+    //         "icon-size": 4,
+    //         "text-field": "{title}",
+    //         "text-font": ["Noto Sans Hans Light"],
+    //         "text-offset": [0, 0.6],
+    //         "text-anchor": "top"
+    //     }
+    // });
 
-    map.addLayer({
-        "id":'location-hover',
-        "type": "symbol",
-        'source': 'locations',
-        'layout':{
-            "text-field": "{title}",
-            // Noto Sans Hans Light, Open Sans Regular
-            "text-font": ["Noto Sans Hans Light"],
-            "text-offset": [0.2, 0.8],
-            "text-anchor": "top"
-        },
-        'paint': {},
-        "filter": ["==", "title", ""]
-    });
+    // map.addLayer({
+    //     "id":'location-hover',
+    //     "type": "symbol",
+    //     'source': 'locations',
+    //     'layout':{
+    //         "text-field": "{title}",
+    //         // Noto Sans Hans Light, Open Sans Regular
+    //         "text-font": ["Noto Sans Hans Light"],
+    //         "text-offset": [0.2, 0.8],
+    //         "text-anchor": "top"
+    //     },
+    //     'paint': {},
+    //     "filter": ["==", "title", ""]
+    // });
 
     // map.addSource('population', {
     //     type: 'vector',
@@ -854,14 +881,14 @@ map.on('load', function() {
     //     }
     // });
 
-    map.on("mousedown", function(e) {
-        var features = map.queryRenderedFeatures(e.point, {layers: ["location"]});
-        if (features.length) {
-            map.setFilter("location-hover", ["==", "title", features[0].properties.title]);
-        } else {
-            map.setFilter("location-hover", ["==", "title", ""]);
-        }
-    });
+    // map.on("mousedown", function(e) {
+    //     var features = map.queryRenderedFeatures(e.point, {layers: ["drone"]});
+    //     if (features.length) {
+    //         map.setFilter("location-hover", ["==", "name", features[0].properties.title]);
+    //     } else {
+    //         map.setFilter("location-hover", ["==", "name", ""]);
+    //     }
+    // });
 
     // PosAnimation
 
@@ -879,6 +906,7 @@ lockViewBtn.addEventListener('click', function(){
     }
 }, false);
 
+// 策略对象池
 var strategy = {
     "up": accelerate,
     "down": brake,
@@ -894,10 +922,11 @@ var controller = document.querySelector("#controller");
 controller.addEventListener("click", function(evt){
     var btn = evt.target||evt.srcElement;
     var func;
+    // 根据点击的按钮不同，调用不同策略函数.
     if (btn.id){
         func = strategy[btn.id];
-    } else {
-        func = strategy[btn.innerText];
+    } else if (btn.parentElement.id) {        
+        func = strategy[btn.parentElement.id];
     }
     console.log(btn.id);
     func(evt);
@@ -917,7 +946,7 @@ controller.addEventListener("touchstart", function(evt){
     } else {
         func = strategy[btn.innerText];
     }
-    var touchInter = setInterval(func, 100);
+    var touchInter = setInterval(func, 50);
     controller.addEventListener("touchend", function(){
         clearInterval(touchInter);
     });

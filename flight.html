@@ -11,10 +11,10 @@
 <div id='map'></div>
 <div class="" id="controlPanel">
     <div id="controller">
-        <div class="control-btn" id="up"><div>W</div></div>
-        <div class="control-btn" id="left"><div>A</div></div>
-        <div class="control-btn" id="right"><div>D</div></div>
-        <div class="control-btn" id="down"><div>S</div></div>
+        <div class="control-btn" id="up"><div class="tri-up"></div></div>
+        <div class="control-btn" id="left"><div class="tri-left"></div></div>
+        <div class="control-btn" id="right"><div class="tri-right"></div></div>
+        <div class="control-btn" id="down"><div class="tri-down"></div></div>
     </div>
     <div class="btn" id="lockview"><span>Unlock</span></div>
 </div>
@@ -22,10 +22,14 @@
     <textarea id="chatOutput" class="chat-contain" readonly></textarea>
     <input type="text" id="chatInput" class="chat-contain" placeholder="Input you message">
 </div>
-<div id="miniMap"></div>
+<div id="nav_panel">
+<div id="miniMap"></div><div id="miniBtn" class="miniBtn btn">MAP</div>
+</div>
 <div id="message" >Defeated, don't cry and come again</div>
 <div id="status">Not connected with server</div>
-<div class="btn fire-btn" id="fire">Fire</div>
+<div class="btn fire-btn" id="fire">
+    <img src="./Asset/sprite@2x.png" class="fire-icon">
+</div>
 <a class="btn" id="github" href='https://github.com/alex2wong/Jqmap2'>ForkMe!</a>
 <div class="btn" id="help-btn">Help</div>
 <!-- <div class="btn" id="connect">上线</div> -->
@@ -48,7 +52,7 @@
 
 <audio src="" id="fireBgm" autoplay="true"></audio>
 <audio src="" id="crashBgm" autoplay="true"></audio>
-<script src="/socket.io/socket.io.js"></script>
+<script src="node_modules/socket.io-client/socket.io.js"></script> 
 <script src='Scripts/mapbox-gl.js'></script>
 <script src="Scripts/drone.js"></script>
 <script src="Scripts/flight.js"></script>
