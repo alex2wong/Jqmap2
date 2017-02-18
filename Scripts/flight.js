@@ -29,7 +29,7 @@ var featureCol = {
               }
           }]
       };
-
+var enemyUid = 1;
 var totalKill = 0, bulletTimer;
 var statusBar = document.querySelector('#status');
 var statsBar = document.querySelector('#totalkill');
@@ -132,7 +132,8 @@ try {
                 "type":"Point",
                 "coordinates": json.text.coordinates
             };
-            robot.name = json.text.name;
+            enemyUid += 1;
+            robot.name = json.text.name + enemyUid;
             robot.direction = 0;
             robot.point = point;
             drones.push(robot);
@@ -353,7 +354,7 @@ function updateDrones() {
     for (var i = featureCol.features.length - 1; i > 0; i--) {
         var current_rotate = map.getBearing();
         var feature = featureCol.features[i];
-        if (feature.properties.name === "敌机") {
+        if (feature.properties.name.indexOf("敌机") > -1) {
             var enemySpeed = Math.random() * 0.05 + 0.01;
             // this is great!! which changes direction 5 times every 100 times updates !
             if (Math.random() > 0.95) {
@@ -480,7 +481,7 @@ function updateStatusBar() {
     // print player names in list
     playerList.innerHTML = "&nbsp;PlayerList:<br>";
     drones.forEach(function(thisDrone){
-        if (thisDrone.name != "敌机") {
+        if (thisDrone.name.indexOf("敌机") !== 0) {
             playerList.innerHTML += "<a class='item'>" + thisDrone.name + "</a>";
         }
     });
@@ -534,6 +535,7 @@ function testCrash(coordinates) {
         explode(damagedFeature, 1500);
         
         setTimeout(function(){
+            // del droneObj in drones by name... incorrect for Robot.
             delInDrones(damagedDrone.name);
             featureCol.features.splice(damagedIndex, 1);
         }, 1500);
@@ -572,9 +574,11 @@ function renderBullet() {
             // calculate MyDrone if it's bullet hit any enemy
             if (!hitted && drone.name && drones[j].name == drone.name){
                 hitted = testCrash(real_point.coordinates);
+                // if MyDrone has hitted enemy, continue render other drone ..
                 if (hitted) {
                     drones[j].firing = false;
                     drones[j].bullet = null;
+                    continue;
                 }
             }
             particles.coordinates.push(real_point.coordinates);
