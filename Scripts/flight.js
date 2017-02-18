@@ -30,6 +30,7 @@ var featureCol = {
           }]
       };
 
+var chatPopUp = null, popUp = null;
 var totalKill = 0, bulletTimer;
 var statusBar = document.querySelector('#status');
 var statsBar = document.querySelector('#totalkill');
@@ -153,6 +154,18 @@ try {
             && json.text.message) {
             // display other's chat msg.
             if (chatOutput) {
+                var curDrone = findInDrones(json.text.name);
+                if (!curDrone) { return; }
+                if (curDrone.popup && curDrone.popup.remove) {
+                    curDrone.popup.remove();
+                }
+                var lnglat = json.text.coordinates;
+                lnglat[1] += 0.02;
+                curDrone.popup = new mapboxgl.Popup()
+                    .setLngLat(lnglat)
+                    .setHTML(json.text.message)
+                    .addTo(map);
+                
                 chatOutput.innerHTML += json.text.name + ": " + json.text.message + "\n";
             } else {
                 console.error("can't find chatOutput div");
@@ -229,6 +242,30 @@ catch(e) {
     console.log(e);
 }
 
+// popup chat message...
+function addPopup(msg, lnglat) {
+    if (1) {
+        if (chatPopUp && chatPopUp.remove) {
+            chatPopUp.remove();
+        }
+        lnglat[1] += 0.02;
+        setTimeout(function() {
+            chatPopUp = new mapboxgl.Popup()
+            .setLngLat(lnglat)
+            .setHTML(msg)
+            .addTo(map);
+            // pass PopUp to global var !
+        }, 100);
+    }
+}
+
+function updatePopUp(lnglat, other) {
+    if (chatPopUp) {
+        lnglat[1] += 0.02;
+        chatPopUp.setLngLat(lnglat);
+    }
+}
+
 function findInDrones(name) {
     var droneIndex = -1;
     for (var i = 0; i < drones.length; i++) {
@@ -272,6 +309,11 @@ function updateDrone(drone2Update, text) {
     drone2Update.direction = text.direction;
     drone2Update.firing = text.firing;
     drone2Update.life = text.life ? text.life: 0;
+    if (drone2Update.popup) {
+        var lnglat = text.coordinates.concat();
+        lnglat[1] += 0.02;
+        drone2Update.popup.setLngLat(lnglat);
+    }
 }
 
 // smoothly move viewport 2 born place.  not Finished .
@@ -343,6 +385,10 @@ function setPosition() {
     drone.speed = speed;
     drone.point = point;
     // console.log("drone direction: " + drone.direction);
+
+    // Update ChatPopup lnglat.
+    var lnglat = point.coordinates.concat();
+    updatePopUp(lnglat);
 }
 
 function easing(t) {
@@ -508,10 +554,14 @@ function updateStatusBar() {
             playerList.innerHTML += "<a class='item'>" + thisDrone.name + "</a>";
         }
     });
-    playerList.addEventListener("click", function(evt){
+    playerList.addEventListener("click", function(evt) {
         var target = evt.target || evt.srcElement;
         if (target.innerText) {
-            chatInput.value = "@" + target.innerText + "  " + chatInput.value;
+            if (chatInput.value.indexOf("@") > -1 && chatInput.value.split(":").length > 1) {
+                chatInput.value = "@" + target.innerText + ":" + chatInput.value.split(":")[1];
+            } else {
+                chatInput.value = "@" + target.innerText + ":" + chatInput.value;
+            }
         }
     });
 }
@@ -681,6 +731,20 @@ function explode(droneObj, duration) {
     }
     return droneObj;
 }
+
+map.on("click", function(e) {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    if (popUp) {
+        // popUp = null;
+    } else {
+        // popUp = new mapboxgl.Popup()
+        // .setLngLat(map.unproject(e.point))
+        // .setHTML("clicked here!")
+        // .addTo(map);
+    }    
+});
 
 // sprite contain json and png.
 map.on('load', function() {
