@@ -22,6 +22,10 @@ body { margin:0; padding:0;
     bottom: 8px;
     left: 50px;
 }
+.mapboxgl-popup {
+    max-width: 400px;
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}
 .btn {
     width: 60px;
     height: 30px;
@@ -166,7 +170,7 @@ body { margin:0; padding:0;
     text-decoration: none;
 }
 #help-btn {
-    position: absolute;            
+    position: absolute;
     top:50px;
     right:20px;
 }
@@ -245,9 +249,10 @@ body { margin:0; padding:0;
 }
 #help {
     position: absolute;
+    padding: 0 4px 0 10px;
     top: 50%;
     right: 50%;
-    width: 300px;
+    width: 320px;
     height: 300px;
     margin-right: -150px;
     margin-top: -150px;

@@ -368,7 +368,9 @@ function init() {
     };
     templayer = new OpenLayers.Layer.Vector("temp", { displayInLayerSwitcher: false });
     map.addLayer(templayer);
-    templayer.setZIndex(341)
+    templayer.setZIndex(341);
+
+
 
     gamelayer = new OpenLayers.Layer.MapboxLayer("游戏风格", "https://a.tiles.mapbox.com/v3/examples.bc17bb2a");
     voyagelayer = new OpenLayers.Layer.MapboxLayer("航海地图", "https://d.tiles.mapbox.com/v3/examples.a3cad6da");
@@ -381,7 +383,7 @@ function init() {
     map.addLayer(Bingmap);
     // map.addLayers([gamelayer,voyagelayer,HDlayer]);    
     map.addLayer(querylayer); 
-    map.addLayer(shiplayer);//目前用来绘制查询所得医院点
+    map.addLayer(shiplayer); // 解析GeoJSON，绘制上海到曼谷路线
 
 
 
@@ -774,18 +776,19 @@ function searchplace() {
         alert("不能为空");
         return;
     }
-    var param={"distric":"上海","type":"query","hospital":name};
-    $.get(
-        "query.ashx", 
-        param,
-        function (json) { 
-            templayer.removeAllFeatures();
-            shiplayer.removeAllFeatures();
-            DrawPoint(json);
-            $("#list").listview('refresh');
-        },
-        "json"
-    );
+
+    //var param={"distric":"上海","type":"query","hospital":name};
+    // $.get(
+    //     "query.ashx", 
+    //     param,
+    //     function (json) { 
+    //         templayer.removeAllFeatures();
+    //         shiplayer.removeAllFeatures();
+    //         DrawPoint(json);
+    //         $("#list").listview('refresh');
+    //     },
+    //     "json"
+    // );
     //传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)
     //jsonpCallback:"flightHandler",//自定义的jsonp回调函数名称，默认为jQuery自动生成的随机函数名，也可以写"?"，jQuery会自动为你处理数据
 

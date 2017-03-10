@@ -12,6 +12,9 @@ function handleChat(evt){
         drone.message = chatInput.value.trim();
         socket.send(drone);
 
+        // pass copy lnglat.
+        var lnglat = point.coordinates.concat();
+        addPopup(drone.message, lnglat);
         drone.message = null;
         chatInput.value = "";
     }

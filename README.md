@@ -15,14 +15,15 @@ Game ScreenShot:
 <br>
 <a href="http://alex2wong.github.io/Jqmap2/index2.html" > First view flight </a>, press WSAD for move
 
-## Todo List (Updated 2016/12/20):
+## Todo List (Updated 2017/2/18):
 - add websocket to support multiplayer (completed!)
 - optimize touch events to promote mobile performance (completed!)
 - display other player's fire action and sync Robot Status to all client, not emit to client speratedly anymore.
 - optimize calculation in fire animation. promote game influence.(completed!)
 - add mini map to navigate enemy drone(completed).
+- add chatPopup to map, clear to show who talks.(completed).
 - **!important**: refactor code structure based on es6. (inprogress..)
-- add AI-robot module to current robot flight which can move and fire at player.
+- **!important**: add AI-robot module to current robot flight which can move and fire at player.
 
 
 ## **Related Blog**

@@ -5,55 +5,276 @@
     <title></title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <script src='Scripts/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.css' rel='stylesheet' />
+    <link href='Css/mapbox-gl.css' rel='stylesheet' />
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
+        .coordinates {
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            padding:5px 10px;
+            margin: 0;
+            font-size: 11px;
+            line-height: 18px;
+            border-radius: 3px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
 <div id='map'></div>
+<pre id='coordinates' class='coordinates'></pre>
 <script>
-mapboxgl.accessToken = 'pk.eyJ1IjoiaHVhbmd5aXhpdSIsImEiOiI2WjVWR1hFIn0.1P90Q-tkbHS38BvnrhTI6w';
-var map = new mapboxgl.Map({
-    style: 'mapbox://styles/mapbox/light-v9',
-    center: [-74.0066, 40.7135],
-    zoom: 15,
-    pitch: 45,
-    bearing: -17.6,
-    container: 'map',
-    light: {
-        anchor: 'viewport',
-        color: 'white',
-        intensity: 0.8
-    }
-});
+mapboxgl.accessToken = false;
+// var map = new mapboxgl.Map({
+//     style: 'mapbox://styles/mapbox/light-v9',
+//     center: [-74.0066, 40.7135],
+//     zoom: 15,
+//     pitch: 45,
+//     bearing: -17.6,
+//     container: 'map',
+//     light: {
+//         anchor: 'viewport',
+//         color: 'white',
+//         intensity: 0.8
+//     }
+// });
 
 // the 'building' layer in the mapbox-streets vector source contains building-height
 // data from OpenStreetMap.
+// map.on('load', function() {
+//     map.addLayer({
+//         'id': '3d-buildings',
+//         'source': 'composite',
+//         'source-layer': 'building',
+//         'filter': ['==', 'extrude', 'true'],
+//         'type': 'fill',
+//         'minzoom': 15,
+//         'paint': {
+//             'fill-color': '#aaa',
+//             'fill-extrude-height': {
+//                 'type': 'identity',
+//                 'property': 'height'
+//             },
+//             'fill-extrude-base': {
+//                 'type': 'identity',
+//                 'property': 'min_height'
+//             },
+//             'fill-opacity': .9
+//         }
+//     });
+// });
+var geojson = {
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "properties": {
+                "message": "Foo",
+                "iconSize": [60, 60]
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -66.324462890625,
+                    -16.024695711685304
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "message": "Bar",
+                "iconSize": [50, 50]
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -61.2158203125,
+                    -15.97189158092897
+                ]
+            }
+        },
+        {
+            "type": "Feature",
+            "properties": {
+                "message": "Baz",
+                "iconSize": [40, 40]
+            },
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -63.29223632812499,
+                    -18.28151823530889
+                ]
+            }
+        }
+    ]
+};
+
+var map = new mapboxgl.Map({
+    container: 'map',
+    // style: 'mapbox://styles/mapbox/light-v9',
+    style: {
+        "version": 8,
+        "sprite": './Asset/sprite',
+        "glyphs": "./{fontstack}/{range}.pbf",
+        "sources": {
+            "custom-tms": {   
+                'type': 'raster',
+                'tiles': [
+                    // "http://127.0.0.1:8080/Tiles/{z}/{x}/{y}.png"
+                    // "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
+                    "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
+                ],
+                'tileSize': 256
+            },
+        },
+        "layers": [
+            {
+                'id': 'custom-tms',
+                'type': 'raster',
+                'source': 'custom-tms',
+                'paint': {}
+            },
+        ]
+    },
+    center: [-65.017, -16.457],
+    zoom: 5
+});
+
+// add markers to map
+geojson.features.forEach(function(marker) {
+    // create a DOM element for the marker
+    var el = document.createElement('div');
+    el.className = 'marker';
+    el.style.backgroundImage = 'url(http://127.0.0.1:8080/Assets/sprite.png)';
+    el.style.width = '40px';
+    el.style.height = '40px';
+
+    el.addEventListener('click', function() {
+        window.alert(marker.properties.message);
+    });
+
+    // add marker to map
+    new mapboxgl.Marker(el, {offset: [-marker.properties.iconSize[0] / 2, -marker.properties.iconSize[1] / 2]})
+        .setLngLat(marker.geometry.coordinates)
+        .addTo(map);
+});
+
+
+// Holds mousedown state for events. if this
+// flag is active, we move the point on `mousemove`.
+var isDragging;
+
+// Is the cursor over a point? if this
+// flag is active, we listen for a mousedown event.
+var isCursorOverPoint;
+
+var coordinates = document.getElementById('coordinates');
+
+var canvas = map.getCanvasContainer();
+
+var geojson = {
+    "type": "FeatureCollection",
+    "features": [{
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [-65.017, -16.457]
+        }
+    }]
+};
+
+function mouseDown() {
+    if (!isCursorOverPoint) return;
+
+    isDragging = true;
+
+    // Set a cursor indicator
+    canvas.style.cursor = 'grab';
+
+    // Mouse events
+    map.on('mousemove', onMove);
+    map.once('mouseup', onUp);
+}
+
+function onMove(e) {
+    if (!isDragging) return;
+    var coords = e.lngLat;
+
+    // Set a UI indicator for dragging.
+    canvas.style.cursor = 'grabbing';
+
+    // Update the Point feature in `geojson` coordinates
+    // and call setData to the source layer `point` on it.
+    geojson.features[0].geometry.coordinates = [coords.lng, coords.lat];
+    map.getSource('point').setData(geojson);
+}
+
+function onUp(e) {
+    if (!isDragging) return;
+    var coords = e.lngLat;
+
+    // Print the coordinates of where the point had
+    // finished being dragged to on the map.
+    coordinates.style.display = 'block';
+    coordinates.innerHTML = 'Longitude: ' + coords.lng + '<br />Latitude: ' + coords.lat;
+    canvas.style.cursor = '';
+    isDragging = false;
+
+    // Unbind mouse events
+    map.off('mousemove', onMove);
+}
+
 map.on('load', function() {
+
+    // Add a single point to the map
+    map.addSource('point', {
+        "type": "geojson",
+        "data": geojson
+    });
+
     map.addLayer({
-        'id': '3d-buildings',
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill',
-        'minzoom': 15,
-        'paint': {
-            'fill-color': '#aaa',
-            'fill-extrude-height': {
-                'type': 'identity',
-                'property': 'height'
-            },
-            'fill-extrude-base': {
-                'type': 'identity',
-                'property': 'min_height'
-            },
-            'fill-opacity': .9
+        "id": "point",
+        "type": "circle",
+        "source": "point",
+        "paint": {
+            "circle-radius": 10,
+            "circle-color": "#3887be"
         }
     });
+
+    // If a feature is found on map movement,
+    // set a flag to permit a mousedown events.
+    map.on('mousemove', function(e) {
+        var features = map.queryRenderedFeatures(e.point, { layers: ['point'] });
+
+        // Change point and cursor style as a UI indicator
+        // and set a flag to enable other mouse events.
+        if (features.length) {
+            map.setPaintProperty('point', 'circle-color', '#3bb2d0');
+            canvas.style.cursor = 'move';
+            isCursorOverPoint = true;
+            map.dragPan.disable();
+        } else {
+            map.setPaintProperty('point', 'circle-color', '#3887be');
+            canvas.style.cursor = '';
+            isCursorOverPoint = false;
+            map.dragPan.enable();
+        }
+    });
+
+    // Set `true` to dispatch the event before other functions call it. This
+    // is necessary for disabling the default map dragging behaviour.
+    map.on('mousedown', mouseDown, true);
 });
+
 </script>
 
 </body>
