@@ -2,6 +2,8 @@
  * author: alex2wong
  *  DRONE.JS
  */
+var MAXSPEED = 0.15;
+var ATTACKRANGE = 0.4;
 
 var Drone = function() {
     this.name;
@@ -54,12 +56,108 @@ Drone.prototype.fire = function() {
     bullet.spoint.coordinates[1] = this.point.coordinates[1];
     bullet.direction = this.direction;
     this.bullet = bullet;
-
 };
+
+Drone.prototype.turnLeft = function() {
+    this.direction -= 0.1;
+}
+
+Drone.prototype.turnRight = function() {
+    this.direction += 0.1;
+}
+
+Drone.prototype.accelerate = function() {
+    if (this.speed < MAXSPEED) {
+        this.speed += 0.01;
+    }
+}
+
+Drone.prototype.brake = function () {
+    if (this.speed > 0.01) {
+        this.speed -= 0.01;
+    }
+}
 
 /**
  * autofire by robot drone.
+ * ..robot drone need a input drone to fire at..
  */
-Drone.prototype.autofire = function () {
+Drone.prototype.attack = function (drone) {
+    // adjust direction then fire.
+    if (drone instanceof Drone) {
+        
+    }
+}
 
+/**
+ * searchNearest drone from this one.
+ * take care of timer .. cause this searchNearest cost too much performance.
+ */
+Drone.prototype.searchNearest = function (drones) {
+    var nDrone = null;
+    var minDist = 10000;
+    if (drones instanceof Array) {
+        // calc distance between this drone and Others.
+        for (var i = 0; i < drones.length; i ++) {
+            var curDist = calcDist(this.point.coordinates, drones[i].point.coordinates);
+            if (curDist < minDist && curDist !== 0) {
+                // nearest drone is found.
+                nDrone = drones[i];
+                minDist = curDist;
+            }
+        }
+    }
+    return nDrone;
+}
+
+/**
+ * adjust direction and follow at distance.
+ */
+Drone.prototype.follow = function (drone, targetDist) {
+    if (!targetDist) {
+        targetDist = ATTACKRANGE * 2;
+    }
+    if (drone instanceof Drone) {
+        var theta = calcSlope(this.point.coordinates, drone.point.coordinates);
+        var dist = calcDist(this.point.coordinates, drone.point.coordinates);
+        // then try to turn..
+        // if (!isNaN(theta) && theta > 0) {
+        //     this.turnLeft();
+        // } else if (!isNaN(theta)) {
+        //     this.turnRight();
+        // }
+        if (!isNaN(theta) && theta > (-2 * Math.PI)) {
+            this.direction = theta;
+            // accelerate following target
+            if (dist > targetDist && this.speed < MAXSPEED) {
+                this.speed += 0.01;
+            } else if (dist < targetDist && this.speed > 4 * drone.speed) {
+                // this.speed -= 0.01;
+            }
+            // console.log("Debug: following " + drone.name + " at degree " + theta*180/Math.PI.toFixed(1));
+        }        
+        return; 
+    }
+    console.warn("Input drone not instanceof Drone.");
+}
+
+/**
+ * calc the connectino line slope of two drones in RAD.
+ */
+function calcSlope(coordinates1, coordinates2) {
+    var theta = -10000;
+    if (coordinates1 instanceof Array && coordinates2 instanceof Array 
+        && coordinates1.length === 2 && coordinates2.length === 2) {
+        theta = Math.atan((coordinates2[0]-coordinates1[0])/(coordinates2[1] - coordinates1[1]));
+        // if targets at south of this drone.
+        if (coordinates2[1] < coordinates1[1]) {
+            theta += Math.PI;
+        }
+    }
+    return theta;
+}
+
+// source, target is coordinates. return distance in Rad.
+function calcDist(source, target) {
+    return  Math.sqrt(Math.pow((source[0] - target[0]), 2) + Math.pow((source[1] - target[1]), 2));
 }

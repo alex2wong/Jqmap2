@@ -4,6 +4,7 @@
 var direction = 0, manual = false, speed = 0.01, locking = true;
 // front-end drones pool.
 var drones = [];
+var enemyIndex = 0;
 
 var drone = new Drone();
 var point = {
@@ -69,7 +70,14 @@ try {
         // upload drone status to other client.
         window.setInterval(function() {
             socket.send(drone);
-        }, 100);
+            if (drones) {
+                var target = drone.searchNearest(drones);
+                if (target) {
+                    manual = false;
+                    drone.follow(target);
+                }
+            }
+        }, 200);
     });
 
     socket.on('system', function(json) {
@@ -102,7 +110,7 @@ try {
                 var bornPlace = [121.321,30.112];
                 locking = false;
                 lockViewBtn.innerHTML = "<span>Lock</span>";
-                speed = 0.001;
+                drone.speed = 0.001;
                 setTimeout(function() {
                     map.flyTo({
                         center: bornPlace,
@@ -133,10 +141,12 @@ try {
                 "type":"Point",
                 "coordinates": json.text.coordinates
             };
-            robot.name = json.text.name;
+            // robot name with index...to identity each robot enemy !!
+            robot.name = json.text.name + enemyIndex;
             robot.direction = 0;
             robot.point = point;
             drones.push(robot);
+            enemyIndex += 1;
             // 将敌机状态直接加入用于渲染的geojson对象
             var feature = {
                 "type": "feature",
@@ -239,12 +249,14 @@ function findInDrones(name) {
     }
 }
 
-// delete Drone in drones by name
+// delete Drone in drones by name.. implicit problem..what about "敌机"
 function delInDrones(name) {
     var droneIndex = -1;
     for (var i = 0; i < drones.length; i++) {
+        // if name "敌机"??
         if (drones[i].name == name) {
             droneIndex = i;
+            break;
         }
     }
     drones.splice(droneIndex, 1);
@@ -253,12 +265,12 @@ function delInDrones(name) {
 
 function delInFeatureCol(name) {
     var index = 0, damagedIndex =0;
-    featureCol.features.forEach(function(feature) {
-        if (feature.properties.name == name) {
+    for (var j = 0; j < featureCol.features.length; j ++) {
+        if (featureCol.features[i].properties.name == name) {
             damagedIndex = index;
+            break;
         }
-        index += 1;
-    });
+    }
     if (damagedIndex > 0) {
         // delete the damaged drone in this location!
         featureCol.features.splice(damagedIndex, 1);
@@ -308,10 +320,10 @@ function setPosition() {
         // direction += (Math.random() - 0.5) /5;
     }
     
-    point.coordinates[0] += speed * Math.sin(direction) / 100;
-    point.coordinates[1] += speed * Math.cos(direction) / 100;
+    point.coordinates[0] += drone.speed * Math.sin(drone.direction) / 100;
+    point.coordinates[1] += drone.speed * Math.cos(drone.direction) / 100;
 
-    current_rotate = (-current_rotate) + direction * (180 / Math.PI);
+    current_rotate = (-current_rotate) + drone.direction * (180 / Math.PI);
 
     if (featureCol.features.length>0){
         featureCol.features[0].geometry = point;
@@ -339,8 +351,6 @@ function setPosition() {
     }
 
     // sync Mydrone status..
-    drone.direction = direction;
-    drone.speed = speed;
     drone.point = point;
     // console.log("drone direction: " + drone.direction);
 }
@@ -356,7 +366,7 @@ function updateDrones() {
     for (var i = featureCol.features.length - 1; i > 0; i--) {
         var current_rotate = map.getBearing();
         var feature = featureCol.features[i];
-        if (feature.properties.name === "敌机") {
+        if (feature.properties.name.indexOf("敌机") > -1) {
             var enemySpeed = Math.random() * 0.05 + 0.01;
             // this is great!! which changes direction 5 times every 100 times updates !
             if (Math.random() > 0.95) {
@@ -441,7 +451,7 @@ var map = new mapboxgl.Map({
 });
 
 function turnLeft() {
-    direction -= 0.1;
+    drone.turnLeft();
     manual = true;
     // map.easeTo({
     //     bearing: map.getBearing() - 0.1 * (180 / Math.PI),
@@ -450,7 +460,7 @@ function turnLeft() {
 }
 
 function turnRight() {
-    direction += 0.1;
+    drone.turnRight();
     manual = true;
     // map.easeTo({
     //     bearing: map.getBearing() + 0.1 * (180 / Math.PI),
@@ -460,19 +470,20 @@ function turnRight() {
 
 function accelerate() {
     // limit the max speed to 2.8 ╭(╯^╰)╮!
-    speed = Math.min(speed + 0.01, 2.8/map.getZoom());
-        manual = true;
-        if (arguments[0]) {
-            arguments[0].preventDefault();
-        }
+    // speed = Math.min(speed + 0.01, 2.8/map.getZoom());
+    drone.accelerate();
+    manual = true;
+    if (arguments[0]) {
+        arguments[0].preventDefault();
+    }
 }
 
 function brake() {
-    speed = Math.max(speed - 0.01, 0);
-        manual = true;
-        if (arguments[0]) {
-            arguments[0].preventDefault();
-        }
+    drone.brake();
+    manual = true;
+    if (arguments[0]) {
+        arguments[0].preventDefault();
+    }
 }
 
 function fire() {
@@ -480,7 +491,7 @@ function fire() {
     if (drone.firing) {
         return;
     }    
-    audio.src = "Asset/fire.mp3";
+    // audio.src = "Asset/fire.mp3";
     // firing, create bullet for drone.
     drone.fire();
     setTimeout(function(){
@@ -504,7 +515,7 @@ function updateStatusBar() {
     playerList.innerHTML = "&nbsp;PlayerList:<br>";
     drones.forEach(function(thisDrone){
         // Delegate the click listener to PlayerList DIV.
-        if (thisDrone.name != "敌机") {
+        if (thisDrone.name.indexOf("敌机") < 0) {
             playerList.innerHTML += "<a class='item'>" + thisDrone.name + "</a>";
         }
     });
