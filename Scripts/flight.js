@@ -41,6 +41,8 @@ var audio = document.querySelector("#fireBgm");
 var defeatedAudio = document.querySelector("#crashBgm");
 var chatInput = document.querySelector("#chatInput");
 
+var windowsInterval = null;
+
 // time for bullet fly.
 var firingTime = 600;
 
@@ -69,14 +71,22 @@ try {
         }
         
         // upload drone status to other client.
-        window.setInterval(function() {
+        windowsInterval = window.setInterval(function() {
             socket.send(drone);
             if (drones) {
-                var target = drone.searchNearest(drones);
-                if (target) {
-                    manual = false;
-                    drone.follow(target);
-                }
+                drones.forEach(function(robot) {
+                    if (robot.name && robot.name.indexOf("敌机") > -1) {
+                        var target2follow = robot.searchNearest(drones);
+                        if (target2follow) {
+                            robot.attack(target2follow);
+                        }
+                    }
+                })
+                // var target = drone.searchNearest(drones);
+                // if (target) {
+                //     manual = false;
+                //     drone.follow(target);
+                // }
             }
         }, 200);
     });
@@ -301,14 +311,14 @@ function delInDrones(name) {
 }
 
 function delInFeatureCol(name) {
-    var index = 0, damagedIndex =0;
+    var index = 0, damagedIndex = -1;
     for (var j = 0; j < featureCol.features.length; j ++) {
-        if (featureCol.features[i].properties.name == name) {
+        if (featureCol.features[j].properties.name === name) {
             damagedIndex = index;
             break;
         }
     }
-    if (damagedIndex > 0) {
+    if (damagedIndex > -1) {
         // delete the damaged drone in this location!
         featureCol.features.splice(damagedIndex, 1);
     }
@@ -407,21 +417,29 @@ function easing(t) {
 
 // update non-ego drones status
 function updateDrones() {
-    var index = 0;
-
+    var index = 0;    
     for (var i = featureCol.features.length - 1; i > 0; i--) {
+        // get Map Bearing in Degree.
         var current_rotate = map.getBearing();
         var feature = featureCol.features[i];
         if (feature.properties.name.indexOf("敌机") > -1) {
-            var enemySpeed = Math.random() * 0.05 + 0.01;
-            // this is great!! which changes direction 5 times every 100 times updates !
-            if (Math.random() > 0.95) {
-                feature.properties.direction += (Math.random() - 0.5) /2;
+            // AI 自动攻击模式开启则无需随机调整敌机参数！但还是需要由Drone模型同步到feature中.
+            if (!windowsInterval) {
+                var enemySpeed = Math.random() * 0.05 + 0.01;
+                // this is great!! which changes direction 5 times every 100 times updates !
+                if (Math.random() > 0.95) {
+                    feature.properties.direction += (Math.random() - 0.5) /2;
+                }
+            } 
+            var curDrone = findInDrones(feature.properties.name);
+            if (curDrone) {
+                // 根据速度和feature的 direction 计算坐标.
+                feature.properties.direction = curDrone.direction;
+                feature.geometry.coordinates[0] += curDrone.speed * Math.sin(curDrone.direction) / 100;
+                feature.geometry.coordinates[1] += curDrone.speed * Math.cos(curDrone.direction) / 100;
+                current_rotate = (-current_rotate) + curDrone.direction * (180 / Math.PI);
+                feature.properties.rotate = current_rotate;
             }
-            feature.geometry.coordinates[0] += enemySpeed * Math.sin(feature.properties.direction) / 100;
-            feature.geometry.coordinates[1] += enemySpeed * Math.cos(feature.properties.direction) / 100;
-            current_rotate = (-current_rotate) + feature.properties.direction * (180 / Math.PI);
-            feature.properties.rotate = current_rotate;
         } else {
             // 其他客户端飞机的坐标是在socket.on('message', func) 中更新了，这里只根据bearing(deg)校正显示方向
             current_rotate = (-current_rotate) + feature.properties.direction * (180 / Math.PI);
@@ -579,45 +597,44 @@ function updateStatusBar() {
 window.setInterval(updateStatusBar, 4000);
 
 /* 
- * 简化的碰撞检测.
- * coordinates: bulvar coordinates
+ * 简化的碰撞检测. 这个函数最开始只是用来做 本玩家对其他飞机的射击检测！！
+ * ！Robot 敌机对玩家的射击碰撞检测放到服务器端做！
+ * coordinates: bullets coordinates
+ * name: drone who firing!!
  */
-function testCrash(coordinates) {
+function testCrash(coordinates, name) {
     // all other drones! calc distance between bulvar and drones..
     // here we add zoom into calculation as a ratio.
     var zoom = map.getZoom();
-    var distance, volume = 0.15/zoom, index = 0, damagedIndex = 0, hitted = false;
+    var distance, volume = 0.20/zoom, featureIndex = 0, damagedIndex = -1, damagedDroneName = 0, hitted = false;
     featureCol.features.forEach(function(drone) {
-        if (index > 0){
-            distance = calcDist(coordinates, drone.geometry.coordinates);
-            // if distance less than the Volume of drone, Damage it!
-            if (distance < volume ) {
-                damagedIndex = index;
-                defeatedAudio.src = "Asset/crash.mp3";
-                // defeatedMsg.innerHTML = 'You defeated <span style="color:orange">'+ drone.properties.name + "</span> !\n" + "\n";
-                // defeatedMsg.style.display = "block";
-                // setTimeout(function() {
-                //     defeatedMsg.style.display = 'none';
-                // }, 2500);
-            }
+        distance = calcDist(coordinates, drone.geometry.coordinates);
+        // if distance less than the Volume of drone and not self-killed!!, Damage it!
+        if (distance < volume && drone.properties.name !== name) {
+            damagedDroneName = drone.properties.name;
+            damagedIndex = featureIndex;
+            defeatedAudio.src = "Asset/crash.mp3";
+            // defeatedMsg.innerHTML = 'You defeated <span style="color:orange">'+ drone.properties.name + "</span> !\n" + "\n";
+            // defeatedMsg.style.display = "block";
+            // setTimeout(function() {
+            //     defeatedMsg.style.display = 'none';
+            // }, 2500);
         }
-        index += 1;
+        featureIndex += 1;
     });
 
-    if (damagedIndex > 0){
-        console.warn('ready to remove damaged drone with index: '+ damagedIndex +
-            ", current zoom "+ zoom +', crash tolerance in Rad: '+ volume);
-        totalKill += 1;
-        statsBar.innerText = "Kill " + totalKill;
-
+    // 只用来做 本玩家对其他飞机的射击检测！！！Robot 敌机对玩家的射击碰撞检测放到服务器端做！
+    if (damagedDroneName && damagedIndex > -1 && damagedDroneName !== drone.name){
+        if (name === drone.name) {
+            totalKill += 1;
+            statsBar.innerText = "Kill " + totalKill;
+        }        
         // try to send damageDrone info to server. 
         // shallowCopy ?? explode on damagedFeature directly
         var damagedFeature = featureCol.features[damagedIndex];
-        var damagedDrone = new Drone();
-        damagedDrone.name = damagedFeature.properties.name;
-        damagedDrone.point = damagedFeature.geometry;
-        damagedDrone.life = false;
-        if (socket) {
+        var damagedDrone = findInDrones(damagedDroneName);
+        if (socket && damagedDrone) {
+            damagedDrone.life = false;
             socket.send(damagedDrone);
         }
 
@@ -625,8 +642,10 @@ function testCrash(coordinates) {
         explode(damagedFeature, 1000);
         
         setTimeout(function(){
-            delInDrones(damagedDrone.name);
-            featureCol.features.splice(damagedIndex, 1);
+            if (damagedDroneName) {
+                delInDrones(damagedDroneName);
+                delInFeatureCol(damagedDroneName);
+            }
         }, 1000);
 
         hitted = true;
@@ -661,8 +680,8 @@ function renderBullet() {
             var real_point = drones[j].bullet.spoint;
 
             // calculate MyDrone if it's bullet hit any enemy
-            if (!hitted && drone.name && drones[j].name == drone.name){
-                hitted = testCrash(real_point.coordinates);
+            if (!hitted && drone.name && drones[j].name){
+                hitted = testCrash(real_point.coordinates, drones[j].name);
                 if (hitted) {
                     // drones[j].firing = false;
                     drones[j].bullet = null;

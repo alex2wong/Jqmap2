@@ -22,8 +22,9 @@
     <textarea id="chatOutput" class="chat-contain" readonly></textarea>
     <input type="text" id="chatInput" class="chat-contain" placeholder="Input you message">
 </div>
+<!--this panel should be absolute. and child div relative..-->
 <div id="nav_panel">
-<div id="miniMap"></div><div id="miniBtn" class="miniBtn btn">MAP</div>
+    <div id="miniMap"></div><div id="miniBtn" class="miniBtn btn">MAP</div>
 </div>
 <div id="message" >Defeated, don't cry and come again</div>
 <div id="status">Not connected with server</div>
@@ -34,7 +35,7 @@
 <div class="btn" id="help-btn">Help</div>
 <!-- <div class="btn" id="connect">上线</div> -->
 <div class="btn" id="totalkill">Kills</div>
-<div class="diag" id="help">Game Help
+<div class="diag panel" id="help">Game Help
     <div id="close" class="btn" style="float: right;"> X </div>
     <br><br>
     WSAD&nbsp;&nbsp;&nbsp;->Control drone's movement<br><br>
@@ -56,6 +57,7 @@
 <script src='Scripts/mapbox-gl.js'></script>
 <script src="Scripts/drone.js"></script>
 <script src="Scripts/flight.js"></script>
+<script src="Scripts/flight_controllers.js"></script>
 <script src="Scripts/add_controls.js"></script>
 </body>
 </html>

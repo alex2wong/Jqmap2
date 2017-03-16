@@ -16,6 +16,7 @@ var Drone = function() {
     };
     this.weapon = {};
     this.life = true;
+    this.firing = false;
 }
 
 var Bullet = function() {
@@ -46,7 +47,6 @@ var Bullet = function() {
 Drone.prototype.fire = function() {
     // body... direction in Rad !! this represent current Drone
     if (this.firing && this.bullet) {
-        console.warn('clients are firing..');
         return;
     }
     var bullet = new Bullet();
@@ -56,6 +56,11 @@ Drone.prototype.fire = function() {
     bullet.spoint.coordinates[1] = this.point.coordinates[1];
     bullet.direction = this.direction;
     this.bullet = bullet;
+    // setTimeout(function(){
+    //     this.firing = false;
+    //     this.bullet = null;
+    // }, 600);
+    // drone.firing = true;
 };
 
 Drone.prototype.turnLeft = function() {
@@ -83,10 +88,14 @@ Drone.prototype.brake = function () {
  * ..robot drone need a input drone to fire at..
  */
 Drone.prototype.attack = function (drone) {
-    // adjust direction then fire.
-    if (drone instanceof Drone) {
-        
-    }
+    this.follow(drone);
+    if (this.firing) return;
+    this.fire();
+    setTimeout(() => {
+            this.firing = false;
+            this.bullet = null;
+        }, firingTime + 400);
+    this.firing = true;    
 }
 
 /**
@@ -100,7 +109,7 @@ Drone.prototype.searchNearest = function (drones) {
         // calc distance between this drone and Others.
         for (var i = 0; i < drones.length; i ++) {
             var curDist = calcDist(this.point.coordinates, drones[i].point.coordinates);
-            if (curDist < minDist && curDist !== 0) {
+            if (curDist < minDist && curDist !== 0 && drones[i].name.indexOf("敌机") < 0) {
                 // nearest drone is found.
                 nDrone = drones[i];
                 minDist = curDist;
@@ -115,7 +124,7 @@ Drone.prototype.searchNearest = function (drones) {
  */
 Drone.prototype.follow = function (drone, targetDist) {
     if (!targetDist) {
-        targetDist = ATTACKRANGE * 2;
+        targetDist = ATTACKRANGE;
     }
     if (drone instanceof Drone) {
         var theta = calcSlope(this.point.coordinates, drone.point.coordinates);
@@ -129,13 +138,16 @@ Drone.prototype.follow = function (drone, targetDist) {
         if (!isNaN(theta) && theta > (-2 * Math.PI)) {
             this.direction = theta;
             // accelerate following target
-            if (dist > targetDist && this.speed < MAXSPEED) {
+            if (dist > targetDist && this.name.indexOf("敌机") > -1 && this.speed < MAXSPEED/2) {
                 this.speed += 0.01;
-            } else if (dist < targetDist && this.speed > 4 * drone.speed) {
-                // this.speed -= 0.01;
+            } else if (dist > targetDist && this.speed < MAXSPEED) {
+                this.speed += 0.01;
+            }
+            else if (dist < targetDist) {
+                this.speed = drone.speed;
             }
             // console.log("Debug: following " + drone.name + " at degree " + theta*180/Math.PI.toFixed(1));
-        }        
+        }
         return; 
     }
     console.warn("Input drone not instanceof Drone.");
