@@ -94,7 +94,7 @@ Drone.prototype.attack = function (drone) {
     setTimeout(() => {
             this.firing = false;
             this.bullet = null;
-        }, firingTime + 400);
+        }, firingTime + 200);
     this.firing = true;    
 }
 

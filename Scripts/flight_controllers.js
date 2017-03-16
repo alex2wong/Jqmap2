@@ -11,12 +11,12 @@ Controller.prototype.init = function (ele) {
     this.ele = ele || null;
     document.body.appendChild(this.ele);
     this.ele.style.position = "absolute";
-    this.ele.style.left = "10%";
-    this.ele.style.bottom = "40%";
+    this.ele.style.left = "10px";
+    this.ele.style.bottom = "180px";
     this.ele.style.width = this.width + "px";
     this.ele.style.height = this.height + "px";
     this.ele.style.background = "rgba(200,200,200,0.4)";
-    this.ele.innerHTML = "<span>controller</span>";
+    this.ele.innerHTML = "<span></span>";
     this.ele.className = "panel";
     return this;
 }
@@ -28,7 +28,7 @@ Controller.prototype.setDOM = function (ele) {
 
 Controller.prototype.enableDrag = function() {
     console.log("ready to install draggable attri");
-    this.ele.setAttr("draggable", "true");
+    this.ele.draggable = true
     return this;
 }
 
@@ -37,15 +37,16 @@ Controller.prototype.enableDrag = function() {
 
 function Dashboard () {
     Controller.call(this);
-    this.width = 140;
-    this.height = 100;
+    this.width = 150;
+    this.height = 70;
     this.obj = null;
     this.updateData = function () {
         if (this.obj && this.obj.name) {
             var htmlContent = "";
-            htmlContent += "NAME: " + this.obj.name + "<br>";
-            htmlContent += "SPEED: " + (this.obj.speed * 10).toFixed(0) + "000KM/h<br>"; 
-            htmlContent += "DIRECT: " + this.obj.direction.toFixed(1) + " Degree<br>";
+            htmlContent += "NAME: <span class='warn'>" + this.obj.name + "</span><br>";
+            htmlContent += "SPEED: <span class='primary'>" + (this.obj.speed * 10000).toFixed(0) + "</span> KM/h<br>";
+            var degree = (this.obj.direction*180/Math.PI)%360;
+            htmlContent += "DIRECT: <span class='primary'>" + degree.toFixed(0) + "</span> Degree<br>";
             this.ele.innerHTML = htmlContent;
         }
         console.log("get the latest Status Data..");
@@ -60,7 +61,8 @@ Dashboard.prototype.bindObj = function (obj) {
         return;
     }
     this.obj = obj;
-    setInterval(() => this.updateData(), 2000);
+    setInterval(() => this.updateData(), 500);
+    this.enableDrag();
     return this;
 }
 
