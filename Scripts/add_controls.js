@@ -20,6 +20,11 @@ function handleChat(evt){
     }
 }
 
+if (Dashboard && drone) {
+    dashboard = new Dashboard();
+    dashboard.init(document.createElement("div")).bindObj(drone);
+}
+
 var help = true;
 
 var helpBtn = document.querySelector("#help-btn");
@@ -119,5 +124,7 @@ miniMap.on('load', function() {
             "circle-opacity": 0.8
         }
     });
-    
+
+    // add drone DIRECTION ARC!
+    // miniMap.addLayer();
 })

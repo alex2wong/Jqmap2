@@ -1,7 +1,6 @@
 ## Jqmap2
 Jqmap2 contains sets of **web app** based on <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> and socket.io
 
-## Recently Update 2016/11/18:
 Currently <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> is applied to build A totally new flightgame, with pitch, bearing in viewport and webgl render.
 
 Game ScreenShot:
@@ -15,7 +14,7 @@ Game ScreenShot:
 <br>
 <a href="http://alex2wong.github.io/Jqmap2/index2.html" > First view flight </a>, press WSAD for move
 
-## Todo List (Updated 2017/2/18):
+## Todo List (Updated 2017/3/10):
 - add websocket to support multiplayer (completed!)
 - optimize touch events to promote mobile performance (completed!)
 - display other player's fire action and sync Robot Status to all client, not emit to client speratedly anymore.
@@ -23,7 +22,7 @@ Game ScreenShot:
 - add mini map to navigate enemy drone(completed).
 - add chatPopup to map, clear to show who talks.(completed).
 - **!important**: refactor code structure based on es6. (inprogress..)
-- **!important**: add AI-robot module to current robot flight which can move and fire at player.
+- **!important**: add AI-robot module to current robot flight which can follow and fire at player. (completed)
 
 
 ## **Related Blog**
