@@ -1,6 +1,7 @@
 // require('./flight.js');
 // add_controls.js
 
+var selectedDrone = null;
 var chatInput = document.querySelector("#chatInput");
 var chatOutput = document.querySelector("#chatOutput");
 chatInput.addEventListener('keyup',handleChat);
@@ -53,6 +54,7 @@ helpBtn.addEventListener("click", function() {
 })
 
 miniBtn.addEventListener("click", function() {
+    audio.src = "Asset/flight_board.wav";
     if (displayMini) {
         displayMini = !displayMini;
         // hide the miniMap div
@@ -128,3 +130,42 @@ miniMap.on('load', function() {
     // add drone DIRECTION ARC!
     // miniMap.addLayer();
 })
+
+// add Map Click to bind chosen drone to dashboard..hhh
+map.on("mousemove", function(e) {
+    var foundDrone = null;
+    // this func return deep copy
+    var features = map.queryRenderedFeatures(e.point, { layers: ['drone'] });    
+    map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+    if (features.length) {
+        var featureName = features[0].properties.name;
+        var curFeature = findInFeatures(featureName);
+        if (audio) {
+            audio.src = "Asset/flight_click.mp3";
+        }
+        // clear last selectedDrone's style.
+        if (selectedDrone && selectedDrone.properties.name !== curFeature.properties.name) {
+            setTimeout(function(){
+                var lastFeature = findInFeatures(selectedDrone.properties.name);
+                if (lastFeature) {
+                    lastFeature.properties = selectedDrone.properties;
+                }                
+            }, 50);
+        } else if (selectedDrone) {
+            // The same one drone, do nothing.
+            return;
+        }
+        // After clean the last selected..this backUp can be set new Value..
+        // this selectedDrone is deep copy of map.queryRenderedFeatures[0]
+        setTimeout(function() {
+            selectedDrone = features[0];
+            curFeature.properties.gradius = 26;
+            curFeature.properties.gopacity = 0.6;
+            foundDrone = findInDrones(featureName);
+            if (foundDrone) {
+                dashboard.bindObj(foundDrone);
+            }
+        }, 60) 
+    }
+});
+

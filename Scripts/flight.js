@@ -44,7 +44,7 @@ var chatInput = document.querySelector("#chatInput");
 var windowsInterval = null;
 
 // time for bullet fly.
-var firingTime = 600;
+var firingTime = 800;
 
 function randomName() {
     return "Player" + (Math.random()*10000).toFixed(0);
@@ -57,9 +57,10 @@ try {
     // 127.0.0.1
     // locally test.. 10.103.14.66
     // deploy to Server use 123.206.201.245 !important
+    audio.src = "Asset/flight_identy.wav";
     socket = io.connect("http://123.206.201.245:3002");
     socket.on('open', function(){
-        statusBar.innerText = "Connected to server..";
+        statusBar.innerText = "Connected to server..";        
         var randName = randomName();
         while(!drone.name) {
             var askName = prompt("Name your drone with a special one", randName);
@@ -264,16 +265,18 @@ catch(e) {
 
 // popup chat message...
 function addPopup(msg, lnglat) {
+    // always remove existed popup and create new one.
     if (1) {
         if (chatPopUp && chatPopUp.remove) {
             chatPopUp.remove();
         }
-        lnglat[1] += 0.02;
+        lnglat[1] += 0.04;
         setTimeout(function() {
             chatPopUp = new mapboxgl.Popup()
             .setLngLat(lnglat)
             .setHTML(msg)
             .addTo(map);
+            audio.src = 'Asset/flight_click.mp3';
             // pass PopUp to global var !
         }, 100);
     }
@@ -286,6 +289,17 @@ function updatePopUp(lnglat, other) {
     }
 }
 
+function findInFeatures(name) {
+    var featureIndex = -1;
+    for (var i = 0; i < featureCol.features.length; i++) {
+        if (featureCol.features[i].properties.name === name) {
+            droneIndex = i;
+            return featureCol.features[i];
+        }
+    }
+    return null;
+}
+
 function findInDrones(name) {
     var droneIndex = -1;
     for (var i = 0; i < drones.length; i++) {
@@ -294,6 +308,7 @@ function findInDrones(name) {
             return drones[i];
         }
     }
+    return null;
 }
 
 // delete Drone in drones by name.. implicit problem..what about "敌机"
@@ -762,20 +777,6 @@ function explode(droneObj, duration) {
     return droneObj;
 }
 
-map.on("click", function(e) {
-    if (e.preventDefault) {
-        e.preventDefault();
-    }
-    if (popUp) {
-        // popUp = null;
-    } else {
-        // popUp = new mapboxgl.Popup()
-        // .setLngLat(map.unproject(e.point))
-        // .setHTML("clicked here!")
-        // .addTo(map);
-    }    
-});
-
 // sprite contain json and png.
 map.on('load', function() {
     var nav = new mapboxgl.NavigationControl({position: 'top-left'}); // position is optional
@@ -786,6 +787,7 @@ map.on('load', function() {
         type: 'geojson',
         data: featureCol
     });
+    // drone-target is source of bullets !!
     map.addSource('drone-target', {
         type: 'geojson',
         data: point

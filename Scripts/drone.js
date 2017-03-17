@@ -4,6 +4,7 @@
  */
 var MAXSPEED = 0.15;
 var ATTACKRANGE = 0.4;
+var BULLETOFFSET =  0.04;
 
 var Drone = function() {
     this.name;
@@ -52,8 +53,8 @@ Drone.prototype.fire = function() {
     var bullet = new Bullet();
     var sx, sy;
     // Bug !!! here should be deepCopy.. not shallow. fixed
-    bullet.spoint.coordinates[0] = this.point.coordinates[0];
-    bullet.spoint.coordinates[1] = this.point.coordinates[1];
+    bullet.spoint.coordinates[0] = this.point.coordinates[0] + BULLETOFFSET * Math.sin(this.direction);
+    bullet.spoint.coordinates[1] = this.point.coordinates[1] + BULLETOFFSET * Math.cos(this.direction);
     bullet.direction = this.direction;
     this.bullet = bullet;
     // setTimeout(function(){
@@ -89,12 +90,13 @@ Drone.prototype.brake = function () {
  */
 Drone.prototype.attack = function (drone) {
     this.follow(drone);
+    if (calcDist(this.point.coordinates, drone.point.coordinates) > ATTACKRANGE) return; 
     if (this.firing) return;
     this.fire();
     setTimeout(() => {
             this.firing = false;
             this.bullet = null;
-        }, firingTime + 200);
+        }, firingTime - 100);
     this.firing = true;    
 }
 
@@ -140,7 +142,7 @@ Drone.prototype.follow = function (drone, targetDist) {
             // accelerate following target
             if (dist > targetDist && this.name.indexOf("敌机") > -1 && this.speed < MAXSPEED/2) {
                 this.speed += 0.01;
-            } else if (dist > targetDist && this.speed < MAXSPEED) {
+            } else if (dist > targetDist && this.speed < (MAXSPEED - 0.02)) {
                 this.speed += 0.01;
             }
             else if (dist < targetDist) {
