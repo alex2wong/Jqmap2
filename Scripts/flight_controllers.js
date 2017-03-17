@@ -27,7 +27,6 @@ Controller.prototype.setDOM = function (ele) {
 }
 
 Controller.prototype.enableDrag = function() {
-    console.log("ready to install draggable attri");
     this.ele.draggable = true
     return this;
 }
@@ -40,6 +39,7 @@ function Dashboard () {
     this.width = 150;
     this.height = 70;
     this.obj = null;
+    this.dataTimer = null;
     this.updateData = function () {
         if (this.obj && this.obj.name) {
             var htmlContent = "";
@@ -49,7 +49,6 @@ function Dashboard () {
             htmlContent += "DIRECT: <span class='primary'>" + degree.toFixed(0) + "</span> Degree<br>";
             this.ele.innerHTML = htmlContent;
         }
-        console.log("get the latest Status Data..");
     }
 }
 
@@ -61,7 +60,10 @@ Dashboard.prototype.bindObj = function (obj) {
         return;
     }
     this.obj = obj;
-    setInterval(() => this.updateData(), 500);
+    if (this.dataTimer) {
+        clearInterval(this.dataTimer);
+    }
+    this.dataTimer = setInterval(() => this.updateData(), 500);
     this.enableDrag();
     return this;
 }
