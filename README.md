@@ -7,7 +7,11 @@ Game ScreenShot:
 
 ![flight_screenshot](https://github.com/alex2wong/Jqmap2/blob/master/Asset/flight_screenshot.jpg?raw=true)
 
+↓Openlayer label without overlap
+![openlayer label without overlap](https://github.com/alex2wong/Jqmap2/blob/master/Asset/Label_Func3.gif)
 ### **Demos** for you:
+<a href="http://alex2wong.github.io/Jqmap2/label.html"> Label Example </a>, Openlayer label **without overlap**, Update 2017/3/22.
+<br>
 <a href="http://alex2wong.github.io/Jqmap2/"> Mobile web map </a>, the JqueryMobile and Openlayer2 webApp.
 <br>
 <a href="http://123.206.201.245/flight.html"> Flight Game </a>, press WSAD for move, Space to fire, Enjoy it!
