@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Openlayer label with collide check</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link href="Css/ol.css" rel="stylesheet" />
+    <link rel="stylesheet" href="Css/bootstrap.min.css" type="text/css">    
+  </head>
+  <style type="text/css">
+	  #map{
+        width: 100%;
+        height: 600px;
+        position: relative;
+        background-color: #deeff7;
+        /* 渐变背景 */
+        transition: background, 1.4s;
+    }
+    #layertree{
+      background-color: rgba(155,155,155,0.6);
+      border-radius: 6px;
+      position: absolute;
+      right:10px;
+      top:40px;
+      padding-right: 20px;
+      
+    }
+    #mouse-position{
+      position: absolute;
+      left: 20px;
+      top: 560px;
+    }
+    #plot{
+      pointer-events: none;
+      position: absolute;
+      top:400px;
+      left:20px;
+    }
+    .bar{
+      pointer-events: auto;
+      fill:#AFAFB9;
+    }
+    .bar.selected:{
+      fill:green;
+    }
+    .tip{
+      position: absolute;
+      background: black;
+      color:white;
+      padding:6px;
+      font-size: 12px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      display: none;
+      opacity: 0;
+    }
+
+    #info {
+      position: absolute;
+      height: 1px;
+      width: 1px;
+      z-index: 100;
+    }
+    #shpfile{
+      height: 80px;
+      width: 200px;
+      border:dashed 1.5px grey;
+
+    }
+    .tooltip.in {
+      opacity: 1;
+      filter: alpha(opacity=100);
+    }
+    .tooltip.top .tooltip-arrow {
+      border-top-color: white;
+    }
+    .tooltip-inner {
+      border: 2px solid white;
+    }
+    .layers{
+      text-decoration: none;
+      list-style: none;
+    }
+    .checkbox{
+      width: 100px;
+    }
+    .opacity
+    {
+      width: 100px;
+    }
+
+   </style>
+<body>
+	<div id="map"><div id="info"></div></div>
+  <div id="mouse-position"></div>
+  <div id="plot"></div>
+  <div id="layertree" class="span6">
+    <ul class="layers">
+      <!--<li id="layerb">
+        <label class="checkbox" for="vlayerb">
+          <input id="vlayerb" class="visible" type="checkbox">layername</input>
+          <input class="opacity" type="range" min="0" max="1" step="0.01"></input>
+        </label>
+        
+      </li>-->
+    </ul>
+  </div>
+  <div id="drawpanel">
+    <!-- <div id="toggledraw"></div> -->
+    <label>Geometry type  </label>
+    <select id="type">
+      <option value="None">None</option>
+      <option value="Point">Point</option>
+      <option value="LineString">LineString</option>
+      <option value="Polygon">Polygon</option>
+    </select>
+    <button id="removedraw">取消绘制</button>
+    <button id="removedrawed">清除绘制</button>
+    <button id="exportkml">导出kml格式</button>
+    <button id="exportgeojson">导出geojson格式</button>
+    <input id="lnglat" type="text" value="121.31 31.312"></input>
+    <button id="addpoint">addpoint</button>
+
+    <br>
+    <input type="checkbox" name="bufferHelper" id="bufferHelper" onchange="toggleHelper()">
+    <label for="bufferHelper">辅助多边形</label>
+    <input type="checkbox" name="labelSwitch" id="labelSwitch" onchange="toggleLabel()" checked>
+    <label for="labelSwitch">标注开关</label>
+    <input type="file" name="shpfile" id="shpfile" onchange="fileselect()">拖放shp/json/csv/txt文件</input>    
+    <div id="selectinfo" class="alert alert-success">
+      &nbsp;
+    </div>
+  </div>  
+</body>
+<script src="Scripts/label/ol4.js"></script>
+<script src="Scripts/label/labelUtils.js"></script>
+<script src="Scripts/label/layercontrol.js"></script>
+<script src="Scripts/jquery-1.11.1.min.js"></script>
+<script src="Scripts/bootstrap.min.js"></script>
+<script src="Scripts/label/shp.js"></script>
+<script src='Scripts/label/labelHtml.js'></script>
+<script src="Scripts/label/interactions.js"></script>
+</html>
