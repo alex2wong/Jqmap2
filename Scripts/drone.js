@@ -93,11 +93,12 @@ Drone.prototype.attack = function (drone) {
     if (calcDist(this.point.coordinates, drone.point.coordinates) > ATTACKRANGE) return; 
     if (this.firing) return;
     this.fire();
-    setTimeout(() => {
-            this.firing = false;
-            this.bullet = null;
+    var that = this;
+    setTimeout(function(that) {
+            that.firing = false;
+            that.bullet = null;
         }, firingTime - 100);
-    this.firing = true;    
+    this.firing = true;
 }
 
 /**

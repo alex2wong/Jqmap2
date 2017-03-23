@@ -379,7 +379,7 @@ var selectlayers = [];
 
         map.on('moveend', function(evt) {            
             if (1) {
-                setTimeout(() => {
+                setTimeout(function() {
                     visitedLabels = [];
                     labelNum = 0;
                     styleFunctionTimer = 0;
