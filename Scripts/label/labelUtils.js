@@ -27,6 +27,17 @@ var styleFunction = function(feature, resolution) {
   return style;
 }
 
+/**
+ * @return {Array.<number>} Flat midpoint.
+ */
+ol.geom.LineString.prototype.getFlatMidpoint = function() {
+  if (this.flatMidpointRevision_ != this.getRevision()) {
+    this.flatMidpoint_ = this.getCoordinateAt(0.5, this.flatMidpoint_);
+    this.flatMidpointRevision_ = this.getRevision();
+  }
+  return this.flatMidpoint_;
+};
+
 // var roadstyle = 
 
 var vector = new ol.layer.Vector(

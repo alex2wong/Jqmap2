@@ -60,7 +60,7 @@ var selectlayers = [];
 
   function getlayername(layername)
   {
-    var layers = map.getLayers().array_;
+    var layers = map.getLayers().array_ || map.getLayers().getArray();
     for (var i = 0; i < layers.length; i++) {
       if (layers[i].get('title') == layername){
         return layers[i];
@@ -70,7 +70,8 @@ var selectlayers = [];
   }
 
   function getlayer(index){
-    return map.getLayers().array_[index];
+    var layers = map.getLayers().array_ || map.getLayers().getArray();
+    return layers[index];
     // return index;
   }
   function getlayerindex(ollayer){
