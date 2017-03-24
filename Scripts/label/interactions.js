@@ -100,3 +100,9 @@ function toggleLabel() {
 		labelSwitch = !labelSwitch;
 		console.warn("toggle label display !");
 }
+
+
+function toggleStrategy() {
+		distStrat = !distStrat;
+		console.warn("toggle distStrat !");
+}

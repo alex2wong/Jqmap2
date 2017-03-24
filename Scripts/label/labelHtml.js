@@ -238,6 +238,7 @@ var selectlayers = [];
              //tian_diming,
              vector,
              shroad,
+             cities,
              drawvector
             ];
         
@@ -384,10 +385,17 @@ var selectlayers = [];
                     labelNum = 0;
                     styleFunctionTimer = 0;
                     adjustView();
+                    map.on("postcompose", function() {
+                        // estimate Label Calc timelapse.
+                        var etime = new Date().getTime();
+                        // console.warn("## Debug: label render timelapse " + (etime - stime) + " ms");
+                    });
                 }, 0); 
             }
             console.log("## Debug: last moveend generat label-> " + labelNum + " times in styleFunction " + styleFunctionTimer + " times");
+            var stime = new Date().getTime();
         });
+
         map.on('movestart', function(evt) {
             drawsource.clear();
         })
@@ -456,6 +464,7 @@ var selectlayers = [];
         getlayername('Asset/water.shp')?getlayername('Asset/water.shp').setStyle(waterstyle):console.log('');
         getlayername('用户绘制图层')?getlayername('用户绘制图层').setZIndex(20):console.log('');
         getlayername('shanghai_road')?getlayername('shanghai_road').setZIndex(120):console.log('');
+        getlayername('cities')?getlayername('cities').setZIndex(200):console.log("");
     }
 
     /* input layername */
