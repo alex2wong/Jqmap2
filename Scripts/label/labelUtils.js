@@ -115,39 +115,46 @@ function isOverlapse(feature) {
  * return curFeature text to avoid overlapse.
  */
 function generateLabel(feature, resolution, checkCollide, name) {
-    var overlapse = false, extent = null, buffer = resolution * bufferRatio;
+    var overlapse = false, extent = null;
+    buffer = resolution * bufferRatio, 
+    text = feature.getProperties()[name];
     if (visitedLabels.length === 0) {
-        // 本次缩放，第一个feature，直接加入池中. !important 可以考虑采用二分法，去屏幕中央的要素开始检查.
+        // 本次缩放，第一个feature，直接加入池中.
         drawsource.clear();
         console.warn("clear BufferHelper of last move!");
+        feature.setProperties({"lenKey":text.length});
         visitedLabels.push(feature);
     } else if (checkCollide) {
-        var curGeom = feature.getGeometry();
-        var curExtent = curGeom.getExtent();
-        // what ever the geomType. get the MidPoint
-        if (!curGeom.getFlatMidpoint) return; 
-        var curMidPoint = curGeom.getFlatMidpoint();
-        if (curMidPoint instanceof Array === false) return;
-        buffer *= feature.getProperties()[name].length;
+        var curExtent, 
+        curLabelFeature, 
+        curGeom = feature.getGeometry();
+        if (!curGeom.getFlatMidpoint) return;
+        curMidPoint = curGeom.getFlatMidpoint();
         // when use label Extent as Feature to judge, generate curLabel's bufferFeature.
         if (!distStrat) {
-            midPoint2Extent(curExtent, curMidPoint, buffer);          
-            var curLabelFeature = extent2Feature(curExtent);
+            curExtent = curGeom.getExtent();
+            midPoint2Extent(curExtent, curMidPoint, buffer);
+            // labelExtent2Feature
+            curLabelFeature = extent2Feature(curExtent);
             if (!curLabelFeature) return;
-        } else {
-            // calc curFeature's 
+        } else {                        
+            if (curMidPoint instanceof Array === false) return;
+            buffer *= text.length;
         }
-        
         for (let j = 0; j < visitedLabels.length; j ++) {
-            // for each feature's extent, check curGeom intersectsExtent or not .. MAYBE: calc extent by Text Length!
-            extent = visitedLabels[j].getGeometry().getExtent();
-            if (!visitedLabels[j].getGeometry().getFlatMidpoint) continue;
-            var Midpoint = visitedLabels[j].getGeometry().getFlatMidpoint();
-            var curBuffer = buffer;
+            // for each feature's extent, check curGeom intersectsExtent or not.
+            var Midpoint, curBuffer,
+            visitingF = visitedLabels[j],
+            visitingGeom = visitingF.getGeometry(),
+            labelLen = visitingF.getProperties()["lenKey"];
+            if (!visitingGeom.getFlatMidpoint) continue;
+            Midpoint = visitingGeom.getFlatMidpoint();
+            curBuffer = buffer;
             buffer = resolution * bufferRatio;
-            buffer *= getLabelText(visitedLabels[j]).length;
-
+            buffer *= labelLen||5;
+            // if apply intersectsExtent.
             if (!distStrat) {
+                extent = visitingGeom.getExtent();
                 midPoint2Extent(extent, Midpoint, buffer);
                 overlapse = curLabelFeature.getGeometry().intersectsExtent(extent);
             } else {
@@ -158,14 +165,15 @@ function generateLabel(feature, resolution, checkCollide, name) {
             if (overlapse) {
               return "";
             }
-        } 
+        }
+        feature.setProperties({"lenKey":text.length});
         visitedLabels.push(feature);
     }
     labelNum += 1;
-    if (helper) {
-        BufferHelper(extent);
+    if (helper && curExtent) {
+        BufferHelper(curExtent);
     }
-    return feature.getProperties()[name];
+    return text;
 }
 
 /** 
@@ -178,8 +186,9 @@ function feature2Label() {
 
 function getLabelText(feature) {
     for (var i = 0; i < labelFields.length; i ++) {
-        if (labelFields[i] in feature.getProperties()) {
-            return feature.getProperties()[labelFields[i]];
+        var key = labelFields[i], props = feature.getProperties();
+        if (props[key] !== undefined) {
+            return props[key];
         }
     }
     return "";
@@ -280,8 +289,8 @@ function roadStyleFunction(feature, resolution) {
   styleFunctionTimer += 1;
   return new ol.style.Style({
       stroke : new ol.style.Stroke({
-        color: 'yellow',
-        width: 3
+        color: 'rgba(255,255,10,0.8)',
+        width: 6/feature.getProperties()["CLASS"]%40
       }),
       // 根据配置 返回道路的文字标注！！
       text: createTextStyle(feature, resolution, {
@@ -320,7 +329,6 @@ var polyworld = new ol.layer.Vector({
   }),
   visible: true,
   title: "countries",
-  style: roadStyleFunction
 });
 
 // test layer.Image and layer.Vector
