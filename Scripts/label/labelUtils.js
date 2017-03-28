@@ -115,21 +115,21 @@ function isOverlapse(feature) {
  * return curFeature text to avoid overlapse.
  */
 function generateLabel(feature, resolution, checkCollide, name) {
-    var overlapse = false, extent = null;
+    var overlapse = false, extent = null, curExtent, featureClone = feature.clone();
     buffer = resolution * bufferRatio, 
     text = feature.getProperties()[name];
     if (visitedLabels.length === 0) {
         // 本次缩放，第一个feature，直接加入池中.
         drawsource.clear();
-        console.warn("clear BufferHelper of last move!");
-        feature.setProperties({"lenKey":text.length});
-        visitedLabels.push(feature);
+        console.warn("clear BufferHelper of last move!");        
+        featureClone.setProperties({"lenKey":text.length});
+        visitedLabels.push(featureClone);
     } else if (checkCollide) {
-        var curExtent, 
-        curLabelFeature, 
+        var curLabelFeature, 
         curGeom = feature.getGeometry();
         if (!curGeom.getFlatMidpoint) return;
         curMidPoint = curGeom.getFlatMidpoint();
+        buffer *= text.length;
         // when use label Extent as Feature to judge, generate curLabel's bufferFeature.
         if (!distStrat) {
             curExtent = curGeom.getExtent();
@@ -139,7 +139,6 @@ function generateLabel(feature, resolution, checkCollide, name) {
             if (!curLabelFeature) return;
         } else {                        
             if (curMidPoint instanceof Array === false) return;
-            buffer *= text.length;
         }
         for (let j = 0; j < visitedLabels.length; j ++) {
             // for each feature's extent, check curGeom intersectsExtent or not.
@@ -166,8 +165,8 @@ function generateLabel(feature, resolution, checkCollide, name) {
               return "";
             }
         }
-        feature.setProperties({"lenKey":text.length});
-        visitedLabels.push(feature);
+        featureClone.setProperties({"lenKey":text.length});
+        visitedLabels.push(featureClone);
     }
     labelNum += 1;
     if (helper && curExtent) {
@@ -289,12 +288,12 @@ function roadStyleFunction(feature, resolution) {
   styleFunctionTimer += 1;
   return new ol.style.Style({
       stroke : new ol.style.Stroke({
-        color: 'rgba(255,255,10,0.8)',
-        width: 6/feature.getProperties()["CLASS"]%40
+        color: 'rgba(255,255,10,0.7)',
+        width: 5/(feature.getProperties()["CLASS"]%40)
       }),
       // 根据配置 返回道路的文字标注！！
       text: createTextStyle(feature, resolution, {
-          maxRes: 150,
+          maxRes: 120,
           field: "NAME"
       })
   });
@@ -351,7 +350,7 @@ var shroad = new ol.layer.Vector({
     })
   }),
   visible: true,
-  maxResolution: 300,
+  maxResolution: 250,
   title: "shanghai_road",
   style: roadStyleFunction
 });
