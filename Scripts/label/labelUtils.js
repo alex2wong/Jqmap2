@@ -140,7 +140,7 @@ function generateLabel(feature, resolution, checkCollide, name) {
         } else {                        
             if (curMidPoint instanceof Array === false) return;
         }
-        for (let j = 0; j < visitedLabels.length; j ++) {
+        for (var j = visitedLabels.length-1; j > -1; j --) {
             // for each feature's extent, check curGeom intersectsExtent or not.
             var Midpoint, curBuffer,
             visitingF = visitedLabels[j],
@@ -264,7 +264,7 @@ var getText = function(feature, resolution, opt) {
 };
 
 function createTextStyle(feature, resolution, opt) {
-  var fontSet = opt.weight||"normal" + " " + opt.size||13;
+  var fontSet = opt.weight||"normal" + " " + opt.size||"13px";
   return new ol.style.Text({
     textAlign: "center",
     offsetY: 8,
@@ -314,7 +314,7 @@ function cityStyleFunction(feature, resolution) {
           maxRes: 25000,
           field: "city",
           weight: "bold",
-          size: 16,
+          size: "16px",
       })
   });
 }
