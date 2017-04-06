@@ -64,7 +64,7 @@
     // blurControl.setMap(".mapboxgl-canvas");
 
     var blurControl = new Blurify({
-        ele: ".mapboxgl-canvas"
+        ele: document.querySelector(".mapboxgl-canvas")
     });
 
     map.on("moveend", function(evt) {

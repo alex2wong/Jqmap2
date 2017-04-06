@@ -132,12 +132,15 @@ Apature.prototype.setMap = function (mapDiv) {
 // blurify control using canvas!
 function Blurify(options) {
     this.options = options;
-    this.ratio = options.ratio || 5;
     this.blur = options.blur || 4;
-    this.mode = options.mode || 'css';
-    // get canvas element which used to render map. must be canvas element!!
-    let canvEle = document.querySelector(options.ele);
-    this.$els = [canvEle];
+    this.mode = options.mode || 'auto';
+    this.ratio = options.ratio || 0.2;
+    this.blurStep = options.blurStep || 1;
+    this.blurOffset = options.blurOffset || 1;
+    this.imageType = options.imageType || `image/jpeg`;
+    this.image = options.image;
+    // get canvas element which used to render map.
+    this.$els = [options.ele];
 
     if (this.mode == 'auto') {
         this.useCanvasMode();
@@ -156,33 +159,74 @@ Blurify.prototype.useCSSMode = function() {
 }
 
 Blurify.prototype.useCanvasMode = function() {
-    this.imageType = this.options.imageType || `image/jpeg`;
-    if (this.$els instanceof Array && this.$els[0] !== undefined){
-        this.blurCanvas(this.$els[0]);
-    }
+    this.blurCanvas();
 }
 
-Blurify.prototype.blurify = function(canvas, blur, imgtype, ratio) {
-    let ctx = canvas.getContext('2d'),
-        topImageData, blurImg = new Image(), tmpCanv = document.createElement("canvas"), tmpCtx;
+Blurify.prototype.blurify = function(canvas, blur) {
+    let ctx = canvas.getContext('2d'), blurStep = this.blurStep, blurOffset = this.blurOffset,
+        topImageData, blurImg = new Image(), tmpCanv = document.createElement("canvas"), tmpCtx, bottomImageData;
     tmpCanv.width = canvas.width;
-    tmpCanv.height = parseInt(canvas.height/ratio);
-    tmpCtx = tmpCanv.getContext("2d");
-    topImageData = ctx.getImageData(0,0,canvas.width, parseInt(canvas.height/ratio));
-    tmpCtx.putImageData(topImageData,0,0);
-    blurImg.src = tmpCanv.toDataURL(imgtype);
-    ctx.globalAlpha = 1 / (2 * blur);
-    for (let y = -blur; y <= blur; y += 2) {
-        for (let x = -blur; x <= blur; x += 2) {
-            // drawImage(image/canvas/video, offsetX, offsetY) // repeat offsetDraw to blur the image !! curious. parseInt(canvas.height/10)
-            ctx.drawImage(blurImg, x, y);
-            if (x >= 0 && y >= 0) ctx.drawImage(blurImg, -(x - 1), -(y - 1));
+    tmpCanv.height = parseInt(canvas.height* this.ratio);
+    tmpCtx = tmpCanv.getContext("2d")
+
+    try {
+        // get top partial image then fill into tmpCanv
+        topImageData = ctx.getImageData(0,0,canvas.width, tmpCanv.height);
+        tmpCtx.putImageData(topImageData,0,0);
+        
+        // common function to blur partial image got from origin canvas.
+        blurImg.src = tmpCanv.toDataURL(this.imageType);
+        ctx.globalAlpha = 1 / (2 * blur);
+        for (let y = -blur; y < blur; y += blurStep) {
+            for (let x = -blur; x <= blur; x += blurStep) {
+                // drawImage(image/canvas/video, offsetX, offsetY) // repeat offsetDraw to blur the image !! curious. parseInt(canvas.height/10)
+                ctx.drawImage(blurImg, x, y);
+                if (x >= 0 && y >= 0) ctx.drawImage(blurImg, -(x - blurOffset), -(y - blurOffset));
+            }
         }
+
+        // get bottom partial image
+        let offsetY = canvas.height - tmpCanv.height;
+        bottomImageData = ctx.getImageData(0, offsetY, canvas.width, tmpCanv.height);
+        tmpCtx.putImageData(bottomImageData,0,0);
+
+        // common function to blur partial image got from origin canvas.  blur the specific part!!!
+        blurImg.src = tmpCanv.toDataURL(this.imageType);
+        ctx.globalAlpha = 1 / (2 * blur);
+        for (let y = -blur; y < blur; y += blurStep) {
+            for (let x = -blur; x <= blur; x += blurStep) {
+                // drawImage(image/canvas/video, offsetX, offsetY) // repeat offsetDraw to blur the image !! curious. parseInt(canvas.height/10)
+                ctx.drawImage(blurImg, x, y + offsetY);
+                if (x >= 0 && y >= 0) ctx.drawImage(blurImg, -(x - blurOffset), -(y + offsetY - blurOffset));
+            }
+        }
+
+        ctx.globalAlpha = 1;
+
+    } catch (error) {
+        console.error("error with the blurCanvas process..");
     }
-    ctx.globalAlpha = 1;
 }
 
-Blurify.prototype.blurCanvas = function(canvas) {
+Blurify.prototype.blurCanvas = function() {
+    var canvas;
+    if (this.$els instanceof Array && this.$els[0] !== undefined && this.$els[0].tagName === "CANVAS") {
+        canvas = this.$els[0];
+    }
+    if (!canvas) return;
     // blurify current canvas by blur..
-    this.blurify(canvas, this.blur, this.imageType, this.ratio);
+    this.blurify(canvas, this.blur);
+}
+
+Blurify.prototype.drawImage = function() {
+    if (this.$els instanceof Array && this.$els[0] !== undefined && this.$els[0].tagName === "CANVAS") {
+        let canvas = this.$els[0], ctx;    
+        ctx = canvas.getContext("2d");
+        canvas.width = this.image.width;
+        canvas.height = this.image.height;
+        ctx.drawImage(this.image, 0, 0);
+        return this.$els[0]
+    } else {
+        return null;
+    }
 }
