@@ -10,6 +10,7 @@ var express = require('express'),
   app = express(),
   server = require('http').createServer(app),
   io = require('socket.io').listen(server),
+  proxy = require('./proxy');
   log4js = require('log4js');
 
 
@@ -17,12 +18,26 @@ app.set('port', process.env.PORT || 3002);
 app.set('app', __dirname);
 // serve static file in root dir. for url: "", return: "".
 app.use(express.static(path.join(__dirname, '')));
+
+// config CORS to provide service to cross domain page.
+app.all('*', function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With, accept, origin, content-type");
+  res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
+  // res.header("Content-Type", "application/json");
+  next();
+})
+
 // config the default HTML. set rootPath in res.send(path[,option])
 app.get('/', function(req, res) {
   res.sendFile('index.html',{
     root: __dirname
   });
 });
+
+app.get('/proxy', function(req, res) {
+  proxy(req, res);
+})
 
 app.get('/flight', function(req, res) {
   res.sendFile('flight.html',{

@@ -37,6 +37,16 @@ ol.geom.LineString.prototype.getFlatMidpoint = function() {
   }
   return this.flatMidpoint_;
 };
+ol.geom.Polygon.prototype.getFlatMidpoint = ol.geom.Polygon.prototype.getFlatInteriorPoint;
+ol.geom.MultiPolygon.prototype.getFlatMidpoint = function () {
+    if (this.getPolygons().length && this.getPolygons()[0].getInteriorPoint 
+        && this.getPolygons()[0].getInteriorPoint().getLastCoordinate)
+    {
+        return this.getPolygons()[0].getInteriorPoint().getLastCoordinate();
+    }
+    return null;
+}
+ol.geom.Point.prototype.getFlatMidpoint = ol.geom.Point.prototype.getLastCoordinate;
 
 // var roadstyle = 
 
@@ -56,23 +66,39 @@ var vector = new ol.layer.Vector(
 // }
 );
 
-function LabelEngine() {
-    this.features = features || [];
+
+var labelOption = {
+    maxResolution: 150,
+    checkCollide: true,
+    helper: false,
+    labelSwitch: true
+}
+
+function LabelEngine(opt) {
     this.visitedLabels = [];
-    this.options = opt||{ 
-      buffer: 10
-    };
-    this.removeDupl = function() {
-        // tranverse features to removeDupl, then cached in visitedLabels
+    this.labelNum = 0;  
+    this.styleFunctionTimer = 0;
+    this.bufferRatio = 3,
+    this.options = opt|| {
+        maxResolution: 100000000,
+        checkCollide: true,
+        helper: false,
+        labelSwitch: true,
+        labelField: "name"
     }
-    this.isOverlapse = isOverlapse;
+    this.generateLabel = generateLabel; 
     this.init = function() {
         this.visitedLabels = [];
+        this.labelNum = 0;
+        this.styleFunctionTimer = 0;
     }
 }
 
-var visitedLabels = [], labelNum = 0, styleFunctionTimer = 0, helper = false, labelSwitch = true;
-
+var visitedLabels = [], labelNum = 0, styleFunctionTimer = 0,
+ helper = false, labelSwitch = true, bufferRatio = 7, distStrat = true, labelFields = ['city', 'NAME'];
+/** 
+ * for optimization. TODO.
+ */
 function findInVisited() {
     
 }
@@ -88,44 +114,65 @@ function isOverlapse(feature) {
  * input curFeature, check with visitedLabels
  * return curFeature text to avoid overlapse.
  */
-function generateLabel(feature, resolution, checkCollide) {
-    var overlapse = false, extent = null, buffer = resolution * 7;
+function generateLabel(feature, resolution, checkCollide, name) {
+    var overlapse = false, extent = null, curExtent, featureClone = feature.clone();
+    buffer = resolution * bufferRatio, 
+    text = feature.getProperties()[name];
     if (visitedLabels.length === 0) {
-        // 本次缩放，第一个feature，直接加入池中. !important 可以考虑采用二分法，去屏幕中央的要素开始检查.
+        // 本次缩放，第一个feature，直接加入池中.
         drawsource.clear();
-        console.warn("clear BufferHelper of last move!");
-        visitedLabels.push(feature);
+        console.warn("clear BufferHelper of last move!");        
+        featureClone.setProperties({"lenKey":text.length});
+        visitedLabels.push(featureClone);
     } else if (checkCollide) {
-        var curGeom = feature.getGeometry();
-        var curExtent = curGeom.getExtent();
-        var curMidPoint = curGeom.getFlatMidpoint();
-        buffer *= feature.getProperties().NAME.length;
-        midPoint2Extent(curExtent, curMidPoint, buffer);
-        // console.log("created current LabelExtent.." + curExtent);
-        // generate curLabel's bufferFeature.
-        var curLabelFeature = extent2Feature(curExtent);
-        if (!curLabelFeature) return;
-        for (let j = 0; j < visitedLabels.length; j ++) {
-            // for each feature's extent, check curGeom intersectsExtent or not .. MAYBE: calc extent by Text Length!
-            extent = visitedLabels[j].getGeometry().getExtent();
-            var Midpoint = visitedLabels[j].getGeometry().getFlatMidpoint();
-            buffer = resolution * 7;
-            buffer *= visitedLabels[j].getProperties().NAME.length;
-            midPoint2Extent(extent, Midpoint, buffer);
-            // extentBuffer(extent, resolution);
-            // feature.geometry inter with Label Extent.. it should be Label inter Label check!!
-            overlapse = curLabelFeature.getGeometry().intersectsExtent(extent);
+        var curLabelFeature, 
+        curGeom = feature.getGeometry();
+        if (!curGeom.getFlatMidpoint) return;
+        curMidPoint = curGeom.getFlatMidpoint();
+        buffer *= text.length;
+        // when use label Extent as Feature to judge, generate curLabel's bufferFeature.
+        if (!distStrat) {
+            curExtent = curGeom.getExtent();
+            midPoint2Extent(curExtent, curMidPoint, buffer);
+            // labelExtent2Feature
+            curLabelFeature = extent2Feature(curExtent);
+            if (!curLabelFeature) return;
+        } else {                        
+            if (curMidPoint instanceof Array === false) return;
+        }
+        for (var j = visitedLabels.length-1; j > -1; j --) {
+            // for each feature's extent, check curGeom intersectsExtent or not.
+            var Midpoint, curBuffer,
+            visitingF = visitedLabels[j],
+            visitingGeom = visitingF.getGeometry(),
+            labelLen = visitingF.getProperties()["lenKey"];
+            if (!visitingGeom.getFlatMidpoint) continue;
+            Midpoint = visitingGeom.getFlatMidpoint();
+            curBuffer = buffer;
+            buffer = resolution * bufferRatio;
+            buffer *= labelLen||5;
+            // if apply intersectsExtent.
+            if (!distStrat) {
+                extent = visitingGeom.getExtent();
+                midPoint2Extent(extent, Midpoint, buffer);
+                overlapse = curLabelFeature.getGeometry().intersectsExtent(extent);
+            } else {
+                var BufferDist = curBuffer + buffer;
+                overlapse = cmpDist(curMidPoint, Midpoint, BufferDist);
+            }
+
             if (overlapse) {
               return "";
             }
-        } 
-        visitedLabels.push(feature);
+        }
+        featureClone.setProperties({"lenKey":text.length});
+        visitedLabels.push(featureClone);
     }
     labelNum += 1;
-    if (helper) {
-        BufferHelper(extent);
-    }    
-    return feature.getProperties().NAME;
+    if (helper && curExtent) {
+        BufferHelper(curExtent);
+    }
+    return text;
 }
 
 /** 
@@ -136,28 +183,37 @@ function feature2Label() {
 
 }
 
+function getLabelText(feature) {
+    for (var i = 0; i < labelFields.length; i ++) {
+        var key = labelFields[i], props = feature.getProperties();
+        if (props[key] !== undefined) {
+            return props[key];
+        }
+    }
+    return "";
+}
+
+/**
+ * dist less than bufferDist means overlapse.
+ */
+function cmpDist(source, target, bufferDist) {
+    var dist = calcDist(source, target);
+    return dist < bufferDist;
+}
+
+// source, target is coordinates. return distance in Rad.
+function calcDist(source, target) {
+    return  Math.sqrt(Math.pow((source[0] - target[0]), 2) + Math.pow((source[1] - target[1]), 2));
+}
+
 /**
  * extent for text label.
  */
-function midPoint2Extent(extent, Midpoint, buffer) {
-    // if (extent instanceof Array === false) return;
+function midPoint2Extent(extent, Midpoint, buffer) {    
     extent[0] = Midpoint[0] - buffer;
     extent[1] = Midpoint[1] - buffer/1.0;
     extent[2] = Midpoint[0] + buffer;
     extent[3] = Midpoint[1] + buffer/1.0;
-}
-
-var BufferRatio = 0.05;
-/**
- * 精确地来说，需要通过feature的center来估算text的最小外接矩形. 作为extent，
- * 并且每个Label 的最小外接矩形 做overlapse 检测是最准确的. 目前先简化为要素extent
- */
-function extentBuffer(extent, resolution) {
-    extent[0] -= resolution * BufferRatio;
-    extent[1] -= resolution * BufferRatio; 
-    extent[2] += resolution * BufferRatio; 
-    extent[3] += resolution * BufferRatio;
-    // return bufferExtent;
 }
 
 /**
@@ -168,10 +224,14 @@ function BufferHelper(extent) {
     var BufferFeature = extent2Feature(extent);
     if (features && drawsource && BufferFeature) {
         features.push(BufferFeature);
-        console.warn("Generating Label and BufferHelper for curResolution");
+        // console.warn("Generating Label and BufferHelper for curResolution");
     }
 }
 
+
+/**
+ * Extent2Feature
+ */
 function extent2Feature(extent) {
     if (extent instanceof Array === false) return null; 
     var BufferFeature = new ol.Feature();
@@ -192,27 +252,27 @@ function extent2Feature(extent) {
  * feature.getProperties: get label priority/name/ better location..
  */
 
-var getText = function(feature, resolution) {
-    var maxResolution = 150; // 小于 1: maxRes 这个比例尺就不显示标注. 在大比例尺下可以显示标注
+var getText = function(feature, resolution, opt) {
+    var maxResolution = opt.maxRes || 22550; // 小于 1: maxRes 这个比例尺就不显示标注. 在大比例尺下可以显示标注
+    var labelField = opt.field || "name";
     var checkCollide = true;
     if (resolution > maxResolution || !labelSwitch) {
         return ""
     } 
-    var text = generateLabel(feature, resolution, checkCollide);
-    
-    // else if (type == 'shorten') {
-    //   text = text.trunc(12);
-    // } 
+    var text = generateLabel(feature, resolution, checkCollide, labelField);
     return text;
 };
 
-function createTextStyle(feature, resolution) {
+function createTextStyle(feature, resolution, opt) {
+  var fontSet = opt.weight||"normal" + " " + opt.size||"13px";
   return new ol.style.Text({
     textAlign: "center",
-    text: getText(feature, resolution),
+    offsetY: 8,
+    text: getText(feature, resolution, opt),
     fill: new ol.style.Fill({
       color: "#222"
     }),
+    font: fontSet,
     // canvas.getContext("2d").setStroke()!! custom Label Engine!
     stroke: new ol.style.Stroke({
       color: "#eee",
@@ -227,18 +287,60 @@ function createTextStyle(feature, resolution) {
 function roadStyleFunction(feature, resolution) {
   styleFunctionTimer += 1;
   return new ol.style.Style({
-      fill: new ol.style.Fill(
-      {
-        color: 'blue'
-      }),
       stroke : new ol.style.Stroke({
-        color: 'yellow',
-        width: 3
+        color: 'rgba(255,255,10,0.7)',
+        width: 5/(feature.getProperties()["CLASS"]%40)
       }),
-      // 显示 文字标注！！
-      text: createTextStyle(feature, resolution)
+      // 根据配置 返回道路的文字标注！！
+      text: createTextStyle(feature, resolution, {
+          maxRes: 120,
+          field: "NAME"
+      })
   });
 }
+
+// 城市点要素的文字标注配置！！
+function cityStyleFunction(feature, resolution) {
+  styleFunctionTimer += 1;
+  return new ol.style.Style({
+      image: new ol.style.Circle({
+        fill: new ol.style.Fill({
+                color: "#ffc107"
+              }),
+        radius: 4
+      }),
+      // 根据配置 返回城市的文字标注！！
+      text: createTextStyle(feature, resolution, {
+          maxRes: 25000,
+          field: "city",
+          weight: "bold",
+          size: "16px",
+      })
+  });
+}
+
+// test layer.Image and layer.Vector
+var polyworld = new ol.layer.Vector({
+  source: new ol.source.Vector({
+    url:'Asset/countries.geojson',
+    format: new ol.format.GeoJSON({
+    })
+  }),
+  visible: true,
+  title: "countries",
+});
+
+// test layer.Image and layer.Vector
+var cities = new ol.layer.Vector({
+  source: new ol.source.Vector({
+    url:'Asset/cities.json',
+    format: new ol.format.GeoJSON({
+    })
+  }),
+  visible: true,
+  title: "cities",
+  style: cityStyleFunction
+});
 
 // test layer.Image and layer.Vector
 var shroad = new ol.layer.Vector({
@@ -248,6 +350,7 @@ var shroad = new ol.layer.Vector({
     })
   }),
   visible: true,
+  maxResolution: 250,
   title: "shanghai_road",
   style: roadStyleFunction
 });

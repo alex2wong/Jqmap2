@@ -146,11 +146,19 @@ var selectlayers = [];
               color: '#4caf50'
             })
           });
-        var waterstyle = new ol.style.Style({
-            fill: new ol.style.Fill({
-              color: '#2196F3'
-            })
-        });
+        var waterstyle = function (feature, resolution){
+          return new ol.style.Style({
+              fill: new ol.style.Fill({
+                color: '#2196F3'
+              }),
+              // text: createTextStyle(feature, resolution, {
+              //     maxRes: 450,
+              //     field: "name",
+              //     weight: "bold",
+              //     size: "14px",
+              // })
+          });
+        }
 
         /* set Style of layer */
         function setStyle(layername, prop){
@@ -230,7 +238,6 @@ var selectlayers = [];
         //loadshp("cpdmpop2010_poly_wgs.shp");
         // Performance need to be promoted. Cache manage not good!. refer to mapshaper.org. How to render tens of thousands of Data with limited buffer..
 
-
         layercol = [
              //geoqdark,
              //tian_base,
@@ -238,6 +245,7 @@ var selectlayers = [];
              //tian_diming,
              vector,
              shroad,
+             cities,
              drawvector
             ];
         
@@ -301,14 +309,15 @@ var selectlayers = [];
         // loadshp('Green.shp');
         setTimeout(function() {
           loadshp('Asset/water.shp');
+          if (getlayername('Asset/water.shp')) {
+              var waters = getlayername('Asset/water.shp').getSource().getFeatures();
+              for(var i=0; i < waters.length; i++) {
+                  waters[i].setProperties({"name": "黄浦江"});
+              }
+          }
         }, 500);
 
         $('#map')[0].style.backgroundColor = '#333';
-        getlayername('Green.shp')?getlayername('Green.shp').setStyle(greenstyle):console.log('loading shp....'); 
-        getlayername('Green.shp')?getlayername('Green.shp').setMaxResolution(40):console.log('loading shp....');
-        setTimeout(function(){
-              getlayername('water.shp')?getlayername('water.shp').setStyle(waterstyle):console.log('loading shp....');
-          }, 1500);
         /* getlayername('用户绘制图层').setZIndex(20);*/
 
 
@@ -384,12 +393,21 @@ var selectlayers = [];
                     labelNum = 0;
                     styleFunctionTimer = 0;
                     adjustView();
+                    map.on("postcompose", function() {
+                        // estimate Label Calc timelapse.
+                        var etime = new Date().getTime();
+                        // console.warn("## Debug: label render timelapse " + (etime - stime) + " ms");
+                    });
                 }, 0); 
             }
+            document.body.style.cursor = "default";
             console.log("## Debug: last moveend generat label-> " + labelNum + " times in styleFunction " + styleFunctionTimer + " times");
+            var stime = new Date().getTime();
         });
+
         map.on('movestart', function(evt) {
             drawsource.clear();
+            document.body.style.cursor = "move";
         })
 
         select.on("select",function(evt){
@@ -456,6 +474,30 @@ var selectlayers = [];
         getlayername('Asset/water.shp')?getlayername('Asset/water.shp').setStyle(waterstyle):console.log('');
         getlayername('用户绘制图层')?getlayername('用户绘制图层').setZIndex(20):console.log('');
         getlayername('shanghai_road')?getlayername('shanghai_road').setZIndex(120):console.log('');
+        getlayername('cities')?getlayername('cities').setZIndex(100):console.log("");        
+    }
+
+    // set textPathStyle according inputs
+    function setTextPath(){
+        if (getlayername('用户绘制图层')) {
+            getlayername('用户绘制图层').setTextPathStyle(function(f) {
+            return [ new ol.style.Style(
+          {	text: new ol.style.TextPath(
+            {	
+              text: "text follow curve",
+              font: "12px Arial",
+              fill: new ol.style.Fill ({ color:"#369" }),
+              stroke: new ol.style.Stroke({ color:"#fff", width:3 }),
+              // textBaseline: $("#textBaseline").val(),
+              // textAlign: $("#textAlign").val(),
+              rotateWithView: true,
+              // textOverflow: $("#overflow").val(),
+              // minWidth: Number($("#minwidth").val())
+            }),
+            // geometry: $("#cspline").prop("checked") ? f.getGeometry().cspline() : null
+          })]
+            })
+        }
     }
 
     /* input layername */

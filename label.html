@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="Css/bootstrap.min.css" type="text/css">    
   </head>
   <style type="text/css">
+    body {
+      cursor: default;
+    }
 	  #map{
         width: 100%;
         height: 600px;
@@ -127,13 +130,16 @@
     <label for="bufferHelper">辅助多边形</label>
     <input type="checkbox" name="labelSwitch" id="labelSwitch" onchange="toggleLabel()" checked>
     <label for="labelSwitch">标注开关</label>
+    <input type="checkbox" name="distSwitch" id="distSwitch" onchange="toggleStrategy()" checked>
+    <label for="distSwitch">距离检测算法(默认配置)</label>
     <input type="file" name="shpfile" id="shpfile" onchange="fileselect()">拖放shp/json/csv/txt文件</input>    
     <div id="selectinfo" class="alert alert-success">
       &nbsp;
     </div>
   </div>  
 </body>
-<script src="Scripts/label/ol4.js"></script>
+<script src="Scripts/label/ol-debug4.js"></script>
+<script src="Scripts/label/settextpathstyle.js"></script>
 <script src="Scripts/label/labelUtils.js"></script>
 <script src="Scripts/label/layercontrol.js"></script>
 <script src="Scripts/jquery-1.11.1.min.js"></script>
