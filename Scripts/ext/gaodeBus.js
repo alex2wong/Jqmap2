@@ -60,7 +60,7 @@ Fetcher.prototype.getBus = function(busName, callback) {
     this.setKeywords(busName);
     // send ajax GET request..
     var xhr = new XHR(), finalUrl = this.baseUrl + this.key + "=" + this.keywords; 
-    xhr.get("http://127.0.0.1:3002/proxy/", wrapHandler(this,this.json2lnglats,callback));
+    xhr.get("http://123.206.201.245:3002/proxy/", wrapHandler(this,this.json2lnglats,callback));
 }
 
 // transfer xhr response JSON to lngs and lats array..
