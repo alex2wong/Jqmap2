@@ -2,23 +2,29 @@
 <html>
 <head>
     <meta charset='utf-8' />
-    <title> Blurred Canvas Map </title>
+    <title>Get Resouces by Nodejs Proxy</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     </head>
     <style>
         body { margin:0; padding:0; }
         header {display:block;position:fixed;background:#222;color:#eee;width:100%;}
         #map { position:absolute; top:40px; bottom:0; width:100%; }
+        input {
+            position:absolute; top:50px; width:120px;
+        }
     </style>
     <body>
         <header>
-            <h4>Blurred Canvas Map</h4>
+            <h4>Get Resouces by Nodejs Proxy</h4>
         </header>
         <div id='map'></div>
+        <input type="text" id="keyword" placeholder="input busline name" value="">
     </body>
     <script src="Scripts/label/ol-debug4.js">
     </script>
     <script src="Scripts/flight_controllers.js">
+    </script>
+    <script src="Scripts/ext/gaodeBus.js"> 
     </script>
     <script>
         var geoqdark = new ol.layer.Tile({
@@ -36,7 +42,7 @@
         })
 
         var osm = new ol.layer.Tile({
-            source: new ol.source.BingMaps()
+            source: new ol.source.OSM()
         });
 
         var radar = new ol.layer.Image({
@@ -48,25 +54,56 @@
             opacity: 0.4,
         })
 
+        var features = new ol.Collection();
+        var drawsource = new ol.source.Vector({
+          wrapX:false,
+          features: features
+        });
+        var buslayer = new ol.layer.Vector({
+          title:"buslayer",
+          source: drawsource,
+          style: new ol.style.Style({
+            fill: new ol.style.Fill({
+              color: 'rgba(255, 255, 255, 0.1)'
+            }),
+            stroke: new ol.style.Stroke({
+              color: '#ffcc33',
+              width: 2
+            }),
+            image: new ol.style.Circle({
+              radius: 7,
+              fill: new ol.style.Fill({
+                color: '#ffcc33'
+              })
+            })
+          })
+        });
+
         var map = new ol.Map({
-            layers: [osm],
+            layers: [geoqdark, radar, buslayer],
             // 绑定 div
             target: 'map',
             view: new ol.View({
                 // 默认是3857的web墨卡托
-                center: ol.proj.transform([119.3, 26.3], 'EPSG:4326', 'EPSG:3857'),
-                zoom: 12
+                center: ol.proj.transform([121.3, 30.3], 'EPSG:4326', 'EPSG:3857'),
+                zoom: 10
             })
         });
 
-        var blurControl = new Blurify({
-            ele: document.querySelector(".ol-unselectable")
-        });
-
-        map.on("postcompose", function(evt) {
-            if (evt) {
-                blurControl.useCanvasMode();
+        var fetcher = new Fetcher({
+                'features': features
+            });
+        var keyword = document.querySelector("#keyword");
+        keyword.onkeyup = function(evt) {
+            if (evt.which == 13) {
+                fetcher.getBus(evt.target.value, function(buslines) {
+                    if (buslines.length > 0) {
+                        drawsource.clear();
+                        features.push(buslines[0]);
+                    }
+                });                
             }
-        });
+        }
+
     </script>
 </html>

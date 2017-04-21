@@ -72373,7 +72373,7 @@ ol.source.XYZ = function(opt_options) {
   ol.source.TileImage.call(this, {
     attributions: options.attributions,
     cacheSize: options.cacheSize,
-    crossOrigin: options.crossOrigin,
+    crossOrigin: options.crossOrigin || null,
     logo: options.logo,
     opaque: options.opaque,
     projection: projection,
@@ -73312,6 +73312,8 @@ ol.source.ImageStatic = function(options) {
   var crossOrigin = options.crossOrigin !== undefined ?
       options.crossOrigin : null;
 
+  console.warn("when init ImageStatic source, crossOrigin is: " + crossOrigin);
+
   var /** @type {ol.ImageLoadFunctionType} */ imageLoadFunction =
       options.imageLoadFunction !== undefined ?
       options.imageLoadFunction : ol.source.Image.defaultImageLoadFunction;
@@ -73319,6 +73321,7 @@ ol.source.ImageStatic = function(options) {
   ol.source.Image.call(this, {
     attributions: options.attributions,
     logo: options.logo,
+    crossOrigin: crossOrigin,
     projection: ol.proj.get(options.projection)
   });
 
@@ -73339,6 +73342,8 @@ ol.source.ImageStatic = function(options) {
       this.handleImageChange, this);
 
 };
+
+// extends.. implements.. as well.
 ol.inherits(ol.source.ImageStatic, ol.source.Image);
 
 

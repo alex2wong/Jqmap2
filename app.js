@@ -10,6 +10,7 @@ var express = require('express'),
   app = express(),
   server = require('http').createServer(app),
   io = require('socket.io').listen(server),
+  proxy = require('./proxy');
   log4js = require('log4js');
 
 
@@ -23,6 +24,10 @@ app.get('/', function(req, res) {
     root: __dirname
   });
 });
+
+app.get('/proxy', function(req, res) {
+  proxy(req, res);
+})
 
 app.get('/flight', function(req, res) {
   res.sendFile('flight.html',{

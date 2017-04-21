@@ -32,7 +32,14 @@ function XHR() {
     };
 }
 
-function Fetcher() {
+function wrapHandler(ctx, fn, fn2) {
+    return function(res) {
+        fn.apply(ctx, [res]);
+        fn2(ctx.features);
+    }
+}
+
+function Fetcher(opt) {
     this.lngs = [];
     this.lats = [];
     this.baseUrl = "http://ditu.amap.com/service/poiInfo?query_type=TQUERY&pagesize=20&pagenum=1&qii=true&\
@@ -49,12 +56,11 @@ Fetcher.prototype.setKeywords = function (value) {
 }
 
 // get Gaode busline then add lineFeature to this.features
-Fetcher.prototype.getBus = function(busName) {
+Fetcher.prototype.getBus = function(busName, callback) {
     this.setKeywords(busName);
     // send ajax GET request..
     var xhr = new XHR(), finalUrl = this.baseUrl + this.key + "=" + this.keywords; 
-    xhr.get("http://127.0.0.1:3002/api/", this.json2lnglats);
-    return this.features;
+    xhr.get("http://127.0.0.1:3002/proxy/", wrapHandler(this,this.json2lnglats,callback));
 }
 
 // transfer xhr response JSON to lngs and lats array..
@@ -79,10 +85,10 @@ Fetcher.prototype.lnglat2line = function (lngs, lats) {
         geometry = new ol.geom.LineString(null);
     }
 
-    var start = [lngs[0], lats[0]];
+    var start = [parseFloat(lngs[0]), parseFloat(lats[0])];
     var coordinates = [];
     for (var index = 0; index < lngs.length; index++) {
-        var point = [lngs[index], lats[index]];
+        var point = [parseFloat(lngs[index]), parseFloat(lats[index])];
         coordinates.push(point);
     }
     console.warn("This line has coordinates number: " + coordinates.length);
