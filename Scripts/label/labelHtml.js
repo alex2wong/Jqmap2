@@ -240,7 +240,7 @@ var selectlayers = [];
 
         layercol = [
              //geoqdark,
-             //tian_base,
+             tian_base,
              //sh_img,
              //tian_diming,
              vector,

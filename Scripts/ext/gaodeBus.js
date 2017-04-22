@@ -46,35 +46,45 @@ function Fetcher(opt) {
         cluster_state=5&need_utd=true&utd_sceneid=1000&div=PC1000&addr_poi_merge=true&is_classify=true&zoom=17&city=310000&"
     this.queryString = "";
     this.key = "keywords";
-    this.keywords = "937路";
+    this.keywords = "";
     this.features = [];
+    // "http://123.206.201.245:3002/proxy/";
+    this.proxyAddr = "http://123.206.201.245:3002/proxy/";
 }
 
 Fetcher.prototype.setKeywords = function (value) {
-    this.keywords = value || "";
+    this.keywords = value;
     return this;
 }
 
 // get Gaode busline then add lineFeature to this.features
 Fetcher.prototype.getBus = function(busName, callback) {
+    if (busName.length < 1) {
+        console.warn("use default value 937路 for busName");
+        busName = "937路";
+    }
     this.setKeywords(busName);
-    // send ajax GET request..
-    var xhr = new XHR(), finalUrl = this.baseUrl + this.key + "=" + this.keywords; 
-    xhr.get("http://123.206.201.245:3002/proxy/", wrapHandler(this,this.json2lnglats,callback));
+    // send ajax GET request..    
+    var xhr = new XHR(), finalUrl = this.proxyAddr + "?proxyURI=" + this.baseUrl + this.key + "=" + this.keywords; 
+    xhr.get(encodeURI(finalUrl), wrapHandler(this,this.json2lnglats,callback));
 }
 
 // transfer xhr response JSON to lngs and lats array..
 Fetcher.prototype.json2lnglats = function (content) {
-    var resObj = JSON.parse(content);
-    if ("data" in resObj && "busline_list" in resObj["data"]) {
-        var buslines = resObj["data"]["busline_list"];
-        var lngs = buslines[0]["xs"].split(",");
-        var lats = buslines[0]["ys"].split(",");
-        var resFeature = this.lnglat2line(lngs, lats);
-        this.features = [];
-        this.features.push(resFeature);
-    } else {
-        console.error("Some thing wrong with server responseText");
+    try {
+        var resObj = JSON.parse(content);
+        if ("data" in resObj && "busline_list" in resObj["data"]) {
+            var buslines = resObj["data"]["busline_list"];
+            var lngs = buslines[0]["xs"].split(",");
+            var lats = buslines[0]["ys"].split(",");
+            var resFeature = this.lnglat2line(lngs, lats);
+            this.features = [];
+            this.features.push(resFeature);
+        } else {
+            console.warn("#debug: can not find busline with your keyword:" + this.keywords);
+        }
+    } catch (error) {
+        console.warn("#debug: can not find busline with your keyword:" + this.keywords);
     }
 }
 
