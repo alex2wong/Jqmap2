@@ -94,6 +94,7 @@
                 'features': features
             });
         var keyword = document.querySelector("#keyword");
+        var newImg = new Image();
         keyword.onkeyup = function(evt) {
             if (evt.which == 13) {
                 fetcher.getBus(evt.target.value, function(buslines) {
@@ -103,7 +104,23 @@
                         map.getView().setCenter(buslines[0].getGeometry().getFlatMidpoint());
                     }
                 });
-            }
+            }            
+            newImg.onload = function() {
+                console.warn('got binary data');
+            };
+            var Imgsrc = "http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/10/419/855";
+            fetcher.getBinary(Imgsrc, function(data) {
+                newImg.src = data;
+                // actually the canv is Tainted!! Tainted canvases may not be exported
+                var canv = document.querySelector(".ol-unselectable");
+                var ctx = canv.getContext('2d');
+
+                ctx.clearRect(0,0,canv.width,canv.height);
+                ctx.drawImage(newImg,0,0);
+
+                // the Only way is to create a new canv and draw proxy image.
+            });
+
         }
 
     </script>
