@@ -22,10 +22,12 @@ var Proxy = function (req, res) {
             res.setHeader("Content-Type","application/json");
             let buffer = [];
             response.on('data', (chunk) => {
+                // typeof chunk ?? Buffer?
                 buffer.push(chunk);                
             });
             response.on('end', () => {
                 let buff = Buffer.concat(buffer);
+                // Buffer toString. 'ascii'/'base64'
                 res.end(buff.toString());
             })
         }).on('error', function(e) {  
