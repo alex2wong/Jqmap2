@@ -13,7 +13,11 @@ Game ScreenShot:
 if interested **how it works**, visit [WIKI](https://github.com/alex2wong/Jqmap2/wiki/Openlayer-%E5%AE%9E%E7%8E%B0%E5%B8%A6%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E7%9A%84%E6%A0%87%E6%B3%A8) for more information.
 
 ### **Demos** for you:
-<a href="http://alex2wong.github.io/Jqmap2/label.html"> Label Example </a>, Openlayer label **without overlap**, Update 2017/3/22.
+<a href="http://alex2wong.github.io/Jqmap2/label.html"> Label Example </a>, Openlayer label **without overlap**, Update 2017/4/22.
+<br>
+<a href="http://alex2wong.github.io/Jqmap2/proxy.html"> Proxy Example </a>, Get  resource by Nodejs Proxy, input busline name in DEMO to get the line coordinates.
+<br>
+<a href="http://alex2wong.github.io/Jqmap2/blur.html"> Blur Example </a>, blur partial canvas context, based on js lib [blurify](https://github.com/alex2wong/blurify).
 <br>
 <a href="http://alex2wong.github.io/Jqmap2/"> Mobile web map </a>, the JqueryMobile and Openlayer2 webApp.
 <br>
