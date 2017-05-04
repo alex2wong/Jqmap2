@@ -252,35 +252,38 @@ function extent2Feature(extent) {
  * feature.getProperties: get label priority/name/ better location..
  */
 
-var getText = function(feature, resolution, opt) {
-    var maxResolution = opt.maxRes || 22550; // 小于 1: maxRes 这个比例尺就不显示标注. 在大比例尺下可以显示标注
+var getText = function(feature, resolution, opt) {    
     var labelField = opt.field || "name";
-    var checkCollide = true;
-    if (resolution > maxResolution || !labelSwitch) {
-        return ""
-    } 
+    var checkCollide = true;    
     var text = generateLabel(feature, resolution, checkCollide, labelField);
     return text;
 };
 
 function createTextStyle(feature, resolution, opt) {
-  var fontSet = opt.weight||"normal" + " " + opt.size||"13px";
-  return new ol.style.Text({
-    textAlign: "center",
-    offsetY: 8,
-    text: getText(feature, resolution, opt),
-    fill: new ol.style.Fill({
-      color: "#222"
-    }),
-    font: fontSet,
-    // canvas.getContext("2d").setStroke()!! custom Label Engine!
-    stroke: new ol.style.Stroke({
-      color: "#eee",
-      width: "3"
-    })
-  });
+    var maxResolution = opt.maxRes || 22550; // 小于 1: maxRes 这个比例尺就不显示标注. 在大比例尺下可以显示标注
+    if (resolution > maxResolution || !labelSwitch) {
+        return new ol.style.Text({
+            text: "",
+        })
+    }
+    var fontSet = opt.weight||"normal" + " " + opt.size||"13px";
+    return new ol.style.Text({
+        textAlign: "center",
+        offsetY: 8,
+        text: getText(feature, resolution, opt),
+        fill: new ol.style.Fill({
+        color: "#222"
+        }),
+        font: fontSet,
+        // canvas.getContext("2d").setStroke()!! custom Label Engine!
+        stroke: new ol.style.Stroke({
+        color: "#eee",
+        width: "3"
+        })
+    });
 }
 
+var roadMaxRes = 60;
 /**
  * layer init and map drag/zoom will trigger this func.
  */
@@ -288,12 +291,12 @@ function roadStyleFunction(feature, resolution) {
   styleFunctionTimer += 1;
   return new ol.style.Style({
       stroke : new ol.style.Stroke({
-        color: 'rgba(255,255,10,0.7)',
-        width: 5/(feature.getProperties()["CLASS"]%40)
+        color: 'rgba(255,255,10,.0)',
+        // width: 5/(feature.getProperties()["CLASS"]%40)
       }),
       // 根据配置 返回道路的文字标注！！
       text: createTextStyle(feature, resolution, {
-          maxRes: 120,
+          maxRes: roadMaxRes,
           field: "NAME"
       })
   });
@@ -350,7 +353,7 @@ var shroad = new ol.layer.Vector({
     })
   }),
   visible: true,
-  maxResolution: 250,
+  maxResolution: roadMaxRes,
   title: "shanghai_road",
   style: roadStyleFunction
 });
