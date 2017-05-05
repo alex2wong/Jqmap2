@@ -22,6 +22,7 @@ var Proxy = function (req, res) {
                 target += "&" + k.trim() + "=" + req.query[k].trim();
             }
         }
+        // thisPlace should first check localFile if exists, res localFile directly..
         http.get(target, function(response) {  
             console.log("Proxy got response: " + response.statusCode);
             var resContentType = response.headers["content-type"];
@@ -42,12 +43,25 @@ var Proxy = function (req, res) {
                             // var fileName = encodeURIComponent(target.replace("/", "_")) + "." + ext;
                             var tmpArr = target.split("/");
                             var fileName = tmpArr[tmpArr.length-2] + "_" + tmpArr[tmpArr.length-1] + "." + ext;
-                            fs.writeFile("./Asset/tiles/" + fileName, buff);
+                            var finalName = "./Asset/tiles/" + fileName;
+                            fs.exists(finalName, function(exists) {
+                                if (exists) {
+                                    res.sendFile(finalName, {
+                                        root: __dirname
+                                    });
+                                } else {
+                                    fs.writeFileSync("./Asset/tiles/" + fileName, buff);
+                                    res.sendFile(finalName, {
+                                        root: __dirname
+                                    });
+                                }
+                            });
+                            
+                            return;
                         } catch (error) {
-                            console.error("");
+                            console.error("proxyImage error.");
+                            res.end("proxyImage error.");
                         }                        
-                        res.end("Asset/tiles/" + fileName);
-                        return;
                     }
                 }
                 res.end(buff.toString());

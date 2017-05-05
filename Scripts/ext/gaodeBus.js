@@ -49,7 +49,7 @@ function Fetcher(opt) {
     this.keywords = "";
     this.features = [];
     // "http://123.206.201.245:3002/proxy/";
-    this.proxyAddr = "http://127.0.0.1:3002/proxy/";
+    this.proxyAddr = opt.proxyAddr || "http://127.0.0.1:3002/proxy/";
 }
 
 Fetcher.prototype.setKeywords = function (value) {
