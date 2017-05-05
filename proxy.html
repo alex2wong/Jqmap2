@@ -27,10 +27,16 @@
     <script src="Scripts/ext/gaodeBus.js"> 
     </script>
     <script>
+        var proxyAddr = "http://123.206.201.245:3002/proxy/";
+        // var proxyAddr = "http://127.0.0.1:3002/proxy/";
         var geoqdark = new ol.layer.Tile({
             source: new ol.source.XYZ({
-                url:"http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
-            }),
+                // imageLoadFunction: function(image, src){
+                //     // image.getImage().src = src;
+                //     console.log("imageLoadFunction: load src " + src, " completed..");
+                // },
+                url: proxyAddr + "?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
+            }),            
             title:"geoq暗夜底图-有偏"
         });
 
@@ -91,9 +97,11 @@
         });
 
         var fetcher = new Fetcher({
-                'features': features
+                'features': features,
+                'proxyAddr': proxyAddr,
             });
         var keyword = document.querySelector("#keyword");
+        var newImg = new Image();
         keyword.onkeyup = function(evt) {
             if (evt.which == 13) {
                 fetcher.getBus(evt.target.value, function(buslines) {
@@ -105,6 +113,18 @@
                 });
             }
         }
+
+        //// easy to load Blur Plugin..
+        // var blurControl = new Blurify({
+        //     ele: document.querySelector(".ol-unselectable"),
+        //     ratio: 0.5,
+        // });
+
+        // map.on("moveend", function(evt) {
+        //     if (evt) {
+        //         blurControl.useCanvasMode();
+        //     }
+        // });
 
     </script>
 </html>

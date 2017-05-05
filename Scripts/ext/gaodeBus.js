@@ -35,7 +35,7 @@ function XHR() {
 function wrapHandler(ctx, fn, fn2) {
     return function(res) {
         fn.apply(ctx, [res]);
-        fn2(ctx.features);
+        if (fn2) fn2(ctx.features);
     }
 }
 
@@ -49,7 +49,7 @@ function Fetcher(opt) {
     this.keywords = "";
     this.features = [];
     // "http://123.206.201.245:3002/proxy/";
-    this.proxyAddr = "http://123.206.201.245:3002/proxy/";
+    this.proxyAddr = opt.proxyAddr || "http://127.0.0.1:3002/proxy/";
 }
 
 Fetcher.prototype.setKeywords = function (value) {
@@ -67,6 +67,12 @@ Fetcher.prototype.getBus = function(busName, callback) {
     // send ajax GET request..    
     var xhr = new XHR(), finalUrl = this.proxyAddr + "?proxyURI=" + this.baseUrl + this.key + "=" + this.keywords; 
     xhr.get(encodeURI(finalUrl), wrapHandler(this,this.json2lnglats,callback));
+}
+
+// get binary octen-stream resource by proxy...
+Fetcher.prototype.getBinary = function(url, callback) {
+    var xhr = new XHR(), finalUrl = this.proxyAddr + "?proxyURI=" + url;
+    xhr.get(encodeURI(finalUrl), wrapHandler(this, callback));
 }
 
 // transfer xhr response JSON to lngs and lats array..
