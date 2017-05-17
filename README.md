@@ -13,7 +13,42 @@ Game ScreenShot:
 if interested **how it works**, visit [WIKI](https://github.com/alex2wong/Jqmap2/wiki/Openlayer-%E5%AE%9E%E7%8E%B0%E5%B8%A6%E7%A2%B0%E6%92%9E%E6%A3%80%E6%B5%8B%E7%9A%84%E6%A0%87%E6%B3%A8) for more information.
 
 ### **Demos** for you:
-<a href="http://alex2wong.github.io/Jqmap2/label.html"> Label Example </a>, Openlayer label **without overlap**, Update 2017/4/22.
+<a href="http://alex2wong.github.io/Jqmap2/label.html"> Label Example </a>, Openlayer label Engine, Update 2017/5/17. Simple config, easy use.
+<br>
+```
+// new LabelEngine.
+var labelEngine = new LabelEngine({
+      labelFields: ['city', 'NAME'],
+      distStrat: true,
+    });
+
+// refresh timer each moveend.
+map.on('moveend', function(evt) {
+    if (labelEngine) {
+        labelEngine.log();
+        labelEngine.init();
+    }
+});
+
+// config layer styleFunction as usual
+function cityStyleFunction(feature, resolution) {
+  return new ol.style.Style({
+      image: new ol.style.Circle({
+        fill: new ol.style.Fill({
+                color: "#ffc107"
+              }),
+        radius: 4
+      }),
+      // config layer label option
+      text: labelEngine.createTextStyle(feature, resolution, {
+          maxRes: 25000,
+          field: "city",
+          lang: "en",
+      }),
+  });
+}
+
+```
 <br>
 <a href="http://alex2wong.github.io/Jqmap2/proxy.html"> Proxy Example </a>, Get  resource by Nodejs Proxy, input busline name in DEMO to get the line coordinates.
 <br>
