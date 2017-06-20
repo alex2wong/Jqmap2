@@ -340,9 +340,8 @@ var selectlayers = [];
         layercol = [
              geoqdark,
              // tian_base,
-             //sh_img,
-             //tian_diming,
-             vector,
+             // tian_diming,
+             // vector,
              shroad,
              cities,
              drawvector

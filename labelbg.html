@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Label with background rectangle</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link href="Css/ol.css" rel="stylesheet" />
+    <link rel="stylesheet" href="Css/bootstrap.min.css" type="text/css">    
+  </head>
+  <style type="text/css">
+    body {
+      cursor: default;
+    }
+    header {display:block;position:fixed;background:#222;color:#eee;width:100%;}
+    #map { position:absolute; top:40px; bottom:0; width:100%; }
+    </style>
+    <body>
+        <header>
+            <h4>Label with background rectangle</h4>
+        </header>
+        <div id="map"><div id="info"></div></div>
+        <div id="mouse-position"></div>
+        <script src="Scripts/label/ol4.js"></script>
+        <script>
+            var geoqdark = new ol.layer.Tile({
+                source: new ol.source.XYZ({
+                    url:"http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
+                }),
+                title:"geoq暗夜底图-有偏"
+            });
+
+            // test layer.Image and layer.Vector
+            var cities = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    url:'Asset/cities.json',
+                    format: new ol.format.GeoJSON({
+                    })
+                }),
+                visible: true,
+                title: "cities",
+                style: cityStyleFunction
+            });
+
+            var layercol = [
+                geoqdark,
+                cities,
+                ];
+            var map = new ol.Map({
+                layers: layercol,
+                controls: ol.control.defaults({
+                }).extend([
+                    new ol.control.MousePosition({
+                        coordinateFormat: ol.coordinate.createStringXY(4),
+                        projection:ol.proj.get("EPSG:4326"),
+                        className: 'custom-mouse-position',
+                        target: document.getElementById("mouse-position")
+                    }),
+                    //new ol.control.ZoomSlider(),
+                    new ol.control.ZoomToExtent({
+                    "extent": ol.proj.transformExtent([119, 30, 122, 32],"EPSG:4326","EPSG:3857")
+                    })
+                ]),
+                // 绑定 div
+                target: 'map',
+                view: new ol.View({
+                    // 默认是3857的web墨卡托
+                    center: ol.proj.transform([119.3, 31.3], 'EPSG:4326', 'EPSG:3857'),
+                    zoom: 6
+                })
+            });
+
+            //绘制圆角矩形
+            var roundRect = function (x, y, w, h, r, img) {
+                if (w < 2 * r) r = w / 2;
+                if (h < 2 * r) r = h / 2;
+                // set canvas width depend on label length..
+                this.canvas.width = w;
+                this.beginPath();
+                y += h/2;
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                this.closePath();
+                this.strokeWidth = 2;
+                this.strokeStyle = "rgba(255,255,255, 1)";   
+                this.stroke();
+                // console.warn(`drawn 1 rect label bg. imgWidth: ${w}, ctx instance:${this.canvas}`);
+                img.src = this.canvas.toDataURL();
+                return img;
+            }
+            var canvas = document.createElement("canvas");//创建一个canvas标签
+            // canvas.width = 75;
+            var ratio = 9, height = 20, borderRadius = 4;
+            canvas.height = height*2;
+            var context = canvas.getContext("2d");
+            context.roundRect = roundRect;
+            // context.roundRect(0, 0, 75, 20, 8);
+            
+            // 城市点要素的文字标注配置！！
+            function cityStyleFunction(feature, resolution) {
+                var labelLen = feature.getProperties()["city"].length;
+                var img = new Image();
+                return new ol.style.Style({
+                    image: new ol.style.Icon({
+                        // return image instance by 
+                        img: context.roundRect(0,0, labelLen*ratio, height, borderRadius, img),
+                        // depend on label length.
+                        imgSize: [labelLen*ratio, height*2],
+                    }),
+                    // 根据配置 返回城市的文字标注！！
+                    text: new ol.style.Text({
+                        text: feature.getProperties()["city"],
+                        font: "13px 微软雅黑",
+                        fill: new ol.style.Fill({ color: "#ffffff"})
+                    }),
+                });
+            }
+        
+        </script>
+    </body>
+</html>

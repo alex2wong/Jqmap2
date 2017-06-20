@@ -48,7 +48,7 @@ ol.geom.MultiPolygon.prototype.getFlatMidpoint = function () {
 }
 ol.geom.Point.prototype.getFlatMidpoint = ol.geom.Point.prototype.getLastCoordinate;
 
-var vector = new ol.layer.Vector();
+// var vector = new ol.layer.Vector();
 
 function LabelEngine(opt) {
     this.visitedLabels = [];
