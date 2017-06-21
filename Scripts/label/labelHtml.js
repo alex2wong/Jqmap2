@@ -114,7 +114,7 @@ var selectlayers = [];
               color: 'rgba(255, 255, 255, 0.1)'
             }),
             stroke: new ol.style.Stroke({
-              color: '#ffcc33',
+              color: '#f44336',
               width: 2
             }),
             image: new ol.style.Circle({
@@ -237,18 +237,6 @@ var selectlayers = [];
         
         //loadshp("cpdmpop2010_poly_wgs.shp");
         // Performance need to be promoted. Cache manage not good!. refer to mapshaper.org. How to render tens of thousands of Data with limited buffer..
-
-        layercol = [
-             //geoqdark,
-             tian_base,
-             //sh_img,
-             //tian_diming,
-             vector,
-             shroad,
-             cities,
-             drawvector
-            ];
-        
         
         // 默认是click要素出发选择事件。
         var select = new ol.interaction.Select({
@@ -274,6 +262,90 @@ var selectlayers = [];
           })
         });        
         var scaleLineControl = new ol.control.ScaleLine();
+
+        var roadMaxRes = 60, helper = true, distStrat = false;
+        /**
+         * layer init and map drag/zoom will trigger this func.
+         */
+        function roadStyleFunction(feature, resolution) {
+          return new ol.style.Style({
+              stroke : new ol.style.Stroke({
+                color: 'rgba(255,255,10,.4)',
+                width: 5/(feature.getProperties()["CLASS"]%40)
+              }),
+              // 根据配置 返回道路的文字标注！！
+              // text: labelEngine.createTextStyle(feature, resolution, {
+              //     maxRes: roadMaxRes,
+              //     field: "NAME",
+              // })
+          });
+        }
+
+        // 城市点要素的文字标注配置！！
+        function cityStyleFunction(feature, resolution) {
+          return new ol.style.Style({
+              image: new ol.style.Circle({
+                fill: new ol.style.Fill({
+                        color: "#ffc107"
+                      }),
+                radius: 4
+              }),
+              // 根据配置 返回城市的文字标注！！
+              text: labelEngine.createTextStyle(feature, resolution, {
+                  maxRes: 25000,
+                  field: "city",
+                  lang: "en",
+              }),
+          });
+        }
+
+        // test layer.Image and layer.Vector
+        var polyworld = new ol.layer.Vector({
+          source: new ol.source.Vector({
+            url:'Asset/countries.geojson',
+            format: new ol.format.GeoJSON({
+            })
+          }),
+          visible: true,
+          title: "countries",
+        });
+
+        // test layer.Image and layer.Vector
+        var cities = new ol.layer.Vector({
+          source: new ol.source.Vector({
+            url:'Asset/cities.json',
+            format: new ol.format.GeoJSON({
+            })
+          }),
+          visible: true,
+          title: "cities",
+          style: cityStyleFunction
+        });
+
+        // test layer.Image and layer.Vector
+        var shroad = new ol.layer.Vector({
+          source: new ol.source.Vector({
+            url:'Asset/shroad.json',
+            format: new ol.format.EsriJSON({
+            })
+          }),
+          visible: true,
+          maxResolution: roadMaxRes,
+          title: "shanghai_road",
+          style: roadStyleFunction
+        });
+
+        var extent = [120.78489, 30.68767, 121.95649, 31.58687];
+
+        layercol = [
+             geoqdark,
+             // tian_base,
+             // tian_diming,
+             // vector,
+             shroad,
+             cities,
+             drawvector
+            ];        
         
         var map = new ol.Map({
             layers: layercol,
@@ -386,23 +458,18 @@ var selectlayers = [];
           displayFeatureInfo(map.getEventPixel(evt.originalEvent));
         });
 
-        map.on('moveend', function(evt) {            
-            if (1) {
-                setTimeout(function() {
-                    visitedLabels = [];
-                    labelNum = 0;
-                    styleFunctionTimer = 0;
-                    adjustView();
-                    map.on("postcompose", function() {
-                        // estimate Label Calc timelapse.
-                        var etime = new Date().getTime();
-                        // console.warn("## Debug: label render timelapse " + (etime - stime) + " ms");
-                    });
-                }, 0); 
+        var labelEngine = new LabelEngine({
+          labelFields: ['city', 'NAME'],
+          helperSource: drawsource,
+          distStrat: distStrat,
+        });
+        map.on('moveend', function(evt) {
+            if (labelEngine && labelEngine.init) {
+                labelEngine.log();
+                labelEngine.init();
             }
+            adjustView();
             document.body.style.cursor = "default";
-            console.log("## Debug: last moveend generat label-> " + labelNum + " times in styleFunction " + styleFunctionTimer + " times");
-            var stime = new Date().getTime();
         });
 
         map.on('movestart', function(evt) {
@@ -441,34 +508,6 @@ var selectlayers = [];
             selinfobox.innerHTML = selinfo.join();
           }
         });
-		
-		var addpoint = document.getElementById("addpoint");
-		addpoint.onclick=function(){
-			//drawsource.clear();
-			var lnglat = document.getElementById("lnglat").value;
-      try {
-        // statements
-        var lng = parseFloat(lnglat.split(" ")[0]);
-        var lat = parseFloat(lnglat.split(" ")[1]);
-        var coord = []
-        coord.push(lng);
-        coord.push(lat);
-        var poif = new ol.Feature((new ol.geom.Point(coord).transform("EPSG:4326","EPSG:3857")));
-        //drawsource.addFeature(poif);
-        features.push(poif);
-
-        var pan = ol.animation.pan({
-          duration: 1000,
-          source: /** @type {ol.Coordinate} */ (map.getView().getCenter())
-        });
-        map.beforeRender(pan);
-        map.getView().setCenter(poif.getGeometry().getCoordinates());
-      } catch(e) {
-        // statements
-        console.log(e);
-      }     
-      
-    }
     
     function adjustView(){
         getlayername('Asset/water.shp')?getlayername('Asset/water.shp').setStyle(waterstyle):console.log('');

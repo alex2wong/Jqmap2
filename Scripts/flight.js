@@ -56,9 +56,9 @@ try {
     // locally test.. 192.168.1.107.  LAN test.
     // 127.0.0.1
     // locally test.. 10.103.14.66
-    // deploy to Server use 123.206.201.245 !important
+    // deploy to Server use http://111.231.11.20:3002 !important
     audio.src = "Asset/flight_identy.wav";
-    socket = io.connect("http://123.206.201.245:3002");
+    socket = io.connect("http://111.231.11.20:3002");
     socket.on('open', function(){
         statusBar.innerText = "Connected to server..";        
         var randName = randomName();
