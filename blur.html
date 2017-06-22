@@ -22,19 +22,19 @@
     </script>
     <script>
 
-        var tilegrid = new ol.tilegrid.TileGrid({
-            origin: ol.extent.getBottomLeft(projectionExtent),
-            resolutions: resolutions,
-            extent:  extent,//projectionExtent //设置extent为深圳片区的extent；
-            tileSize: [256, 256],
-        });
-        var googleImg = new ol.layer.Tile({
-            source: new ol.source.XYZ({
-                url: "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}",
-                tileGrid: tilegrid,
-            }),
-            title:"googleSat",
-        })
+        // var tilegrid = new ol.tilegrid.TileGrid({
+        //     origin: ol.extent.getBottomLeft(projectionExtent),
+        //     resolutions: resolutions,
+        //     extent:  extent,//projectionExtent //设置extent为深圳片区的extent；
+        //     tileSize: [256, 256],
+        // });
+        // var googleImg = new ol.layer.Tile({
+        //     source: new ol.source.XYZ({
+        //         url: "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}",
+        //         tileGrid: tilegrid,
+        //     }),
+        //     title:"googleSat",
+        // })
 
         var osm = new ol.layer.Tile({
             source: new ol.source.Stamen({
