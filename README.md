@@ -7,6 +7,9 @@ Game ScreenShot:
 
 ![flight_screenshot](https://github.com/alex2wong/Jqmap2/blob/master/Asset/flight_screenshot.jpg?raw=true)
 
+Roads Style and Rectangle label background
+![Roads Style_screenshot](https://github.com/alex2wong/Jqmap2/blob/master/Asset/roadsStyle-roundRect.jpg.jpg?raw=true)
+
 ### ↓Openlayer label without overlap<br>
 ![openlayer label without overlap](https://github.com/alex2wong/Jqmap2/blob/master/Asset/Label_Func3.gif)
 <br>
