@@ -270,14 +270,14 @@ var selectlayers = [];
         function roadStyleFunction(feature, resolution) {
           return new ol.style.Style({
               stroke : new ol.style.Stroke({
-                color: 'rgba(255,255,10,.4)',
+                color: 'rgba(255,255,10,.0)',
                 width: 5/(feature.getProperties()["CLASS"]%40)
               }),
               // 根据配置 返回道路的文字标注！！
-              // text: labelEngine.createTextStyle(feature, resolution, {
-              //     maxRes: roadMaxRes,
-              //     field: "NAME",
-              // })
+              text: labelEngine.createTextStyle(feature, resolution, {
+                  maxRes: roadMaxRes,
+                  field: "NAME",
+              })
           });
         }
 
@@ -338,8 +338,8 @@ var selectlayers = [];
         var extent = [120.78489, 30.68767, 121.95649, 31.58687];
 
         layercol = [
-             geoqdark,
-             // tian_base,
+            //  geoqdark,
+             tian_base,
              // tian_diming,
              // vector,
              shroad,

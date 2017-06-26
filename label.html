@@ -10,12 +10,16 @@
   </head>
   <style type="text/css">
     body {
+      padding: 0;
+      margin: 0;
       cursor: default;
     }
+    header {display:block;position:fixed;background:#222;color:#eee;width:100%;}
 	  #map{
+        /*position:absolute;
+        top:40px;*/
         width: 100%;
-        height: 600px;
-        position: relative;
+        height: 100%;
         background-color: #deeff7;
         /* 渐变背景 */
         transition: background, 1.4s;
@@ -44,9 +48,9 @@
       pointer-events: auto;
       fill:#AFAFB9;
     }
-    .bar.selected:{
+    /*.bar.selected:{
       fill:green;
-    }
+    }*/
     .tip{
       position: absolute;
       background: black;
@@ -95,6 +99,9 @@
 
    </style>
 <body>
+  <header>
+    <h4>Label Engine with collide check, pls wait for road data loading...</h4>
+  </header>
 	<div id="map"><div id="info"></div></div>
   <div id="mouse-position"></div>
   <div id="plot"></div>
@@ -132,13 +139,13 @@
     <label for="labelSwitch">标注开关</label>
     <input type="checkbox" name="distSwitch" id="distSwitch" onchange="toggleStrategy()" checked>
     <label for="distSwitch">距离检测算法(默认配置)</label> -->
-    <input type="file" name="shpfile" id="shpfile" onchange="fileselect()">拖放shp/json/csv/txt文件</input>    
+    <!--<input type="file" name="shpfile" id="shpfile" onchange="fileselect()">拖放shp/json/csv/txt文件</input>    
     <div id="selectinfo" class="alert alert-success">
       &nbsp;
-    </div>
+    </div>-->
   </div>  
 </body>
-<script src="Scripts/label/ol-debug4.js"></script>
+<script src="Scripts/label/ol4.js"></script>
 <script src="Scripts/label/settextpathstyle.js"></script>
 <script src="Scripts/label/labelUtils.js"></script>
 <script src="Scripts/label/layercontrol.js"></script>
