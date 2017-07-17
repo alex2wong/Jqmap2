@@ -9,10 +9,13 @@
 
 # IDEs and editors
 /.idea
+/logs
+/Asset/tiles
 .project
 .classpath
 .c9/
 *.launch
+*.log
 .settings/
 
 # IDE - VSCode
