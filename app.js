@@ -8,11 +8,19 @@
 var express = require('express'),
   path = require('path'),
   app = express(),
-  server = require('http').createServer(app),
-  io = require('socket.io').listen(server),
+  fs = require('fs'),
+  // server = require('https').createServer(options,app),
+  // io = require('socket.io').listen(server),
   proxy = require('./proxy');
   log4js = require('log4js');
 
+var options = {
+  key: fs.readFileSync('../../tmp/ssl/server.key'),
+  cert: fs.readFileSync('../../tmp/ssl/server.crt')
+}
+
+server = require('http').createServer(app);
+io = require('socket.io').listen(server);
 
 app.set('port', process.env.PORT || 3002);
 app.set('app', __dirname);
