@@ -3,8 +3,10 @@ var express = require('express'),
   fs = require('fs'),
   app = express(),
   options = {
-    key: fs.readFileSync("../../tmp/ssl/server.key"),
-    cert: fs.readFileSync("../../tmp/ssl/server.crt")
+    // key: fs.readFileSync("../../tmp/ssl/server.key"),
+    // cert: fs.readFileSync("../../tmp/ssl/server.crt")
+    cert: fs.readFileSync("/etc/letsencrypt/live/huangyixiu.co/fullchain.pem"),
+    key: fs.readFileSync("/etc/letsencrypt/live/huangyixiu.co/privkey.pem")
   }
   server = require('https').createServer(options, app),
   proxy = require('./proxy'),
