@@ -1,7 +1,7 @@
-// require('./drone.js');
+﻿// require('./drone.js');
 
 // start speed generally about 0.5rad/h. speed range(0, 2)
-var direction = 0, manual = false, speed = 0.01, locking = true;
+var direction = 0, manual = false, speed = 0.01, locking = true, followEnabled = true;
 // front-end drones pool.
 var drones = [];
 var enemyIndex = 0;
@@ -44,7 +44,7 @@ var chatInput = document.querySelector("#chatInput");
 var windowsInterval = null;
 
 // time for bullet fly.
-var firingTime = 800;
+var firingTime = 1200;
 
 function randomName() {
     return "Player" + (Math.random()*10000).toFixed(0);
@@ -115,28 +115,7 @@ try {
                 "defeated " + json.text.name;
             // if myDrone defeated. reset the DroneStatus
             if (json.text.name == drone.name) {
-                defeatedMsg.innerHTML = 'You are defeated by <span style="color:orange">'+ json.author + "</span> !\n" + "\n";
-                defeatedMsg.style.display = "block";
-                defeatedAudio.src = "Asset/crash.mp3";
-                var curPlace = drone.point.coordinates.concat();
-                var bornPlace = [121.321,30.112];
-                locking = false;
-                lockViewBtn.innerHTML = "<span>Lock</span>";
-                drone.speed = 0.001;
-                setTimeout(function() {
-                    map.flyTo({
-                        center: bornPlace,
-                        bearing: 0,
-                        zoom: 9,
-                        pitch: 60
-                    });
-                    drone.point.coordinates = bornPlace;
-                    drone.life = true;
-                }, 1500);
-                
-                setTimeout(function(){
-                    defeatedMsg.style.display = "none";
-                }, 4500);
+                displayDefeatMsg();
                 // fly2position(curPlace, bornPlace);
                 
             } else {
@@ -144,7 +123,7 @@ try {
                 delInFeatureCol(json.text.name);
             }
 
-        } else if(json.type === "message" && json.text.name === "敌机") {
+        } else if(json.type === "message" && json.text.name.indexOf("敌机") > -1) {
             statusBar.innerText = "system@" + json.time + ': enemy found！' +
               json.text.coordinates[0].toFixed(5) + ',' + json.text.coordinates[1].toFixed(5);
             // new Drone()!!
@@ -154,11 +133,11 @@ try {
                 "coordinates": json.text.coordinates
             };
             // robot name with index...to identity each robot enemy !!
-            robot.name = json.text.name + enemyIndex;
+            robot.name = json.text.name;
             robot.direction = 0;
             robot.point = point;
+            if (findInDrones(robot.name)) return;
             drones.push(robot);
-            enemyIndex += 1;
             // 将敌机状态直接加入用于渲染的geojson对象
             var feature = {
                 "type": "feature",
@@ -250,6 +229,7 @@ try {
                     "properties": {
                         "name" : tmpdrone.name,
                         "direction": tmpdrone.direction,
+                        "life": tmpdrone.life,
                         "gradius": 18,
                         "gopacity": 0.4
                     }
@@ -261,6 +241,31 @@ try {
 }
 catch(e) {
     console.log(e);
+}
+
+function displayDefeatMsg() {
+    defeatedMsg.innerHTML = 'You are defeated <span style="color:orange">'+ "</span> !\n" + "\n";
+    defeatedMsg.style.display = "block";
+    defeatedAudio.src = "Asset/crash.mp3";
+    var bornPlace = [121.321,30.112];
+    locking = false;
+    lockViewBtn.innerHTML = "<span>Lock</span>";
+    drone.speed = 0.001;
+    setTimeout(function() {
+        map.flyTo({
+            center: bornPlace,
+            bearing: 0,
+            zoom: 9,
+            pitch: 30
+        });
+        drone.point.coordinates = bornPlace;
+        drone.life = 5;
+    }, 1500);
+                
+    setTimeout(function(){
+        defeatedMsg.style.display = "none";
+    }, 2500);
+
 }
 
 // popup chat message...
@@ -305,7 +310,7 @@ function findInDrones(name) {
     for (var i = 0; i < drones.length; i++) {
         if (drones[i].name == name) {
             droneIndex = i;
-            return drones[i];
+            return drones[droneIndex];
         }
     }
     return null;
@@ -326,10 +331,10 @@ function delInDrones(name) {
 }
 
 function delInFeatureCol(name) {
-    var index = 0, damagedIndex = -1;
+    var damagedIndex = -1;
     for (var j = 0; j < featureCol.features.length; j ++) {
         if (featureCol.features[j].properties.name === name) {
-            damagedIndex = index;
+            damagedIndex = j;
             break;
         }
     }
@@ -396,6 +401,7 @@ function setPosition() {
         featureCol.features[0].geometry = point;
         featureCol.features[0].properties.name = drone.name;
         featureCol.features[0].properties.rotate = current_rotate;
+        featureCol.features[0].properties.life = drone.life;
     }
     // update other drones status.
     updateDrones();
@@ -445,7 +451,7 @@ function updateDrones() {
                 if (Math.random() > 0.95) {
                     feature.properties.direction += (Math.random() - 0.5) /2;
                 }
-            } 
+            }
             var curDrone = findInDrones(feature.properties.name);
             if (curDrone) {
                 // 根据速度和feature的 direction 计算坐标.
@@ -454,11 +460,13 @@ function updateDrones() {
                 feature.geometry.coordinates[1] += curDrone.speed * Math.cos(curDrone.direction) / 100;
                 current_rotate = (-current_rotate) + curDrone.direction * (180 / Math.PI);
                 feature.properties.rotate = current_rotate;
+                feature.properties.life = curDrone.life;
             }
         } else {
             // 其他客户端飞机的坐标是在socket.on('message', func) 中更新了，这里只根据bearing(deg)校正显示方向
             current_rotate = (-current_rotate) + feature.properties.direction * (180 / Math.PI);
             feature.properties.rotate = current_rotate;
+            // feature
         }
     }
 
@@ -479,8 +487,9 @@ var map = new mapboxgl.Map({
                 'tiles': [
                     // "http://127.0.0.1:8080/Tiles/{z}/{x}/{y}.png"
                     // "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
                     // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
-                    "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
+                    // "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                 ],
                 'tileSize': 256
             },
@@ -622,13 +631,17 @@ function testCrash(coordinates, name) {
     // here we add zoom into calculation as a ratio.
     var zoom = map.getZoom();
     var distance, volume = 0.20/zoom, featureIndex = 0, damagedIndex = -1, damagedDroneName = 0, hitted = false;
-    featureCol.features.forEach(function(drone) {
-        distance = calcDist(coordinates, drone.geometry.coordinates);
+    // featureCol.features.forEach(function(drone) {
+    //     distance = calcDist(coordinates, drone.geometry.coordinates);
+    for(var i=0;i<drones.length;i++) {
+        var curDrone = drones[i];
+        distance = calcDist(coordinates, curDrone.point.coordinates);
         // if distance less than the Volume of drone and not self-killed!!, Damage it!
-        if (distance < volume && drone.properties.name !== name) {
-            damagedDroneName = drone.properties.name;
+        if (distance < volume && curDrone.name !== name) {
+            damagedDroneName = curDrone.name;
             damagedIndex = featureIndex;
             defeatedAudio.src = "Asset/crash.mp3";
+            break;
             // defeatedMsg.innerHTML = 'You defeated <span style="color:orange">'+ drone.properties.name + "</span> !\n" + "\n";
             // defeatedMsg.style.display = "block";
             // setTimeout(function() {
@@ -636,32 +649,42 @@ function testCrash(coordinates, name) {
             // }, 2500);
         }
         featureIndex += 1;
-    });
+    };
 
     // 只用来做 本玩家对其他飞机的射击检测！！！Robot 敌机对玩家的射击碰撞检测放到服务器端做！
-    if (damagedDroneName && damagedIndex > -1 && damagedDroneName !== drone.name){
-        if (name === drone.name) {
+    // && damagedDroneName !== drone.name
+    if (damagedDroneName && damagedIndex > -1 ){
+        var damagedFeature = findInFeatures(damagedDroneName);
+        var damagedDrone = findInDrones(damagedDroneName);
+        if (!damagedDrone) return;
+        if (damagedDrone.life) damagedDrone.life -= 1;
+        if (name === drone.name && !damagedDrone.life) {
             totalKill += 1;
             statsBar.innerText = "Kill " + totalKill;
-        }        
+        }
         // try to send damageDrone info to server. 
-        // shallowCopy ?? explode on damagedFeature directly
-        var damagedFeature = featureCol.features[damagedIndex];
-        var damagedDrone = findInDrones(damagedDroneName);
-        if (socket && damagedDrone) {
-            damagedDrone.life = false;
+        // shallowCopy ?? explode on damagedFeature directly        
+        if (socket && damagedDrone && !damagedDrone.life) {            
             socket.send(damagedDrone);
         }
 
-        // explode effect on damagedFeature.
-        explode(damagedFeature, 1000);
-        
-        setTimeout(function(){
-            if (damagedDroneName) {
-                delInDrones(damagedDroneName);
-                delInFeatureCol(damagedDroneName);
+        // if life is out.
+        if (damagedDroneName == drone.name && !damagedDrone.life) displayDefeatMsg();
+
+        if (!damagedDrone.life) {
+            // explode effect on damagedFeature.
+            explode(damagedFeature, firingTime - 200);
+            if (damagedDroneName !== drone.name) {
+                 setTimeout(function(){
+                     delInDrones(damagedDroneName);
+                 }, 50);
+            
+                 setTimeout(function(){
+                     delInFeatureCol(damagedDroneName);
+                 }, firingTime - 100);
+
             }
-        }, 1000);
+        }
 
         hitted = true;
     }
@@ -697,7 +720,7 @@ function renderBullet() {
             // calculate MyDrone if it's bullet hit any enemy
             if (!hitted && drone.name && drones[j].name){
                 hitted = testCrash(real_point.coordinates, drones[j].name);
-                if (hitted) {
+                if (hitted ) {
                     // drones[j].firing = false;
                     drones[j].bullet = null;
                     continue;
@@ -756,9 +779,10 @@ document.body.addEventListener('keydown', function(e) {
 
 // Animate the glow color and radius before disappear..
 function explode(droneObj, duration) {
-    if (droneObj.properties.gradius > 18) return;
+    if (droneObj && droneObj.properties.gradius > 18) return;
     var count = 0, explodeInter, steps = 40, inter = parseInt(duration/steps);    
-    if (droneObj.properties && droneObj.properties.gradius && droneObj.properties.gopacity) {
+    if (droneObj && droneObj.properties && droneObj.properties.gradius && droneObj.properties.gopacity) {
+	console.warn("exploding..");
         explodeInter = setInterval(function() {
             // enlarge radius and darker color.
             // droneObj.properties.gcolor = droneObj.properties.gcolor
@@ -840,7 +864,7 @@ map.on('load', function() {
                 "property": "rotate",
                 "type": "identity"
             },
-            "text-field": "{name}",
+            "text-field": "{name}"+ " life:" + "{life}",
             "text-font": ["Noto Sans Hans Light"],
             "text-offset": [0, 0.6],
             "text-anchor": "top",

@@ -77,7 +77,7 @@ miniMap = new mapboxgl.Map({
             "custom-tms": {   
                 'type': 'raster',
                 'tiles': [
-                    "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
+                    "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
                 ],
                 'tileSize': 256
             },
@@ -144,7 +144,7 @@ map.on("mousemove", function(e) {
             audio.src = "Asset/flight_click.mp3";
         }
         // clear last selectedDrone's style.
-        if (selectedDrone && selectedDrone.properties.name !== curFeature.properties.name) {
+        if (selectedDrone && curFeature && selectedDrone.properties.name !== curFeature.properties.name) {
             setTimeout(function(){
                 var lastFeature = findInFeatures(selectedDrone.properties.name);
                 if (lastFeature) {

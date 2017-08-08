@@ -16,7 +16,7 @@ var Drone = function() {
         "coordinates": [121.321,30.112]
     };
     this.weapon = {};
-    this.life = true;
+    this.life = 2;
     this.firing = false;
 }
 
@@ -57,11 +57,7 @@ Drone.prototype.fire = function() {
     bullet.spoint.coordinates[1] = this.point.coordinates[1] + BULLETOFFSET * Math.cos(this.direction);
     bullet.direction = this.direction;
     this.bullet = bullet;
-    // setTimeout(function(){
-    //     this.firing = false;
-    //     this.bullet = null;
-    // }, 600);
-    // drone.firing = true;
+    this.firing = true;
 };
 
 Drone.prototype.turnLeft = function() {
@@ -89,16 +85,18 @@ Drone.prototype.brake = function () {
  * ..robot drone need a input drone to fire at..
  */
 Drone.prototype.attack = function (drone) {
-    this.follow(drone);
+    if (followEnabled) {
+        this.follow(drone);
+    }    
     if (calcDist(this.point.coordinates, drone.point.coordinates) > ATTACKRANGE) return; 
     if (this.firing) return;
     this.fire();
     var that = this;
-    setTimeout(function(that) {
+    setTimeout(function() {
             that.firing = false;
             that.bullet = null;
         }, firingTime - 100);
-    this.firing = true;
+    // this.firing = true;
 }
 
 /**
