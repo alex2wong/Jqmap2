@@ -8,11 +8,19 @@
 var express = require('express'),
   path = require('path'),
   app = express(),
-  server = require('http').createServer(app),
-  io = require('socket.io').listen(server),
+  fs = require('fs'),
+  // server = require('https').createServer(options,app),
+  // io = require('socket.io').listen(server),
   proxy = require('./proxy');
   log4js = require('log4js');
 
+var options = {
+  key: fs.readFileSync('../../tmp/ssl/server.key'),
+  cert: fs.readFileSync('../../tmp/ssl/server.crt')
+}
+
+server = require('http').createServer(app);
+io = require('socket.io').listen(server);
 
 app.set('port', process.env.PORT || 3002);
 app.set('app', __dirname);
@@ -70,11 +78,12 @@ var clients = [];
 var sockets = [];
 var robots = [];
 
+var enemyIndex = 0;
 // Emit a robot enemy every 12 seconds.
 timer1 = setInterval(function(){
   var randomCoord =  randInfo();
   var randomEnemy = {
-    name: '敌机',
+    name: '敌机' + enemyIndex,
     direction: 0,
     coordinates: randomCoord
   }
@@ -82,11 +91,16 @@ timer1 = setInterval(function(){
     'author': 'System',
     'type': 'message'
   };
+
+  if (enemyIndex < 1000) enemyIndex += 1;
+  else {
+      enemyIndex = 0;
+  }
   EnemyMsg['text'] = randomEnemy;
   EnemyMsg['time'] = getTime();
   if (sockets.length > 0) {
     logger.info("Currently, connection number is: " + sockets.length);
-    robots.push(randomEnemy);  
+    // robots.push(randomEnemy);  
     sockets[0].sock.broadcast.emit('message', EnemyMsg);
   }
   // socket.emit('message', EnemyMsg);
