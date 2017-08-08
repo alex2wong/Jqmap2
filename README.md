@@ -60,7 +60,7 @@ function cityStyleFunction(feature, resolution) {
 <br>
 <a href="http://alex2wong.github.io/Jqmap2/"> Mobile web map </a>, the JqueryMobile and Openlayer2 webApp.
 <br>
-<a href="http://123.206.201.245/flight.html"> Flight Game </a>, press WSAD for move, Space to fire, Enjoy it!
+<a href="http://111.231.11.20/flight.html"> Flight Game </a>, press WSAD for move, Space to fire, Enjoy it!
 <br>
 <a href="http://alex2wong.github.io/Jqmap2/index2.html" > First view flight </a>, press WSAD for move
 
@@ -77,7 +77,7 @@ function cityStyleFunction(feature, resolution) {
 
 ## **Related Blog**
 
-一年多前见过一个多人聊天室应用，是张丹老师写的一个 [socket.io 教程](http://blog.csdn.net/comhaqs/article/details/23824005) （原链接点不开，贴一个转帖的），觉得socket这个东西很神奇。后来研究生期间的一个项目也用到了.Net的socket，多个客户端之间的通信， 觉得很有意思，也是那一次比较全面地认识和应用了事件委托等等一些概念。最近受群里研究mapbox的热情和@扯淡大叔， @老羽 @F3earth 所有成员的帮助和启发， 突发奇想花了点时间基于**mapbox gl js**和**socket.io**做了一个 [飞机大战游戏！](http://123.206.201.245/flight.html)，虽然功能界面很简陋。而且代码也比较原始，还没有好好重构。但是基本有了个架子，简单记下来分析下。如果对源码感兴趣或者想参与开发和优化工作，请访问git仓库: [Jqmap2](https://github.com/alex2wong/Jqmap2)
+一年多前见过一个多人聊天室应用，是张丹老师写的一个 [socket.io 教程](http://blog.csdn.net/comhaqs/article/details/23824005) （原链接点不开，贴一个转帖的），觉得socket这个东西很神奇。后来研究生期间的一个项目也用到了.Net的socket，多个客户端之间的通信， 觉得很有意思，也是那一次比较全面地认识和应用了事件委托等等一些概念。最近受群里研究mapbox的热情和@扯淡大叔， @老羽 @F3earth 所有成员的帮助和启发， 突发奇想花了点时间基于**mapbox gl js**和**socket.io**做了一个 [飞机大战游戏！](http://111.231.11.20/flight.html)，虽然功能界面很简陋。而且代码也比较原始，还没有好好重构。但是基本有了个架子，简单记下来分析下。如果对源码感兴趣或者想参与开发和优化工作，请访问git仓库: [Jqmap2](https://github.com/alex2wong/Jqmap2)
 
 
 ### 整体架构
