@@ -1,0 +1,100 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <meta charset="utf-8" user>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>Threejs Overlay on Map</title>
+        <!-- <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script> -->
+        <script src="../../Scripts/mapbox-gl.js"></script>
+        <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.34.0/mapbox-gl.js'></script>-->
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.34.0/mapbox-gl.css' rel='stylesheet' />
+        <script src="../../Scripts/dist/Three.js"></script>
+        <script src="../../Scripts/ext/myTween.js"></script>
+        <script src="../../Scripts/ext/canvasOverlay.js"></script>
+        <!--<link href='Css/mapbox-gl.css' rel='stylesheet' />-->
+        <style>
+            body { margin:0; padding:0; }
+            #map { position:relative; width:700px; height:400px}
+        </style>
+    </head>
+
+    <body style="width: 100%;height: 100%;">
+        <h4>ThreeJS Overlay on Mapbox</h4>
+        <input type="button" style="padding: 6px;" 
+            id="pauseAnimation" value="pauseAnimation" onclick="myTween.toggleAni()">
+        <input type="button" style="padding: 6px;" onclick="myTween.toggleLoop()" value="loopAnimation">
+            <br><br>
+        
+        <div style="position:relative;width:100%;height:100%;">
+            <div id='map'></div>
+            <!-- <canvas id="demoCanvas" style="position:absolute;" width="700px" height="400px"></canvas> -->
+        </div>
+        <script src="../../Scripts/dist/TrackballControls.js"></script>
+        <script src="../../Scripts/ext/threejsUtils.js"></script>
+        <script type="text/javascript">
+            mapboxgl.accessToken = false;
+            var mapCenter = [118.0066, 30.6135];
+            var map = new mapboxgl.Map({
+                style: {
+                    "version": 8,
+                    "sprite": '../../Asset/sprite',
+                    "glyphs": "../../{fontstack}/{range}.pbf",
+                    "sources": {
+                        "custom-tms": {   
+                            'type': 'raster',
+                            'tiles': [
+                                "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
+                                // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
+                                // "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
+                            ],
+                            'tileSize': 256
+                        },
+                    },
+                    "layers": [
+                        {
+                            'id': 'custom-tms',
+                            'type': 'raster',
+                            'source': 'custom-tms',
+                            'paint': {}
+                        },
+                    ]
+                },
+                center: mapCenter,
+                zoom: 6,
+                pitch: 45,
+                bearing: 0,
+                light: {
+                    'anchor':'viewport',
+                    'color':'white',
+                    'intensity':0.7
+                },
+                container: 'map'
+            });
+
+            map.on('load', function() {
+                myTween.fps = 40;
+                map.dragRotate.disable();
+                init();
+            });
+
+            function init() {
+                var objNum = 10, canvasOverlay = null;                
+                canvasOverlay = createOverlay(ThreeShp.r.domElement);
+                // init Threejs render domElement with mapboxOverlay, then bind map with threejs scene.
+                ThreeShp.init(canvasOverlay, map);
+                ThreeShp.c
+                ThreeShp.bind(map, canvasOverlay);
+            }
+
+            ThreeShp.bind = function(map, canvasOverlay) {
+                // map.on('move', syncHandler);
+                // map.on('zoom', syncHandler);
+
+                // tranform mapCenter change to pixel change.. apply to three Camera Change.
+                function syncHandler(evt) {                    
+                }
+            }
+            
+        </script>        
+    </body>
+</html>
