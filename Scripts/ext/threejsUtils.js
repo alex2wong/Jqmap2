@@ -24,26 +24,31 @@ ThreeShp.init = function(canvas, map){
   // Openlayer.View alike  -- PerspectiveCamera... Scene is needed!!.and Camera added to Scene!!!
   // // Camera(fov, aspect, near, far)          
   //lookAt control the angle, right..
-  ThreeShp.c.lookAt(new THREE.Vector3(0,0,map.getPitch()));
+  ThreeShp.c.lookAt(new THREE.Vector3(ThreeShp.c.position.x,ThreeShp.c.position.y,map.getPitch()));
   ThreeShp.r.render(ThreeShp.s, ThreeShp.c);
   originCenterX = map.getCenter().lng;
   originCenterY = map.getCenter().lat;
+  originZoom = map.getZoom();
 
-  map.on('move', function(evt) {
-    // calc CameraPosition by opposite to mapOrigin pixel change. TODO
-    ThreeShp.c.position.x -= map.getCenter().lng - originCenterX;
-    ThreeShp.c.position.y -= map.getCenter().lat - originCenterY;
-    originCenterX = map.getCenter().lng;
-    originCenterY = map.getCenter().lat;
-    ThreeShp.c.lookAt(new THREE.Vector3(0,0,map.getPitch()));
-    ThreeShp.r.render(ThreeShp.s, ThreeShp.c);
-    console.warn("sync mapView to threeCamera..cameraX: " + ThreeShp.c.position.x + ", Y: " + ThreeShp.c.position.y);
-  });
+  map.on('move', handler);
+  map.on('zoom', handler);
   this.s.add(this.c);
   // // 添加鼠标交互
   // this.controls = new THREE.TrackballControls(this.c, this.r.domElement);
   // this.controls.minDistance = 10;
   // this.controls.maxDistance = 1000;
+}
+
+function handler(evt) {
+    // calc CameraPosition by opposite to mapOrigin pixel change. TODO
+    ThreeShp.c.position.x += map.getCenter().lng - originCenterX;
+    ThreeShp.c.position.y += map.getCenter().lat - originCenterY;
+    ThreeShp.c.position.z = 1000/map.getZoom();
+    originCenterX = map.getCenter().lng;
+    originCenterY = map.getCenter().lat;
+    ThreeShp.c.lookAt(new THREE.Vector3(ThreeShp.c.position.x,ThreeShp.c.position.y,map.getPitch()));
+    ThreeShp.r.render(ThreeShp.s, ThreeShp.c);
+    console.warn("sync mapView to threeCamera..cameraX: " + ThreeShp.c.position.x + ", Y: " + ThreeShp.c.position.y);
 }
 
 ThreeShp.rendershp = function(res) {
@@ -103,7 +108,7 @@ ThreeShp.r.shadowMap.type = THREE.PCFSoftShadowMap;
 var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame; 
 window.requestAnimationFrame = requestAnimationFrame;
 
-function createRect(xlen, ylen, zdepth, color) {
+ThreeShp.createRect = function (xlen, ylen, zdepth, color) {
   var cube = new THREE.Mesh(          
     // SphereGeometry(radius, detail)
     // PlaneGeometry(xlen, ylen)
@@ -179,7 +184,7 @@ function animate() {
 
 // !important PhongMatetial means mirror reflect!!
 // load texture mapping to Mesh face.
-function createPlane(xlen) {
+ThreeShp.createPlane = function (xlen) {
   var plane = new THREE.Mesh(
     new THREE.PlaneGeometry(xlen, xlen),
     new THREE.MeshPhongMaterial({
@@ -190,6 +195,7 @@ function createPlane(xlen) {
   plane.position.set(0, 0, 12);
   plane.receiveShadow = true;
   console.log('create plane geometry');
+  ThreeShp.s.add(plane);
   return plane;
 }
 
@@ -218,17 +224,11 @@ var lightHelper = new THREE.SpotLightHelper(light);
 // ThreeShp.s.add(light);
 // ThreeShp.s.add(lightHelper);
 
-var lightViz = createRect(10, 10, 10, 0x4080ff);
+var lightViz = ThreeShp.createRect(10, 10, 10, 0x4080ff);
 lightViz.name = 'BoxGeom';
 lightViz.volume = 10;
 lightViz.position.set(10, 5, 20);
 ThreeShp.s.add(lightViz);
-
-var BoxGeom = createRect(10, 5, 3, 0x2040aa);
-BoxGeom.name = 'Bricks';
-BoxGeom.volume = 3;
-BoxGeom.position.set(-10, 5, 20);
-ThreeShp.s.add(BoxGeom);
 
 var rotateAnimate = function() {
   lightViz.rotation.z += 0.01;
@@ -272,7 +272,7 @@ var floatAnimate = function() {
   ThreeShp.r.render(ThreeShp.s, ThreeShp.c); 
   requestAnimationFrame(floatAnimate);       
 }
-floatAnimate();
+// floatAnimate();
 
 drawAxes(ThreeShp.s);
 

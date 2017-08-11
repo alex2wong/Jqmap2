@@ -1,3 +1,4 @@
+var breakBetween = 2000;
 // myTween.js
 var myTween = {
     fps: 30,
@@ -28,11 +29,12 @@ var myTween = {
                 }
             }
 
-            this.timer = setInterval(function() {
+            function animation() {
+                var fadeIn = false, fadeOut = false;
                 // animation end related handling.
                 if (stepIndex >= stepNum) {
                     // reset objs 2 original status.
-                    if (myTween.loop) { 
+                    if (myTween.loop) {
                         stepIndex = 0;
                         for (var i = 0; i < myTween.objs.length; i++) {
                             myTween.objs[i] = Object.assign([], myTween.objs[i], objsCopy[i]);
@@ -44,6 +46,11 @@ var myTween = {
                     }
                     return;
                 }
+                if (stepIndex == 0) {
+                    fadeIn = true;
+                } else if (stepIndex == stepNum - 1) {
+                    fadeOut = true;
+                }
                 if (myTween.speed != 1) {
 
                 }
@@ -52,17 +59,18 @@ var myTween = {
                     return;
                 }
                 for(var i=0;i<myTween.objs.length;i++){
-                    for(var key in props[i]) {                                
+                    for(var key in props[i]) {
                         // currently animation is controlled by stepIndex..
                         myTween.objs[i][key] += props[i][key];
                         // console.log("obj " +  myTween.objs[i]['name'] +' changed,' + key + ": " + myTween.objs[i][key]);
                     }
                 }
                 if (cb && cb instanceof Function) {
-                    cb.call(this, myTween.objs);
-                }                            
+                    cb.call(this, myTween.objs, fadeOut, fadeIn);
+                }
                 stepIndex += 1;
-            }, inter);
+            }
+            this.timer = setInterval(animation, inter);
         }
         return this;
     },
@@ -75,11 +83,20 @@ var myTween = {
             myTween.objs = Object.assign(myTween.objs, targets);
         }, duration);
     },
-    toggleAni: function() {
+    toggleAni: function(paused) {
+        if (paused != undefined) {
+            this.paused = paused;
+            var status = paused? "paused": "playing";
+            return;
+        }
         this.paused = !this.paused;
     },
-    toggleLoop: function() {
+    toggleLoop: function(loop) {
+        if (loop != undefined) {
+            this.loop = loop;
+            return;
+        }
         this.loop = !this.loop;
     },
     lastAniParams: [undefined, undefined]
-}           
+}
