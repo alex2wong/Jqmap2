@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" user>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <title>Cloud Overlay on Map</title>
+        <title>Story by custom Tween</title>
         <!-- <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script> -->
         <script src="../../Scripts/mapbox-gl.js"></script>
         <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.34.0/mapbox-gl.js'></script>-->
@@ -15,13 +15,13 @@
             body { margin:0; padding:0; }
             #map { position:relative; width:700px; height:400px}
             .overlay-canvas {
-                transition: opacity 3.6s ease-in;
+                transition: opacity 1.8s ease-in;
             }
         </style>
     </head>
 
     <body style="width: 100%;height: 100%;">
-        <h4>Cloud Overlay on Mapbox</h4>
+        <h4>Story by custom Tween</h4>
         <input type="button" style="padding: 6px;" 
             id="pauseAnimation" value="pauseAnimation" onclick="myTween.toggleAni()">
             <br><br>        
@@ -41,9 +41,8 @@
                         "custom-tms": {   
                             'type': 'raster',
                             'tiles': [
-                                // "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
-                                // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
-                                "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
+                                "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
+                                // "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                             ],
                             'tileSize': 256
                         },
@@ -68,21 +67,12 @@
             map.on('load', function() {
                 myTween.fps = 40;
                 myTween.loop = false;
-                // map.dragRotate.disable();
+                //// set loop false to enable fadeIn and fadeOut effect!
+                map.dragRotate.disable();
+                // map.dragPan.disable();
+                // map.scrollZoom.disable();
                 init();
             });
-
-            function bindClouds(map, clouds) {
-                map.on('move', function(){
-                    // set Animation Paused true
-                    myTween.toggleAni(true);
-                    render(clouds);
-                    map.on('moveend', function(){
-                        // keep Animation
-                        myTween.toggleAni(false);
-                    });
-                });
-            }
 
             var img, initZoom = map.getZoom();
             function init() {
@@ -90,13 +80,27 @@
                 canvasOverlay = createOverlay();
                 canvasOverlay.style.opacity = 0.1;
                 // init Threejs render domElement with mapboxOverlay, then bind map with threejs scene.
-                var clouds = rdObjs(objNum);
-                bindClouds(map, clouds);
-                img = new Image();
-                img.onload = function() {
-                    myTween.get(clouds).to(rdObjs(objNum), 20000, render);
-                }
-                img.src = clouds[0].url;
+                var labelX = map.getCenter().lng,
+                    labelY = map.getCenter().lat - 1,
+                    storyLine = {
+                        lon: labelX,
+                        lat: labelY,
+                        text: "It is year 1991"
+                    };
+                var source = rdObjs(objNum);
+                    source.push(storyLine);
+
+                var target = rdObjs(objNum);
+                    target.push(storyLine);
+                myTween.get(source).to(target, 6000, render);
+                console.warn("register storyLine 1 ..");
+
+                map.flyTo({
+                    center: [mapCenter[0]-2, mapCenter[1]-2],
+                })
+                storyLine.text = "World is upon the edge of war";
+                myTween.get(storyLine).to(storyLine, 6000, render);
+                console.warn("register storyLine 2 ..");
             }
 
             // random point objs with given number
@@ -105,18 +109,12 @@
                 if (!mapCenter) return objs;
                 for(var i=0;i<num;i++) {
                     objs.push({
-                        name: "cloud" + i.toString(),
+                        name: "line" + i.toString(),
                         lon: parseInt(((Math.random()*8)+mapCenter[0]-4).toFixed(2)),
                         lat: parseInt(((Math.random()*4)+mapCenter[1]-2).toFixed(2)),
-                        url: "../../Asset/images/cloud2.png",
+                        color: 'rgba(10,200,'+ (Math.random()*251).toFixed(0) +',0.7)',
                     });
                 }
-                objs.push({
-                    name: "label" + i.toString(),
-                    lon: mapCenter[0],
-                    lat: mapCenter[1] - 1,
-                    text: "World in Cloud",
-                });
                 return objs;
             }
 
@@ -128,22 +126,32 @@
                     if (fadeOut) canvasOverlay.style.opacity = 0;
                     if (fadeIn) canvasOverlay.style.opacity = 0.6;
                     // calc cloud display ratio...
-                    var pow = initZoom - map.getZoom();
-                    ratio = Math.pow(2, pow);
                     ctx = canvasOverlay.getContext("2d");
-                    ctx.fillStyle = "rgba(250,250,250,0.9)";
+                    _preSetCtx(ctx);
+                    ctx.save();
+                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = "rgba(255,255,255,.4)";
+
                     ctx.font = "30px Verdana";
-                    ctx.clearRect(0,0,canvasOverlay.width, canvasOverlay.height);
                     for (var i=0;i<objs.length;i++) {
-                        var x = objs[i]['lon'], y = objs[i]['lat'], url = objs[i]['url'], text = objs[i]['text'];
+                        var x = objs[i]['lon'], y = objs[i]['lat'], radius = objs[i]['radius'] || 2, text = objs[i]['text'];
                             pix = trans2pix(x, y);
                         if (pix == null) continue;
+                        ctx.fillStyle = objs[i]['color'];
                         ctx.beginPath();
-                        ctx.drawImage(img, pix[0], pix[1], img.width/ratio, img.height/ratio);
-                        if (text) ctx.fillText(text, pix[0], pix[1]);
+                        if (objs[i]['radius']) ctx.arc(pix[0], pix[1], radius, 0, Math.PI*2);
                         ctx.fill();
                         ctx.closePath();
+
+                        if (text) {
+                            ctx.beginPath();
+                            ctx.fillStyle = "rgba(250,250,250,0.9)";
+                            ctx.fillText(text, pix[0], pix[1]);
+                            ctx.fill();
+                            ctx.closePath();
+                        }
                     }
+                    ctx.restore();
                 }
             }
             
