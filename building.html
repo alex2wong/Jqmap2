@@ -46,7 +46,7 @@
             'type': 'fill-extrusion',
             'minzoom': 15,
             'paint': {
-                'fill-extrusion-color': '#aaa',
+                'fill-extrusion-color': '#2158b8',
                 'fill-extrusion-height': {
                     'type': 'identity',
                     'property': 'height'
@@ -58,19 +58,6 @@
                 'fill-extrusion-opacity': .8
             }
         });
-    });
-
-    // var blurControl = new Apature({});
-    // blurControl.setMap(".mapboxgl-canvas");
-
-    var blurControl = new Blurify({
-        ele: document.querySelector(".mapboxgl-canvas")
-    });
-
-    map.on("moveend", function(evt) {
-        if (evt) {
-            blurControl.useCanvasMode();
-        }
     });
 
 </script>

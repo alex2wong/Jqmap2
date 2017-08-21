@@ -15,6 +15,7 @@ var myTween = {
                 stepIndex =0,
                 objsCopy = [],
                 props = [];
+            console.log("animation params init complete...");
 
             // tranverse targetStatus props then calculate status of each frame
             for(var i=0;i<myTween.objs.length;i++){
@@ -40,9 +41,12 @@ var myTween = {
                             myTween.objs[i] = Object.assign([], myTween.objs[i], objsCopy[i]);
                         }
                         // myTween.objs = Object.assign([], myTween.objs, objsCopy);
-                        console.warn("animation reset !!!!");
+                        console.warn("animation reset ...");
                     } else {
                         myTween.paused = true;
+                        clearInterval(myTween.timer);
+                        myTween.timerOn = false;
+                        console.warn("animation end !!!");
                     }
                     return;
                 }
@@ -70,17 +74,26 @@ var myTween = {
                 }
                 stepIndex += 1;
             }
+            // if last timer is still On, register later.. use async alike process controller.
             this.timer = setInterval(animation, inter);
+            this.timerOn = true;
+            myTween.paused = false;
         }
         return this;
     },
     loop : true,
     speed: 1,
+    timerOn: false,
     timer : null,
     paused: false,
     wait: function(targets, duration) {
+        var duration = duration || 0;        
         setTimeout(function() {
-            myTween.objs = Object.assign(myTween.objs, targets);
+            if (targets instanceof Object)
+                myTween.objs = Object.assign(myTween.objs, targets);
+            else if (targets instanceof Function)
+                console.log("execute Func await..");
+                targets.call(this);
         }, duration);
     },
     toggleAni: function(paused) {
@@ -100,3 +113,11 @@ var myTween = {
     },
     lastAniParams: [undefined, undefined]
 }
+
+var sleep = function (time) {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            resolve();
+        }, time);
+    })
+};
