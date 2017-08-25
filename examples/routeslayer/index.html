@@ -1,0 +1,105 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <meta charset="utf-8" user>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <title>Routes Overlay on Map</title>
+        <!-- <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script> -->
+       <!--  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.34.0/mapbox-gl.js'></script> -->
+        <script src="../../Scripts/mapbox-gl.js"></script>
+        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.34.0/mapbox-gl.css' rel='stylesheet' />
+        <script src="../../Scripts/ext/myTween.js"></script>
+        <script src="../../Scripts/ext/canvasOverlay.js"></script>
+        <script src="../../Scripts/ext/routelayer.js"></script>
+        <!--<link href='Css/mapbox-gl.css' rel='stylesheet' />-->
+        <style>
+            body { margin:0; padding:0; }
+            #map { position:relative; width:700px; height:400px}
+        </style>
+    </head>
+
+    <body style="width: 100%;height: 100%;">
+        <h4>Routes Overlay on Mapbox</h4>
+        <input type="button" style="padding: 6px;" 
+            id="pauseAnimation" value="pauseAnimation" onclick="myTween.toggleAni()">
+        <input type="button" style="padding: 6px;" onclick="myTween.toggleLoop()" value="loopAnimation">
+            <br><br>
+        
+        <div style="position:relative;width:100%;height:100%;">
+            <div id='map'></div>
+            <!-- <canvas id="demoCanvas" style="position:absolute;" width="700px" height="400px"></canvas> -->
+        </div>
+        <script type="text/javascript">
+            mapboxgl.accessToken = false;
+            var mapCenter = [118.0066, 30.6135];
+            var map = new mapboxgl.Map({
+                style: {
+                    "version": 8,
+                    "sprite": '../../Asset/sprite',
+                    "glyphs": "../../{fontstack}/{range}.pbf",
+                    "sources": {
+                        "custom-tms": {   
+                            'type': 'raster',
+                            'tiles': [
+                                "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}",
+                                // "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
+                            ],
+                            'tileSize': 256
+                        },
+                    },
+                    "layers": [
+                        {
+                            'id': 'custom-tms',
+                            'type': 'raster',
+                            'source': 'custom-tms',
+                            'paint': {}
+                        },
+                    ]
+                },
+                center: mapCenter,
+                zoom: 6,
+                pitch: 45,
+                bearing: 0,
+                light: {
+                    'anchor':'viewport',
+                    'color':'white',
+                    'intensity':0.7
+                },
+                container: 'map'
+            });
+
+            map.on('load', function() {
+                myTween.fps = 40;
+                init();
+            });
+
+            function init() {
+                var objNum = 3, canvasOverlay = null;
+                canvasOverlay = createOverlay();
+                objs = rdObjs(objNum);
+                // myTween.loop = false;
+                routelayer = new RouteLayer({
+                    map: map,
+                    coords: objs,
+                    canvas: canvasOverlay,
+                });
+                myTween.get(objs).to(objs, 4000, routelayer.render);
+            }
+
+            // random point objs with given number
+            function rdObjs(num) {
+                var objs = [], index = 0;
+                if (!mapCenter) return objs;
+                for(var i=0;i<num;i++) {
+                    objs.push({
+                        name: "node" + i.toString(),
+                        lon: parseInt(((Math.random()*8)+mapCenter[0]-4).toFixed(2)),
+                        lat: parseInt(((Math.random()*4)+mapCenter[1]-2).toFixed(2)),
+                    });
+                }
+                return objs;
+            }
+            
+        </script>
+    </body>
+</html>

@@ -51,14 +51,17 @@
                             'source': 'custom-tms',
                             'paint': {}
                         },
-                    ]
+                    ],
                 },
                 center: mapCenter,
                 zoom: 6,
-                minZoom: 6,
+                minZoom: 5,
                 pitch: 0,
                 bearing: 0,
-                container: 'map'
+                container: 'map',
+                transition: {
+                    "duration": 2500,
+                }
             });
 
             map.on('load', function() {
@@ -89,17 +92,26 @@
 
                 var target = rdObjs(objNum);
                     target.push(storyLine);
-                myTween.get(source).to(target, 6000, render);
-                console.warn("register storyLine 1 ..");
+                var duration = 6000;
 
-                map.flyTo({
-                    center: [mapCenter[0]-2, mapCenter[1]-2],
-                })
-                storyLine.lon -= 2;
-                storyLine.lat -= 2;
-                storyLine.text = "World is upon the edge of war";
-                myTween.get(storyLine).to(storyLine, 6000, render);
-                console.warn("register storyLine 2 ..");
+                (async function(){
+                    myTween.get(source);
+                    await myTween.to(target, duration, render);
+                    console.warn("register storyLine 1 ..");
+
+
+                    await myTween.wait(function(){ 
+                        map.flyTo({
+                            center: [mapCenter[0]-2, mapCenter[1]-2],
+                        })
+                    }, 2000);
+                    storyLine.lon -= 2;
+                    storyLine.lat -= 2;
+                    storyLine.text = "World is upon the edge of war";
+                    myTween.get([storyLine]);
+                    await myTween.to([storyLine], duration, render);
+                    console.warn("register storyLine 2 ..");
+                })();
             }
 
             // random point objs with given number
@@ -112,6 +124,7 @@
                         lon: parseInt(((Math.random()*8)+mapCenter[0]-4).toFixed(2)),
                         lat: parseInt(((Math.random()*4)+mapCenter[1]-2).toFixed(2)),
                         color: 'rgba(10,200,'+ (Math.random()*251).toFixed(0) +',0.7)',
+                        radius: 2,
                     });
                 }
                 return objs;
@@ -123,12 +136,15 @@
             function render(objs, fadeOut, fadeIn) {
                 if (canvasOverlay) {
                     if (fadeOut) canvasOverlay.style.opacity = 0;
-                    if (fadeIn) canvasOverlay.style.opacity = 0.6;
+                    if (fadeIn) {
+                        canvasOverlay.style.opacity = 0.8;
+                        console.log("animation start, fadeIn...");
+                    }
                     // calc cloud display ratio...
                     ctx = canvasOverlay.getContext("2d");
                     _preSetCtx(ctx);
                     ctx.save();
-                    ctx.shadowBlur = 4;
+                    ctx.shadowBlur = 2;
                     ctx.shadowColor = "rgba(255,255,255,.4)";
 
                     ctx.font = "30px Verdana";

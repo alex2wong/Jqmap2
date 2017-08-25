@@ -15,6 +15,7 @@ var myTween = {
                 stepIndex =0,
                 objsCopy = [],
                 props = [];
+            console.log("animation params init complete...");
 
             // tranverse targetStatus props then calculate status of each frame
             for(var i=0;i<myTween.objs.length;i++){
@@ -40,9 +41,12 @@ var myTween = {
                             myTween.objs[i] = Object.assign([], myTween.objs[i], objsCopy[i]);
                         }
                         // myTween.objs = Object.assign([], myTween.objs, objsCopy);
-                        console.warn("animation reset !!!!");
+                        console.warn("animation reset ...");
                     } else {
                         myTween.paused = true;
+                        clearInterval(myTween.timer);
+                        myTween.timerOn = false;
+                        console.warn("animation end !!!");
                     }
                     return;
                 }
@@ -70,18 +74,33 @@ var myTween = {
                 }
                 stepIndex += 1;
             }
-            this.timer = setInterval(animation, inter);
+            // if last timer is still On, register later.. use async alike process controller.
+            return new Promise(function(res, rej){
+                myTween.timer = setInterval(animation, inter);
+                myTween.timerOn = true;
+                myTween.paused = false;
+                setTimeout(res, duration);
+            });
         }
-        return this;
     },
-    loop : true,
+    loop : false,
     speed: 1,
+    timerOn: false,
     timer : null,
     paused: false,
     wait: function(targets, duration) {
-        setTimeout(function() {
-            myTween.objs = Object.assign(myTween.objs, targets);
-        }, duration);
+        var duration = duration || 0;
+        return new Promise(function(res, rej) {
+            setTimeout(function() {
+                if (targets instanceof Function)
+                    targets.call(this);
+                else if (targets instanceof Object) {
+                    myTween.objs = Object.assign(myTween.objs, targets);
+                }
+                // sleep until Promise end..
+                res();
+            }, duration);
+        });
     },
     toggleAni: function(paused) {
         if (paused != undefined) {

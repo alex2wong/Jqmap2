@@ -11,7 +11,8 @@ Roads Style and Rectangle label background
 ![Roads Style_screenshot](https://github.com/alex2wong/Jqmap2/blob/master/Asset/roadsStyle-roundRect.jpg?raw=true)
 [Rectangle label background based on Canvas](http://alex2wong.github.io/Jqmap2/labelbg.html) Thanks@Yang
 
-[Mapbox cloud example](http://alex2wong.github.io/Jqmap2/examples/cloudlayer/)
+[Mapbox cloud example](http://alex2wong.github.io/Jqmap2/examples/cloudlayer/)<br>
+![Mapbox cloud example](https://github.com/alex2wong/Jqmap2/blob/master/Asset/images/cloudlayer.gif)
 
 ### ↓Openlayer label without overlap<br>
 ![openlayer label without overlap](https://github.com/alex2wong/Jqmap2/blob/master/Asset/Label_Func3.gif)
