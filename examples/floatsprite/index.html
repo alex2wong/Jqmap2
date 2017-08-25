@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" user>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <title>Story by custom Tween</title>
+        <title>Floating Sprites on Map</title>
         <!-- <script src="https://code.createjs.com/tweenjs-0.6.2.min.js"></script> -->
         <script src="../../Scripts/mapbox-gl.js"></script>
         <!--<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.34.0/mapbox-gl.js'></script>-->
@@ -21,7 +21,7 @@
     </head>
 
     <body style="width: 100%;height: 100%;">
-        <h4>Story by custom Tween</h4>
+        <h4>Floating Sprites on Map</h4>
         <div style="position:relative;">
             <div id='map'></div>
             <!-- <canvas id="demoCanvas" style="position:absolute;" width="700px" height="400px"></canvas> -->
@@ -54,9 +54,8 @@
                     ]
                 },
                 center: mapCenter,
-                zoom: 6,
-                minZoom: 6,
-                pitch: 0,
+                zoom: 16,
+                pitch: 30,
                 bearing: 0,
                 container: 'map'
             });
@@ -65,7 +64,6 @@
                 myTween.fps = 40;
                 myTween.loop = false;
                 //// set loop false to enable fadeIn and fadeOut effect!
-                map.dragRotate.disable();
                 // map.dragPan.disable();
                 // map.scrollZoom.disable();
                 init();
