@@ -96,21 +96,23 @@
                 var target = rdObjs(objNum);
                     target.push(storyLine);
                 var duration = 6000;
-                myTween.get(source).to(target, duration, render);
-                console.warn("register storyLine 1 ..");
 
-                // all animation should be excuted by timeline, include this one.
                 (async function(){
-                    myTween.wait(function(){ 
+                    myTween.get(source);
+                    await myTween.to(target, duration, render);
+                    console.warn("register storyLine 1 ..");
+
+                    await myTween.wait(function(){ 
                         map.flyTo({
                             center: [mapCenter[0]-2, mapCenter[1]-2],
-                            pitch: 30
+                            pitch: 15
                         });
-                    }, 1000);
+                        console.log("flyTo animation...");
+                    }, 2000);
 
-                    await sleep(7500);
                     storyLine.text = "World is upon the edge of war";
-                    myTween.get([storyLine]).to([storyLine], duration, render);
+                    myTween.get([storyLine]);
+                    await myTween.to([storyLine], duration, render);
                     console.warn("register storyLine 2 ..");
                 })();
             }

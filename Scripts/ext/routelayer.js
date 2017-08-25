@@ -48,7 +48,7 @@ RouteLayer.prototype.render = function(objs) {
         ctx.beginPath();
         for(var i=0;i<objs.length;i++) {
             var x = objs[i]['lon'], y = objs[i]['lat'], radius = objs[i]['radius'] || 2;
-                pix = trans2pix(x, y);
+                pix = this.project(x, y);
             if (pix == null) continue;
             ctx.fillStyle = objs[i]['color'];
             
@@ -62,8 +62,12 @@ RouteLayer.prototype.render = function(objs) {
 
 RouteLayer.prototype.project = function(lon, lat) {
     var x = 0, y = 0;
-    if (this.map && this.map.project) {
-        // x = this.map.project()
+    if (this.map != undefined && this.map.project instanceof Function) {
+        var lnglat = this.map.project(new mapboxgl.LngLat(
+            lng, lat));
+        var x = lnglat.x;
+        var y = lnglat.y;
+        return [x, y];
     }
-    return [x, y];
+    return null;
 }

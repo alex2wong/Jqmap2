@@ -75,26 +75,32 @@ var myTween = {
                 stepIndex += 1;
             }
             // if last timer is still On, register later.. use async alike process controller.
-            this.timer = setInterval(animation, inter);
-            this.timerOn = true;
-            myTween.paused = false;
+            return new Promise(function(res, rej){
+                myTween.timer = setInterval(animation, inter);
+                myTween.timerOn = true;
+                myTween.paused = false;
+                setTimeout(res, duration);
+            });
         }
-        return this;
     },
-    loop : true,
+    loop : false,
     speed: 1,
     timerOn: false,
     timer : null,
     paused: false,
     wait: function(targets, duration) {
-        var duration = duration || 0;        
-        setTimeout(function() {
-            if (targets instanceof Object)
-                myTween.objs = Object.assign(myTween.objs, targets);
-            else if (targets instanceof Function)
-                console.log("execute Func await..");
-                targets.call(this);
-        }, duration);
+        var duration = duration || 0;
+        return new Promise(function(res, rej) {
+            setTimeout(function() {
+                if (targets instanceof Function)
+                    targets.call(this);
+                else if (targets instanceof Object) {
+                    myTween.objs = Object.assign(myTween.objs, targets);
+                }
+                // sleep until Promise end..
+                res();
+            }, duration);
+        });
     },
     toggleAni: function(paused) {
         if (paused != undefined) {
@@ -113,11 +119,3 @@ var myTween = {
     },
     lastAniParams: [undefined, undefined]
 }
-
-var sleep = function (time) {
-    return new Promise(function (resolve, reject) {
-        setTimeout(function () {
-            resolve();
-        }, time);
-    })
-};
