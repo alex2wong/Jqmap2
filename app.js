@@ -11,13 +11,13 @@ var express = require('express'),
   fs = require('fs'),
   // server = require('https').createServer(options,app),
   // io = require('socket.io').listen(server),
-  proxy = require('./proxy');
+  proxy = require('./proxy'),
   log4js = require('log4js');
 
-var options = {
-  key: fs.readFileSync('../../tmp/ssl/server.key'),
-  cert: fs.readFileSync('../../tmp/ssl/server.crt')
-}
+// var options = {
+//   key: fs.readFileSync('../../tmp/ssl/server.key'),
+//   cert: fs.readFileSync('../../tmp/ssl/server.crt')
+// }
 
 server = require('http').createServer(app);
 io = require('socket.io').listen(server);
@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, '')));
 
 // config CORS to provide service to cross domain page.
 app.all('*', function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "alex2wong.github.io, 111.231.11.20, 10.103.14.66");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, accept, origin, content-type");
   res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
   // res.header("Content-Type", "application/json");
@@ -53,6 +53,11 @@ app.get('/flight', function(req, res) {
   });
 });
 
+/** get current clients info.. */
+app.get("/api/clients", function(req, res) {
+  res.write(JSON.stringify(clients));
+});
+
 io.set('log level', 1);
 // config the back-end log.
 log4js.configure({
@@ -62,20 +67,21 @@ log4js.configure({
       type: 'file',
       filename: 'logs/flight.log',
       maxLogSize: 1024*1024,
-      backups: 3,
+      backups: 10,
       category: 'normal'  
     }
   ],
-  replaceConsole: true
+  replaceConsole: false
 });
-var logger = log4js.getLogger('normal');
+/** should be exposed to socket msg handler.. */
+logger = log4js.getLogger('normal');
 logger.setLevel("INFO");
 
 app.use(log4js.connectLogger(logger, {level: log4js.levels.INFO}));
 
 // clients Array. store realtime status of all drones.
 var clients = [];
-var sockets = [];
+var sockets = {}, sockCount = 0;
 var robots = [];
 
 var enemyIndex = 0;
@@ -98,20 +104,22 @@ timer1 = setInterval(function(){
   }
   EnemyMsg['text'] = randomEnemy;
   EnemyMsg['time'] = getTime();
-  if (sockets.length > 0) {
-    logger.info("Currently, connection number is: " + sockets.length);
+  
+  if (sockCount > 0 ) {
     // robots.push(randomEnemy);  
-    sockets[0].sock.broadcast.emit('message', EnemyMsg);
+    //// broadcast msg with active socket instance..
+    for(k in sockets) {
+      if (sockets[k]) {
+        sockets[clients[0].name].broadcast.emit('message', EnemyMsg);
+        sockets[clients[0].name].emit('message', EnemyMsg);
+        break;
+      }
+    }
   }
-  // socket.emit('message', EnemyMsg);
 }, 12000);
 
 // register WebSocket connect listener, each connection has one socket.
 io.on('connection', function(socket) {
-  logger.info('One client connected..');
-  sockets.push({
-    "sock": socket
-  });
   socket.emit('open');
 
   // init client drone obj for each connection !!
@@ -124,10 +132,9 @@ io.on('connection', function(socket) {
     coordinates: [0, 0],
     life: 100
   }
-  var timer1;
 
   // message from client.
-  socket.on('message', function(msg) {
+  socket.on('message', function handleMsg(msg) {
     var obj = {
       time: getTime(),
       color: client.color
@@ -143,12 +150,17 @@ io.on('connection', function(socket) {
       }
       // client.life = droneStatus.life;
       clients.push(client);
+      sockets[client.name] = socket;
+      sockCount += 1;
 
       // this welcome obj is ready to emit to All clients.
       obj['text'] = client;
       obj['author'] = 'System';
       obj['type'] = 'welcome';
-      logger.info(client.name + ' login');
+      logger.info(client.name + " login, login@" + obj["time"]);
+      console.log(client.name + "logged in");
+      console.log("add socket instance: " + client.name, "current active socks num: " + sockCount);
+      printData(clients, "name");
 
       socket.emit('system', obj);
       // broadcast the welcome from system.
@@ -166,7 +178,10 @@ io.on('connection', function(socket) {
       obj['author'] = 'System';
       obj['type'] = 'message';
       if (client.message) {
-        logger.info(client.name + ' say: ' + client.message);
+        logger.info(client.name + " say: " + client.message);        
+        printData(clients, "name");
+        logger.info(client.name + " say @location: " + client.coordinates[0].toFixed(3) 
+          + "," + client.coordinates[1].toFixed(3) + " @" + getTime());
       }
 
       // // 返回消息（可以省略）
@@ -181,13 +196,16 @@ io.on('connection', function(socket) {
       obj['text'] = droneStatus;
       obj['author'] = client.name;
       obj['type'] = 'defeat';
-      logger.warn(client.name + ' defeated ' + droneStatus.name);
+      logger.warn(client.name + " defeated: " + droneStatus.name);
+      logger.warn(client.name + " defeated enemy @location: " + client.coordinates[0].toFixed(3) 
+          + "," + client.coordinates[1].toFixed(3) + " @" + getTime());
+      console.warn(client.name + " defeated " + droneStatus.name);
       socket.broadcast.emit('message', obj);
     }
 
   });  
 
-  socket.on('disconnect', function() {
+  socket.on('disconnect', function disconHandler() {
     var obj = {
       time: getTime(),
       color: client.color,
@@ -199,7 +217,13 @@ io.on('connection', function(socket) {
     // 广播用户已退出
     socket.broadcast.emit('system', obj);
     clearInterval(timer1);
-    logger.warn(client.name + ' disconnect');
+    logger.warn(client.name + " disconnect, @" + obj["time"]);
+    console.warn(client.name + " disconnect");
+    // socket instance should be deleted from sockets pool. delInSockets, delInClients.
+    handleData(clients,"name",client.name,true);
+    sockets[client.name] = null; sockCount -= 1;
+    console.log("delete socket instance: " + client.name, "current active socks num: " + sockCount);
+    printData(clients);
   });
 
 });
@@ -233,4 +257,62 @@ var getColor = function() {
     'orange', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue'
   ];
   return colors[Math.round(Math.random() * 10000 % colors.length)];
+}
+
+/**
+ * Just print Data Pool items..
+ */
+function printData(dataPool, key="name") {
+  if (dataPool !== undefined && dataPool.length ) {
+    var ind = 0;
+    console.log("Item number: " + dataPool.length);
+    dataPool.forEach((item)=>{
+      console.log(ind + " :" + item[key]);
+      ind += 1;
+    });
+  }
+}
+
+/**
+ * Common Function to find/del Data pool.
+ * @param dataPool:array, pool objs to handle
+ * @param key:string, field to search item
+ * @param value: string
+ * @param del: boolean, delete item or not.
+ */
+function handleData(dataPool, key="name", value, del=false) {
+    var delet = del;
+    if (dataPool !== undefined && dataPool.length ) {
+      for(var i = 0; i< dataPool.length; i++) {
+        if (dataPool[i][key] == value) {          
+          if (delet) {
+            dataPool.splice(i, 1);
+            console.log("DELETE pool data: " + value);
+            return null;
+          } else {
+            console.log("Found pool data : " + value);
+            return dataPool[i];
+          }
+        }
+      }
+    }
+}
+
+/**
+ * @param fn {Function}
+ * @param delay {Number}
+ * @return {Function}
+ */
+function debounce(fn, delay) {
+    var timer;
+    // timer is closure in mem.. returned function is the listener..
+    return function() {
+        var context = this;
+        var args = arguments;
+        // clear the previous timer to prevent the function call.
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            fn.apply(context, args)
+        }, delay);
+    }
 }
