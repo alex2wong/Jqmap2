@@ -29,7 +29,7 @@ app.use(express.static(path.join(__dirname, '')));
 
 // config CORS to provide service to cross domain page.
 app.all('*', function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "alex2wong.github.io, 111.231.11.20, 10.103.14.66");
+  res.header("Access-Control-Allow-Origin", "alex2wong.github.io, 111.231.11.20, *");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, accept, origin, content-type");
   res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
   // res.header("Content-Type", "application/json");
@@ -56,6 +56,7 @@ app.get('/flight', function(req, res) {
 /** get current clients info.. */
 app.get("/api/clients", function(req, res) {
   res.write(JSON.stringify(clients));
+  res.end();
 });
 
 io.set('log level', 1);
@@ -80,7 +81,7 @@ logger.setLevel("INFO");
 app.use(log4js.connectLogger(logger, {level: log4js.levels.INFO}));
 
 // clients Array. store realtime status of all drones.
-var clients = [];
+var clients = [], msgs = [];
 var sockets = {}, sockCount = 0;
 var robots = [];
 
@@ -130,7 +131,8 @@ io.on('connection', function(socket) {
     // direction in Rad, coordinates in LngLat
     direction: 0,
     coordinates: [0, 0],
-    life: 100
+    life: 100,
+    defeat: 0
   }
 
   // message from client.
@@ -178,7 +180,12 @@ io.on('connection', function(socket) {
       obj['author'] = 'System';
       obj['type'] = 'message';
       if (client.message) {
-        logger.info(client.name + " say: " + client.message);        
+        msgs.push({
+          time: getTime(),
+          from : client.name,
+          content: client.message
+        });
+        logger.info(client.name + " say: " + client.message);
         printData(clients, "name");
         logger.info(client.name + " say @location: " + client.coordinates[0].toFixed(3) 
           + "," + client.coordinates[1].toFixed(3) + " @" + getTime());
@@ -191,18 +198,18 @@ io.on('connection', function(socket) {
       socket.broadcast.emit('message', obj);
     } 
     // if receive DamageDrone info
-    else if(!droneStatus.life){
+    else if(!droneStatus.life) {
       // droneStatus Now reprensent 
       obj['text'] = droneStatus;
       obj['author'] = client.name;
       obj['type'] = 'defeat';
+      client.defeat += 1;
       logger.warn(client.name + " defeated: " + droneStatus.name);
       logger.warn(client.name + " defeated enemy @location: " + client.coordinates[0].toFixed(3) 
           + "," + client.coordinates[1].toFixed(3) + " @" + getTime());
       console.warn(client.name + " defeated " + droneStatus.name);
       socket.broadcast.emit('message', obj);
     }
-
   });  
 
   socket.on('disconnect', function disconHandler() {
@@ -237,6 +244,17 @@ server.listen(app.get('port'), function() {
  */
 var randDirect = function() {
   return Math.random() * 2 * Math.PI;
+}
+
+/**
+ * return dist between two lonlat points..
+ * @param {*array} p1 
+ * @param {*array} p2 
+ */
+var calcDist = function(p1, p2) {
+  if (p1 instanceof Array && p2 instanceof Array) {
+    return Math.sqrt(Math.pow(p1[0]-p2[0], 2) + Math.pow(p1[1]-p2[1], 2));
+  }
 }
 
 // 随机生成坐标点，模拟实时坐标数据

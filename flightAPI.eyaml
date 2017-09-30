@@ -1,0 +1,149 @@
+# this is an example of the Flight API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Flight API
+  description: Move your app forward with the Flight API
+  version: "1.0.0"
+# the domain of the service
+host: api.huangyixiu.co
+# array of all schemes that your API supports
+schemes:
+  - https
+# will be prefixed to all paths
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /clients:
+    get:
+      summary: Product Types
+      description: return online clients info
+      parameters:
+        - name: name
+          in: query
+          description: fff
+          required: false
+          type: string
+      tags:
+        - clients
+      responses:
+        200:
+          description: An array of clients
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Client'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  /clients/onlineTime:
+    get:
+      summary: online time of clients
+      description: online Time longest client.
+      parameters:
+        - name: client
+          in: query
+          type: string
+          description: Unique identifier representing a specific client
+      tags:
+        - stats, clients
+      responses:
+        200:
+          description: onlineTime
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Client'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+            
+  /clients/history:
+    get:
+      summary: client Activity
+      description: The User Activity endpoint returns data about a user's lifetime activity
+      parameters:
+        - name: client
+          in: query
+          type: string
+          description: Offset the list of returned results by this amount. Default is zero.
+        - name: limit
+          in: query
+          type: integer
+          format: int32
+          description: Number of items to retrieve. Default is 5, maximum is 100.
+      tags:
+        - User
+      responses:
+        200:
+          description: History activity for the given user
+          schema:
+            $ref: '#/definitions/Activities'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+definitions:
+  Client:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Unique identifier representing a specific client
+      coordinates:
+        type: array
+        items:
+          $ref: '#/definitions/Coordinates'
+        description: lon,lat coordinates
+      killings:
+        type: number
+        description:  how many enemies defeat.
+      words:
+        type: string
+        description: words this client once said.
+  Coordinates:
+    type: array
+    items: 
+      $ref: '#/definitions/Lonlat'
+  Lonlat:
+    type: number
+    
+  Activity:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: Unique identifier for the activity
+  Activities:
+    type: object
+    properties:
+      offset:
+        type: integer
+        format: int32
+        description: Position in pagination.
+      limit:
+        type: integer
+        format: int32
+        description: Number of items to retrieve (100 max).
+      count:
+        type: integer
+        format: int32
+        description: Total number of items available.
+      history:
+        type: array
+        items:
+          $ref: '#/definitions/Activity'
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
