@@ -15,7 +15,7 @@
             body { margin:0; padding:0; }
             #map { position:relative; width:700px; height:400px}
             .overlay-canvas {
-                transition: opacity 1.8s ease-in;
+                transition: opacity 1.2s ease-in;
             }
         </style>
     </head>
@@ -92,30 +92,39 @@
 
                 var target = rdObjs(objNum);
                     target.push(storyLine);
-                var duration = 6000;
+                var duration = 4000;
 
                 (async function(){
-                    myTween.get(source);
-                    await myTween.to(target, duration, render);
+                    await myTween.get(source).to(target, duration, render);
                     console.warn("register storyLine 1 ..");
 
 
                     await myTween.wait(function(){ 
                         map.flyTo({
                             center: [mapCenter[0]-2, mapCenter[1]-2],
+                            zoom: 5
                         })
                     }, 2000);
-                    storyLine.lon -= 2;
-                    storyLine.lat -= 2;
+                    storyLine.lon -= 2, storyLine.lat -= 2;
                     storyLine.text = "World is upon the edge of war";
-                    myTween.get([storyLine]);
+                    await myTween.get([storyLine]).to([storyLine], duration, render);
+                    // switch scene with 1000ms.
+                    await myTween.wait(null, 1000);
+                    storyLine.text = "It is your turn to keep peace or not";
                     await myTween.to([storyLine], duration, render);
-                    console.warn("register storyLine 2 ..");
+                    await myTween.wait(function(){
+                        map.flyTo({
+                            center: mapCenter, pitch: 15
+                        });
+                    }, 1000);
+                    storyLine.text = "Come and join us !";
+                    var circles = rdObjs(10, rndRadius=true); circles.push(storyLine);
+                    await myTween.get(circles).to(circles, duration, render);
                 })();
             }
 
             // random point objs with given number
-            function rdObjs(num) {
+            function rdObjs(num, rndRadius=false) {
                 var objs = [], index = 0;
                 if (!mapCenter) return objs;
                 for(var i=0;i<num;i++) {
@@ -124,7 +133,7 @@
                         lon: parseInt(((Math.random()*8)+mapCenter[0]-4).toFixed(2)),
                         lat: parseInt(((Math.random()*4)+mapCenter[1]-2).toFixed(2)),
                         color: 'rgba(10,200,'+ (Math.random()*251).toFixed(0) +',0.7)',
-                        radius: 2,
+                        radius: rndRadius? (Math.random()*20) : 2,
                     });
                 }
                 return objs;
@@ -147,7 +156,7 @@
                     ctx.shadowBlur = 2;
                     ctx.shadowColor = "rgba(255,255,255,.4)";
 
-                    ctx.font = "30px Verdana";
+                    ctx.font = "22px Verdana";
                     for (var i=0;i<objs.length;i++) {
                         var x = objs[i]['lon'], y = objs[i]['lat'], radius = objs[i]['radius'] || 2, text = objs[i]['text'];
                             pix = trans2pix(x, y);

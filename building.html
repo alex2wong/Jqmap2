@@ -21,15 +21,15 @@
 <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoiaHVhbmd5aXhpdSIsImEiOiI2WjVWR1hFIn0.1P90Q-tkbHS38BvnrhTI6w';
     var map = new mapboxgl.Map({
-        style: 'mapbox://styles/mapbox/dark-v9',
+        style: 'mapbox://styles/mapbox/streets-v9',
         center: [-74.0066, 40.6135],
         zoom: 17,
         pitch: 45,
         bearing: -17.6,
         light: {
             'anchor':'viewport',
-            'color':'white',
-            'intensity':0.5
+            'color':'orange',
+            'intensity':0.8
         },
         container: 'map'
     });
@@ -46,7 +46,7 @@
             'type': 'fill-extrusion',
             'minzoom': 15,
             'paint': {
-                'fill-extrusion-color': '#2158b8',
+                'fill-extrusion-color': '#ccc',
                 'fill-extrusion-height': {
                     'type': 'identity',
                     'property': 'height'
@@ -55,9 +55,47 @@
                     'type': 'identity',
                     'property': 'min_height'
                 },
-                'fill-extrusion-opacity': .8
+                'fill-extrusion-opacity': .5
             }
         });
+        map.addLayer({
+            'id': 'building-selected',
+            'source': 'composite',
+            'source-layer': 'building',
+            // 'filter': ['==', 'extrude', 'true'],
+            'filter': ['==', 'id', ''],
+            // layer type..
+            'type': 'fill-extrusion',
+            'minzoom': 15,
+            'paint': {
+                'fill-extrusion-color': '#faa',
+                'fill-extrusion-height': {
+                    'type': 'identity',
+                    'property': 'height'
+                },
+                'fill-extrusion-base': {
+                    'type': 'identity',
+                    'property': 'min_height'
+                },
+                'fill-extrusion-opacity': .9
+            }
+        });
+    });
+
+    map.on('click', function(e) {
+        // set bbox as 5px reactangle area around clicked point
+        var bbox = [[e.point.x - 5, e.point.y - 5], [e.point.x + 5, e.point.y + 5]];
+        var features = map.queryRenderedFeatures(bbox, { layers: ['3d-buildings'] });
+
+        // Run through the selected features and set a filter
+        // to match features with unique FIPS codes to activate
+        // the `counties-highlighted` layer.
+        var filter = features.reduce(function(memo, feature) {
+            memo.push(feature.id);
+            return memo;
+        }, ['==','id']);
+
+        map.setFilter("building-selected", filter);
     });
 
 </script>
