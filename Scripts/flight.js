@@ -851,7 +851,9 @@ map.on('load', function() {
             "text-halo-width": 2,
             // "text-halo-blur": 1,
             "text-halo-color": "rgba(255,255,255,0.7)",
-            "text-color": "#222"
+            "text-color": "#222",
+            "icon-halo-color": "rgba(20,20,255,0.7)",
+            "icon-halo-width": 4,
         },
         "layout": {
             "icon-image": "airport-15",
@@ -864,6 +866,7 @@ map.on('load', function() {
                 "property": "rotate",
                 "type": "identity"
             },
+            
             "text-field": "{name}"+ " life:" + "{life}",
             "text-font": ["Noto Sans Hans Light"],
             "text-offset": [0, 0.6],
@@ -879,10 +882,11 @@ map.on('load', function() {
         "source": "drone-target",
         "paint": {
             // make circles larger as the user zooms from z12 to z22
-            'circle-radius': 2,
+            'circle-radius': 3,
             // color circles by ethnicity, using data-driven styles
             'circle-color': '#FFFD0C',
-            'circle-opacity':0.8
+            'circle-opacity':0.8,
+            'circle-blur': 2
         }
     });
     // map.addLayer({

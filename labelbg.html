@@ -84,8 +84,10 @@
                 this.arcTo(x, y + h, x, y, r);
                 this.arcTo(x, y, x + w, y, r);
                 this.closePath();
-                this.strokeWidth = 2;
+                this.strokeWidth = 4;
+                this.fillStyle = "#fdc41a";
                 this.strokeStyle = "rgba(255,255,255, 1)";   
+                this.fill();
                 this.stroke();
                 // console.warn(`drawn 1 rect label bg. imgWidth: ${w}, ctx instance:${this.canvas}`);
                 img.src = this.canvas.toDataURL();
@@ -93,7 +95,7 @@
             }
             var canvas = document.createElement("canvas");//创建一个canvas标签
             // canvas.width = 75;
-            var ratio = 9, height = 20, borderRadius = 4;
+            var ratio = 10, height = 22, borderRadius = 4;
             canvas.height = height*2;
             var context = canvas.getContext("2d");
             context.roundRect = roundRect;

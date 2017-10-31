@@ -1,4 +1,7 @@
 ## Jqmap2
+
+**Note:** Mapbox related plugins have been moved to new repo: [mapbox-plugins](https://github.com/alex2wong/mapbox-plugins)
+
 Jqmap2 contains sets of **web app** based on <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> and socket.io
 
 Currently <a href="https://www.mapbox.com/mapbox-gl-js/">Mapbox GL JS</a> is applied to build A totally new flightgame, with pitch, bearing in viewport and webgl render.
@@ -11,6 +14,8 @@ Roads Style and Rectangle label background
 ![Roads Style_screenshot](https://github.com/alex2wong/Jqmap2/blob/master/Asset/roadsStyle-roundRect.jpg?raw=true)
 [Rectangle label background based on Canvas](http://alex2wong.github.io/Jqmap2/labelbg.html) Thanks@Yang
 
+
+[Mapbox storylayer example with async/await](https://alex2wong.github.io/Jqmap2/examples/storylayer/)<br>
 [Mapbox cloud example](http://alex2wong.github.io/Jqmap2/examples/cloudlayer/)<br>
 ![Mapbox cloud example](https://github.com/alex2wong/Jqmap2/blob/master/Asset/images/cloudlayer.gif)
 

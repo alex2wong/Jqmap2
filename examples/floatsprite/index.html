@@ -38,7 +38,7 @@
                         "custom-tms": {   
                             'type': 'raster',
                             'tiles': [
-                                "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
+                                "http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
                                 // "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                             ],
                             'tileSize': 256
@@ -61,13 +61,13 @@
             });
 
             map.on('load', function() {
-                myTween.fps = 40;
-                myTween.loop = false;
                 //// set loop false to enable fadeIn and fadeOut effect!
-                // map.dragPan.disable();
-                // map.scrollZoom.disable();
                 init();
             });
+
+            mapboxgl.Sprite = function() {
+                console.log("floating sprits add to map");
+            }
 
             var img, initZoom = map.getZoom();
             function init() {

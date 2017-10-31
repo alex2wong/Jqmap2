@@ -133,9 +133,11 @@ miniMap.on('load', function() {
 
 // add Map Click to bind chosen drone to dashboard..hhh
 map.on("mousemove", function(e) {
-    var foundDrone = null;
+    var foundDrone = null, features = [];
     // this func return deep copy
-    var features = map.queryRenderedFeatures(e.point, { layers: ['drone'] });    
+    if (map.getSource('drone')) {
+        features = map.queryRenderedFeatures(e.point, { layers: ['drone'] });   
+    }
     map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
     if (features.length) {
         var featureName = features[0].properties.name;
@@ -168,4 +170,3 @@ map.on("mousemove", function(e) {
         }, 60) 
     }
 });
-
