@@ -489,9 +489,7 @@ var map = new mapboxgl.Map({
             "custom-tms": {   
                 'type': 'raster',
                 'tiles': [
-                    // "http://127.0.0.1:8080/Tiles/{z}/{x}/{y}.png"
-                    // "http://c.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    "https://huangyixiu.co:3003/proxy?proxyURI=http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
+                    "http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
                     // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
                     // "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                 ],
