@@ -115,7 +115,7 @@ timer1 = setInterval(function(){
       if (sockets[k] && k == lastClient.name) {
         console.warn(`### sockets ${k} broadcast robot info ${EnemyMsg['text']}, ${lastClient.name}`);
         sockets[k].broadcast.emit('message', EnemyMsg);
-        // sockets[clients[0].name].emit('message', EnemyMsg);
+        sockets[k].emit('message', EnemyMsg);
         break;
       }
     }
