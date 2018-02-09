@@ -51,6 +51,10 @@ function randomName() {
 }
 
 var socket;
+function closeSocket() {
+    if (socket) 
+	socket.close();
+}
 // config socket connection.
 try {
     // locally test.. 192.168.1.107.  LAN test.

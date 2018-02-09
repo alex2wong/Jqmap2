@@ -105,14 +105,17 @@ timer1 = setInterval(function(){
   }
   EnemyMsg['text'] = randomEnemy;
   EnemyMsg['time'] = getTime();
-  
+  console.warn(`timer sockets ready to broadCast, sockCount:${sockCount}`);
+  lastClient = clients[clients.length-1];
   if (sockCount > 0 ) {
     // robots.push(randomEnemy);  
     //// broadcast msg with active socket instance..
     for(k in sockets) {
-      if (sockets[k]) {
-        sockets[clients[0].name].broadcast.emit('message', EnemyMsg);
-        sockets[clients[0].name].emit('message', EnemyMsg);
+      console.warn(`for soc name:${k}, socket instance:${sockets[k]}`);
+      if (sockets[k] && k == lastClient.name) {
+        console.warn(`### sockets ${k} broadcast robot info ${EnemyMsg['text']}, ${lastClient.name}`);
+        sockets[k].broadcast.emit('message', EnemyMsg);
+        // sockets[clients[0].name].emit('message', EnemyMsg);
         break;
       }
     }
@@ -147,6 +150,7 @@ io.on('connection', function(socket) {
     if (!client.name && droneStatus.name) {
       client.name = droneStatus.name;
       client.direction = droneStatus.direction;
+      client.history = [];
       if (droneStatus.point) {
         client.coordinates = droneStatus.point.coordinates;
       }
@@ -173,8 +177,9 @@ io.on('connection', function(socket) {
       client.direction = droneStatus.direction;
       client.coordinates = droneStatus.point.coordinates;
       client.message = droneStatus.message;
-      client.firing = droneStatus.firing;
-      // client.life = droneStatus.life;
+      if(droneStatus.message) client.history.push(droneStatus.message);
+      client.life = droneStatus.life;
+      client.firing = droneStatus.firing;  
 
       obj['text'] = client;
       obj['author'] = 'System';
@@ -203,13 +208,17 @@ io.on('connection', function(socket) {
       obj['text'] = droneStatus;
       obj['author'] = client.name;
       obj['type'] = 'defeat';
-      client.defeat += 1;
-      logger.warn(client.name + " defeated: " + droneStatus.name);
-      logger.warn(client.name + " defeated enemy @location: " + client.coordinates[0].toFixed(3) 
-          + "," + client.coordinates[1].toFixed(3) + " @" + getTime());
-      console.warn(client.name + " defeated " + droneStatus.name);
+      droneStatus.death += 1;
+      deathCoords = droneStatus.point.coordinates;
+      logger.warn(droneStatus.name + " was defeated @location: " + deathCoords[0].toFixed(3) 
+          + "," + deathCoords[1].toFixed(3) + " @" + getTime());
       socket.broadcast.emit('message', obj);
     }
+    temp = handleData(clients, 'name', client.name, false);
+    if (temp) {
+      temp = client;
+    }
+
   });  
 
   socket.on('disconnect', function disconHandler() {
@@ -223,14 +232,13 @@ io.on('connection', function(socket) {
 
     // 广播用户已退出
     socket.broadcast.emit('system', obj);
-    clearInterval(timer1);
     logger.warn(client.name + " disconnect, @" + obj["time"]);
     console.warn(client.name + " disconnect");
     // socket instance should be deleted from sockets pool. delInSockets, delInClients.
     handleData(clients,"name",client.name,true);
     sockets[client.name] = null; sockCount -= 1;
-    console.log("delete socket instance: " + client.name, "current active socks num: " + sockCount);
-    printData(clients);
+    console.warn("delete socket instance: " + client.name, "current active socks num: " + sockCount);
+    printData(clients, 'name');
   });
 
 });
@@ -280,7 +288,7 @@ var getColor = function() {
 /**
  * Just print Data Pool items..
  */
-function printData(dataPool, key="name") {
+function printData(dataPool, key) {
   if (dataPool !== undefined && dataPool.length ) {
     var ind = 0;
     console.log("Item number: " + dataPool.length);
@@ -298,7 +306,7 @@ function printData(dataPool, key="name") {
  * @param value: string
  * @param del: boolean, delete item or not.
  */
-function handleData(dataPool, key="name", value, del=false) {
+function handleData(dataPool, key, value, del) {
     var delet = del;
     if (dataPool !== undefined && dataPool.length ) {
       for(var i = 0; i< dataPool.length; i++) {
@@ -308,12 +316,12 @@ function handleData(dataPool, key="name", value, del=false) {
             console.log("DELETE pool data: " + value);
             return null;
           } else {
-            console.log("Found pool data : " + value);
             return dataPool[i];
           }
         }
       }
     }
+    return null;
 }
 
 /**
