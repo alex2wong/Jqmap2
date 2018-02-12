@@ -1,0 +1,153 @@
+body {
+    width: 100%;
+    height: 100%;
+    color: #5c5c5c;
+    overflow: hidden;
+    background-repeat: no-repeat;
+    font-family: "MicroSoft Yahei";
+    /*background-image: url("../resource/WorkTile首页.png");*/
+    opacity: 1;
+}
+body, html {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+#popuplayer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background: #f9f7f3;
+}
+.sidenav {
+    background: #2e2d2b;
+    float:left;
+    width: 75px;
+    height: 100%;
+}
+.verti {
+    text-align: center;
+    vertical-align: middle;
+    font-size: 1.2em;
+    width: 75px;
+    height: 50px;
+    padding-top: 10px;
+    /*float: left;*/
+    margin-top: 40px;
+}
+.leftbottom {
+    position: absolute;
+    left: 0;
+    bottom: 10px;
+}
+#navitems {
+    width: 100%;
+    padding: 0;
+    margin-top: 100px;
+}
+#tabcontent {
+    width:90%;
+    float: left;
+}
+/*flex or grid is better!!*/
+header {
+    background-color: #fff;
+    width: 100%;
+    height: 45px;
+}
+.lefttitle {
+    float: left;
+    height: 30px;
+    padding-top: 10px;
+    margin: -5px 30px 0 50px;
+}
+.rightpanel {
+    margin: 0 auto;
+}
+.lgfont {
+    font-size: 1.4em;
+}
+.headitem {
+    display: inline-block;
+}
+.hori-group {
+    
+}
+.hori {
+    text-align: center;
+    vertical-align: middle;
+    font-size: 1.2em;
+    width: 80px;
+    height: 30px;
+    padding-top: 10px;
+    float: left;
+    margin: 0px;
+}
+.bloc {
+    display: block;
+}
+.hov:hover {
+    cursor: pointer;
+    color: #ba1010;
+    /*width: 100%;*/
+    /*background-color: rgba(200,200,200,0.1);*/
+    transition: border, 0.6s;    
+    /*border: 1px solid rgba(200,200,200,0.1);*/
+}
+.bottom:hover {
+    border-bottom: 2px solid rgba(200,200,200,0.9);
+}
+
+#content {
+    width: 100%;
+    height: 80%;
+}
+footer {
+    width: 100%;
+    height: 10%;
+}
+a {
+    text-decoration-line: none;
+    text-decoration-style: none;
+}
+li {
+    list-style: none;
+}
+
+.lowPoly {
+    height: 300px;
+    width: auto;
+    border: 2px solid black;
+}
+
+#canv {
+    height: 400px;
+    width: 800px;
+    border: 2px dotted gray;
+}
+
+.button-success,
+.button-error,
+.button-warning,
+.button-secondary {
+    color: white;
+    border-radius: 4px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+.button-success {
+    background: rgb(28, 184, 65); /* this is a green */
+}
+.button-error {
+    background: rgb(202, 60, 60); /* this is a maroon */
+}
+
+.button-warning {
+    background: rgb(223, 117, 20); /* this is an orange */
+}
+
+.button-secondary {
+    background: rgb(66, 184, 221); /* this is a light blue */
+}
+

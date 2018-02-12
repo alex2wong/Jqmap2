@@ -107,19 +107,19 @@ timer1 = setInterval(function(){
   EnemyMsg['time'] = getTime();
   console.warn(`timer sockets ready to broadCast, sockCount:${sockCount}`);
   lastClient = clients[clients.length-1];
-  if (sockCount > 0 ) {
-    // robots.push(randomEnemy);  
-    //// broadcast msg with active socket instance..
-    for(k in sockets) {
-      console.warn(`for soc name:${k}, socket instance:${sockets[k]}`);
-      if (sockets[k] && k == lastClient.name) {
-        console.warn(`### sockets ${k} broadcast robot info ${EnemyMsg['text']}, ${lastClient.name}`);
-        sockets[k].broadcast.emit('message', EnemyMsg);
-        sockets[k].emit('message', EnemyMsg);
-        break;
-      }
+  
+  // robots.push(randomEnemy);  
+  //// broadcast msg with active socket instance..
+  for(k in sockets) {
+    console.warn(`for soc name:${k}, socket instance:${sockets[k]}`);
+    if (sockets[k] && k == lastClient.name) {
+      console.warn(`### sockets ${k} broadcast robot info ${EnemyMsg['text']}, ${lastClient.name}`);
+      sockets[k].broadcast.emit('message', EnemyMsg);
+      sockets[k].emit('message', EnemyMsg);
+      break;
     }
   }
+ 
 }, 12000);
 
 // register WebSocket connect listener, each connection has one socket.
