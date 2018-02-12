@@ -131,6 +131,8 @@ miniMap.on('load', function() {
     // miniMap.addLayer();
 })
 
+if(typeof myTween !=undefined)
+    myTween.fps = 40;
 // add Map Click to bind chosen drone to dashboard..hhh
 map.on("mousemove", function(e) {
     var foundDrone = null, features = [];
@@ -170,3 +172,78 @@ map.on("mousemove", function(e) {
         }, 60) 
     }
 });
+
+// add Cloud Layer..
+function bindClouds(map, clouds) {
+    map.on('move', function(){
+        // set Animation Paused true
+        myTween.toggleAni(true);
+        render(clouds);
+        map.on('moveend', function(){
+            // keep Animation
+            myTween.toggleAni(false);
+        });
+    });
+}
+
+var img, initZoom = map.getZoom();
+(function cloudInit() {
+    var objNum = 10, canvasOverlay = null;
+    canvasOverlay = createOverlay();
+    canvasOverlay.style.opacity = 0.1;
+    var clouds = rdObjs(objNum);
+    bindClouds(map, clouds);
+    img = new Image();
+    img.onload = function() {
+        myTween.get(clouds).to(rdObjs(objNum), 120000, render);
+    }
+    img.src = clouds[0].url;
+})()
+
+// random point objs with given number
+function rdObjs(num) {
+    var objs = [], index = 0;
+    if (!mapCenter) return objs;
+    for(var i=0;i<num;i++) {
+        objs.push({
+            name: "cloud" + i.toString(),
+            lon: parseInt(((Math.random()*8)+mapCenter[0]-4).toFixed(2)),
+            lat: parseInt(((Math.random()*4)+mapCenter[1]-2).toFixed(2)),
+            url: "../Asset/images/cloud2.png",
+        });
+    }
+    objs.push({
+        name: "label" + i.toString(),
+        lon: mapCenter[0],
+        lat: mapCenter[1],
+        text: "World of cloud created by Alex",
+    });
+    return objs;
+}
+
+/*
+ * render cloud with 2d context
+ */
+function render(objs, fadeOut, fadeIn) {
+    if (canvasOverlay) {
+        if (fadeOut) canvasOverlay.style.opacity = 0;
+        if (fadeIn) canvasOverlay.style.opacity = 0.6;
+        // calc cloud display ratio...
+        var pow = initZoom - map.getZoom();
+        ratio = Math.pow(2, pow)*0.2;
+        ctx = canvasOverlay.getContext("2d");
+        ctx.fillStyle = "rgba(250,250,250,0.9)";
+        ctx.font = "30px Verdana";
+        ctx.clearRect(0,0,canvasOverlay.width, canvasOverlay.height);
+        for (var i=0;i<objs.length;i++) {
+            var x = objs[i]['lon'], y = objs[i]['lat'], url = objs[i]['url'], text = objs[i]['text'];
+                pix = trans2pix(x, y);
+            if (pix == null) continue;
+            ctx.beginPath();
+            ctx.drawImage(img, pix[0], pix[1], img.width/ratio, img.height/ratio);
+            if (text) ctx.fillText(text, pix[0], pix[1]);
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+}

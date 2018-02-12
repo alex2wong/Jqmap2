@@ -51,11 +51,11 @@ function randomName() {
 }
 
 var socket;
-function closeSocket() {
-    if (socket) 
-	socket.close();
-}
 // config socket connection.
+function closeSocket () {
+    if (socket)
+        socket.close();
+}
 try {
     // locally test.. 192.168.1.107.  LAN test.
     // 127.0.0.1
@@ -476,7 +476,7 @@ function updateDrones() {
 
 }
 
-mapboxgl.accessToken = false;
+mapboxgl.accessToken = false, mapCenter = [121.00, 31.0892];
 var miniMap = null;
 var map = new mapboxgl.Map({
     container: 'map',
@@ -490,7 +490,7 @@ var map = new mapboxgl.Map({
                 'type': 'raster',
                 'tiles': [
                     "http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}"
-                    // 'http://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
+                    // 'https://www.google.cn/maps/vt/pb=!1m4!1m3!1i{z}!2i{x}!3i{y}!2m3!1e0!2sm!3i345013117!3m8!2szh-CN!3scn!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0'
                     // "http://www.google.cn/maps/vt?lyrs=s@702&gl=cn&x={x}&y={y}&z={z}"
                 ],
                 'tileSize': 256
@@ -537,7 +537,7 @@ var map = new mapboxgl.Map({
     maxZoom: 9,
     minZoom: 7,
     zoom: 9,
-    center: [121.00, 31.0892]
+    center: mapCenter
 });
 
 function turnLeft() {

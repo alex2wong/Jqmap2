@@ -265,6 +265,9 @@ body { margin:0; padding:0;
     margin-right: -150px;
     margin-top: -150px;
 }
+.overlay-canvas {
+    transition: opacity 3.6s ease-in;
+}
 .primary {
     color: deepskyblue;
 }
