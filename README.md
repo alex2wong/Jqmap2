@@ -15,7 +15,7 @@ Roads Style and Rectangle label background
 [Rectangle label background based on Canvas](http://alex2wong.github.io/Jqmap2/labelbg.html) Thanks@Yang
 
 
-[Mapbox storylayer example with async/await](https://alex2wong.github.io/Jqmap2/examples/storylayer/)<br>
+[Mapbox storylayer example with async/await](http://alex2wong.github.io/Jqmap2/examples/storylayer/)<br>
 [Mapbox cloud example](http://alex2wong.github.io/Jqmap2/examples/cloudlayer/)<br>
 ![Mapbox cloud example](https://github.com/alex2wong/Jqmap2/blob/master/Asset/images/cloudlayer.gif)
 
